@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Atividade
+from .models import (
+    Perfil, Progresso, Atividade, Conquista,
+    Capitulo, Modulo, Aula,
+    Forum, RespostaForum, Notificacao
+)
 
 @admin.register(Atividade)
 class AtividadeAdmin(admin.ModelAdmin):
@@ -8,11 +12,76 @@ class AtividadeAdmin(admin.ModelAdmin):
     list_filter = ("data",)
 
 
-from django.contrib import admin
-from .models import Conquista
-
 @admin.register(Conquista)
 class ConquistaAdmin(admin.ModelAdmin):
     list_display = ("titulo", "raridade", "categoria")
     list_filter = ("raridade", "categoria")
     search_fields = ("titulo", "descricao")
+
+
+
+
+
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
+    list_display = ("user", "xp", "nivel", "vidas", "sequencia", "licoes")
+    search_fields = ("user__username",)
+    list_filter = ("nivel",)
+
+
+@admin.register(Progresso)
+class ProgressoAdmin(admin.ModelAdmin):
+    list_display = ("user", "data", "percentual", "xp_ganho", "missoes_concluidas")
+    search_fields = ("user__username",)
+    list_filter = ("data",)
+
+
+
+class ModuloInline(admin.TabularInline):
+    model = Modulo
+    extra = 1
+
+
+@admin.register(Capitulo)
+class CapituloAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "ordem", "ativo", "criado_em")
+    search_fields = ("titulo",)
+    inlines = [ModuloInline]
+
+
+class AulaInline(admin.TabularInline):
+    model = Aula
+    extra = 1
+
+
+@admin.register(Modulo)
+class ModuloAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "capitulo", "ordem", "ativo")
+    search_fields = ("titulo", "capitulo__titulo")
+    inlines = [AulaInline]
+
+
+@admin.register(Aula)
+class AulaAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "modulo", "ordem", "ativo")
+    search_fields = ("titulo", "modulo__titulo")
+
+
+@admin.register(Forum)
+class ForumAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "usuario", "criado_em", "ativo")
+    search_fields = ("titulo", "usuario__username")
+    list_filter = ("ativo", "criado_em")
+
+
+@admin.register(RespostaForum)
+class RespostaForumAdmin(admin.ModelAdmin):
+    list_display = ("forum", "usuario", "criado_em")
+    search_fields = ("forum__titulo", "usuario__username")
+
+
+@admin.register(Notificacao)
+class NotificacaoAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "mensagem", "lida", "enviada_em")
+    search_fields = ("usuario__username", "mensagem")
+    list_filter = ("lida", "enviada_em")

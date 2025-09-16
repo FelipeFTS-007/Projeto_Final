@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fórum - PyQuest{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilos específicos para o fórum */
+  .post {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .post:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .comment {
+    border-left: 3px solid #e5e7eb;
+  }
+  
+  .comment:hover {
+    border-left-color: #2682EA;
+  }
+  
+  .reply-form {
+    transition: all 0.3s ease;
+  }
+  
+  .filter-btn {
+    transition: all 0.2s ease;
+  }
+  
+  .filter-btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  .avatar {
+    transition: transform 0.2s ease;
+  }
+  
+  .avatar:hover {
+    transform: scale(1.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 p-6">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="flex-1">
+    <!-- Estatísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-200 rounded-2xl shadow p-4 text-center">
+        <p>Membros Totais</p>
+        <p class="text-2xl font-bold text-[#2682EA]">5.230</p>
+      </div>
+      <div class="bg-blue-200 rounded-2xl shadow p-4 text-center">
+        <p>Ativos Hoje</p>
+        <p class="text-2xl font-bold text-[#2682EA]">720</p>
+      </div>
+      <div class="bg-blue-200 rounded-2xl shadow p-4 text-center">
+        <p>Posts Hoje</p>
+        <p class="text-2xl font-bold text-[#2682EA]">145</p>
+      </div>
+    </div>
+
+    <!-- Busca e filtros -->
+    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+      <div class="flex items-center gap-2 border rounded-lg px-3 py-2">
+        <input id="searchInput" type="text" placeholder="Buscar no fórum..."
+               class="w-full outline-none text-gray-600" />
+      </div>
+
+      <div id="filters" class="flex flex-wrap gap-2 mt-3">
+        <button class="filter-btn bg-[#2682EA] text-white px-3 py-1 rounded-lg text-sm" data-filter="all">Todos os Posts</button>
+        <button class="filter-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm" data-filter="popular">Mais Populares</button>
+        <button class="filter-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm" data-filter="recent">Mais Recentes</button>
+        <button class="filter-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm" data-filter="following">Seguindo</button>
+      </div>
+    </div>
+
+    <!-- LISTA DE POSTS -->
+    <div id="postsContainer" class="space-y-4"></div>
+
+    <!-- Carregar mais -->
+    <div class="flex justify-center mt-6">
+      <button id="loadMore" class="bg-[#2682EA] text-white w-12 h-12 flex items-center justify-center rounded-full shadow hover:bg-blue-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DIREITA -->
+  <div class="w-full md:w-72 flex-shrink-0 space-y-6">
+    <!-- Tópicos em alta (dinâmico) -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h3 class="font-semibold mb-3 text-gray-700">Tópicos em Alta</h3>
+
+      <div class="flex gap-2 mb-3">
+        <button id="trendToday" class="bg-[#2682EA] text-white px-2 py-1 rounded text-xs">Hoje</button>
+        <button id="trend7d" class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">7 dias</button>
+      </div>
+
+      <ul id="trendingList" class="space-y-2 text-sm">
+        <!-- preenchido dinamicamente -->
+      </ul>
+    </div>
+
+    <!-- Contribuidores destaque -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h3 class="font-semibold mb-3 text-gray-700">Contribuidores Destaque</h3>
+      <ul class="space-y-2 text-sm">
+        <li class="flex justify-between">
+          <span class="flex items-center gap-2 cursor-pointer avatar" data-user="maria">
+            <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" class="w-5 h-5" alt=""> Maria Oliveira
+          </span>
+          <span class="text-[#2682EA]">XP 2.350</span>
+        </li>
+        <li class="flex justify-between">
+          <span class="flex items-center gap-2 cursor-pointer avatar" data-user="pedro">
+            <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" class="w-5 h-5" alt=""> Pedro Lima
+          </span>
+          <span class="text-[#2682EA]">XP 1.890</span>
+        </li>
+        <li class="flex justify-between">
+          <span class="flex items-center gap-2 cursor-pointer avatar" data-user="ana">
+            <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" class="w-5 h-5" alt=""> Ana Souza
+          </span>
+          <span class="text-[#2682EA]">XP 1.420</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Ações rápidas -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h3 class="font-semibold mb-3 text-gray-700">Ações Rápidas</h3>
+      <div class="space-y-2">
+        <button id="openPostModal" class="w-full bg-[#2682EA] text-white px-3 py-2 rounded-lg">Criar Post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRIAR POST (blur no fundo) -->
+<div id="postModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg">
+    <h2 class="text-lg font-semibold mb-4">Criar Post</h2>
+    <textarea id="postContent" class="w-full border rounded-lg p-2 mb-2" placeholder="O que você está pensando?"></textarea>
+    <input id="postHashtags" type="text" class="w-full border rounded-lg p-2 mb-2" placeholder="Adicione hashtags separadas por vírgula" />
+    <div class="flex justify-end gap-2">
+      <button id="cancelPost" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+      <button id="publishPost" class="px-4 py-2 bg-[#2682EA] text-white rounded-lg">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR (posts/comentários/respostas) -->
+<div id="editModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg">
+    <h2 class="text-lg font-semibold mb-4">Editar</h2>
+    <textarea id="editText" class="w-full border rounded-lg p-2 mb-2" rows="4"></textarea>
+    <input id="editTags" type="text" class="w-full border rounded-lg p-2 mb-2" placeholder="Hashtags separadas por vírgula" />
+    <div class="flex justify-end gap-2">
+      <button id="cancelEdit" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+      <button id="saveEdit" class="px-4 py-2 bg-[#2682EA] text-white rounded-lg">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUSÃO -->
+<div id="deleteModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
+    <h2 class="text-lg font-semibold mb-4">Confirmar exclusão</h2>
+    <p class="text-sm text-gray-600 mb-4">Tem certeza que deseja excluir? Esta ação não pode ser desfeita.</p>
+    <div class="flex justify-end gap-2">
+      <button id="cancelDelete" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+      <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MINI PERFIL -->
+<div id="miniProfileModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-xl overflow-hidden">
+    <div id="miniProfileHeader" class="bg-blue-100 px-6 py-5 flex items-center gap-4">
+      <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" class="w-12 h-12" alt="">
+      <div>
+        <h3 id="mpName" class="text-lg font-bold text-gray-800">—</h3>
+        <p id="mpMeta" class="text-sm text-gray-600">—</p>
+      </div>
+      <button id="closeMiniProfile" class="ml-auto text-gray-500 hover:text-gray-700" aria-label="Fechar">✖</button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <div id="mpBio" class="bg-[#133e7b] text-white rounded-2xl p-4 text-sm">—</div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-blue-50 rounded-2xl p-4 text-center">
+          <p class="text-xs text-gray-600 mb-1">XP Total</p>
+          <p id="mpXP" class="font-bold text-[#2682EA] text-lg">—</p>
+        </div>
+        <div class="bg-blue-50 rounded-2xl p-4 text-center">
+          <p class="text-xs text-gray-600 mb-1">Sequência</p>
+          <div class="flex items-center justify-center gap-1">
+            <img src="{% static 'imagem/mode_heat_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" class="w-5 h-5" alt="">
+            <p id="mpStreak" class="font-bold text-[#2682EA] text-lg">—</p>
+          </div>
+        </div>
+        <div class="bg-blue-50 rounded-2xl p-4 text-center">
+          <p class="text-xs text-gray-600 mb-1">Posição</p>
+          <p id="mpRank" class="font-bold text-[#2682EA] text-lg">—</p>
+        </div>
+        <div class="bg-blue-50 rounded-2xl p-4 text-center">
+          <p class="text-xs text-gray-600 mb-1">Estudo</p>
+          <p id="mpStudy" class="font-bold text-[#2682EA] text-lg">—</p>
+        </div>
+      </div>
+
+      <div class="bg-blue-100 rounded-2xl p-4 flex items-center justify-between text-sm">
+        <div class="flex items-center gap-2">
+          <span>📍</span><span id="mpLocation">—</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="mpLang" class="text-[#2682EA]">—</span>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <a id="mpGit" href="#" target="_blank" class="bg-gray-900 text-white px-3 py-1 rounded-lg text-sm" rel="noopener">GitHub</a>
+        <a id="mpLinkedin" href="#" target="_blank" class="bg-[#2682EA] text-white px-3 py-1 rounded-lg text-sm" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ===========================
+   DADOS DE USUÁRIOS
+=========================== */
+const users = {
+  ana:   { nome:"Ana Souza",  arroba:"@ana_py",    nivel:12, xp:"1.420", streak:12, rank:"92%", study:"5h",
+           desde:"Desde março de 2024", bio:"Apaixonada por Python, IA e ensino. Sempre aprendendo!",
+           local:"São Paulo, Brasil", lang:"Python", github:"#", linkedin:"#"},
+  joao:  { nome:"João Pereira", arroba:"@joao_code", nivel:9,  xp:"2.150", streak:7,  rank:"89%", study:"3h",
+           desde:"Desde janeiro de 2024", bio:"Backend com Flask и FastAPI; fã de algoritmos.",
+           local:"Belo Horizonte, Brasil", lang:"Python", github:"#", linkedin:"#"},
+  maria: { nome:"Maria Oliveira", arroba:"@maria_ds", nivel:18, xp:"3.850", streak:22, rank:"95%", study:"8h",
+           desde:"Desde janeiro de 2024", bio:"Data Scientist e fã de pandas/NumPy. Adoro desafios!",
+           local:"Rio de Janeiro, Brasil", lang:"Python", github:"#", linkedin:"#"},
+  pedro: { nome:"Pedro Lima",  arroba:"@pedro_ml",   nivel:14, xp:"2.980", streak:15, rank:"90%", study:"6h",
+           desde:"Desde fevereiro de 2024", bio:"ML Engineer. Curto MLOps e computação científica.",
+           local:"Curitiba, Brasil", lang:"Python", github:"#", linkedin:"#"},
+  voce:  { nome:"User507",     arroba:"@user507",    nivel:12, xp:"2.450", streak:8,  rank:"—",   study:"—",
+           desde:"Desde 2024", bio:"Estudante na PyQuest 🚀", local:"Brasil", lang:"Python", github:"#", linkedin:"#"}
+};
+const CURRENT_USER = "voce";
+
+/* ===========================
+   ESTADO / DADOS
+=========================== */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const now  = () => Date.now();
+
+let posts = JSON.parse(localStorage.getItem("posts")) || [
+  {
+    id: 1,
+    autor: "ana",
+    tempo: "há 2 horas",
+    conteudo: "Acabei de concluir meu primeiro desafio no PyQuest! 🚀 Foi difícil, mas consegui dominar listas em Python. Quem mais já passou por isso?",
+    hashtags: ["#Python","#Listas","#Iniciante"],
+    likes: 48,
+    createdAt: now(),
+    comments: []
+  },
+  {
+    id: 2,
+    autor: "joao",
+    tempo: "há 5 horas",
+    conteudo: "Qual vocês acham mais difícil: recursão ou compreensão de listas? 🤔",
+    hashtags: ["#Recursão","#Discussão"],
+    likes: 102,
+    createdAt: now(),
+    comments: []
+  }
+];
+
+// eventos de hashtags para Tópicos em Alta (persistência com timestamp)
+let tagEvents = JSON.parse(localStorage.getItem("tagEvents")) || []; // {tag, ts}
+
+let currentFilter = "all";
+let trendWindow = "today"; // today | 7d
+
+/* ===========================
+   HELPERS
+=========================== */
+function saveState(){
+  localStorage.setItem("posts", JSON.stringify(posts));
+  localStorage.setItem("tagEvents", JSON.stringify(tagEvents));
+}
+function addTagEvents(tags){
+  const ts = now();
+  (tags||[]).forEach(t => tagEvents.push({tag: normalizeTag(t), ts}));
+  saveState();
+}
+function normalizeTag(t){
+  const s = t.trim();
+  return s.startsWith("#") ? s : "#"+s;
+}
+function parseTags(str){
+  return (str||"")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(normalizeTag);
+}
+function walkComments(list, fn){
+  list.forEach(c=>{
+    fn(c);
+    walkComments(c.replies||[], fn);
+  });
+}
+function findCommentById(list, id){
+  for(const c of list){
+    if(c.id === id) return c;
+    const r = findCommentById(c.replies||[], id);
+    if(r) return r;
+  }
+  return null;
+}
+function removeCommentById(list, id){
+  for(let i=0;i<list.length;i++){
+    if(list[i].id===id){ list.splice(i,1); return true; }
+    if(removeCommentById(list[i].replies||[], id)) return true;
+  }
+  return false;
+}
+
+/* ===========================
+   RENDER
+=========================== */
+const postsContainer = document.getElementById("postsContainer");
+
+function renderPosts(filter = currentFilter, q = document.getElementById("searchInput").value.trim().toLowerCase()){
+  currentFilter = filter;
+  postsContainer.innerHTML = "";
+
+  let list = [...posts];
+
+  // busca
+  if(q){
+    list = list.filter(p=>{
+      const u = users[p.autor] || {};
+      const text = (p.conteudo + " " + (p.hashtags||[]).join(" ") + " " + (u.nome||"") + " " + (u.arroba||"")).toLowerCase();
+      return text.includes(q);
+    });
+  }
+
+  if(filter==="recent")  list.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+  if(filter==="popular") list.sort((a,b)=> (b.likes||0) - (a.likes||0));
+  if(filter==="following") list = list.filter(p => p.autor === "ana"); // exemplo
+
+  list.forEach(p => postsContainer.appendChild(renderPost(p)));
+
+  recomputeTrending();
+}
+
+function renderPost(post){
+  const u = users[post.autor] || {nome:"—",arroba:"—"};
+  const div = document.createElement("div");
+  div.className = "post bg-white rounded-2xl shadow p-4";
+  div.dataset.id = post.id;
+
+  const selfActions = post.autor===CURRENT_USER
+    ? `<div class="flex gap-2 text-xs mt-1">
+         <button class="edit-post text-[#2682EA]">Editar</button>
+         <button class="delete-post text-red-600">Excluir</button>
+       </div>`
+    : "";
+
+  div.innerHTML = `
+    <div class="flex items-center gap-3 mb-2">
+      <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}"
+           class="avatar w-10 h-10 rounded-full cursor-pointer" data-user="${post.autor}" alt="">
+      <div>
+        <p class="font-semibold">${u.nome}</p>
+        <p class="text-sm text-gray-500">${u.arroba} • ${post.tempo}</p>
+        ${selfActions}
+      </div>
+    </div>
+
+    <p class="text-gray-700 mb-3 whitespace-pre-wrap">${post.conteudo}</p>
+    <div class="flex flex-wrap gap-2 mb-3">
+      ${(post.hashtags||[]).map(h=>`<span class="bg-blue-100 text-[#2682EA] px-2 py-1 rounded-lg text-xs">${h}</span>`).join("")}
+    </div>
+
+    <div class="flex gap-6 text-gray-500 text-sm">
+      <button class="comment-toggle flex items-center gap-1"> 
+        <img src="{% static 'imagem/forum_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Comentar" class="w-5 h-5">
+        <span>${post.comments.length}</span></button>
+      <button class="like-post flex items-center gap-1" data-liked="false">
+        <img src="{% static 'imagem/favorite_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Curtir" class="w-5 h-5">
+        <span>${post.likes || 0}</span>
+      </button>
+    </div>
+
+    <div class="comments space-y-3 mt-4 pl-8 border-l border-gray-200"></div>
+
+    <div class="mt-3 hidden comment-form">
+      <textarea class="comment-text w-full border rounded-lg p-2 mb-2" placeholder="Escreva seu comentário..."></textarea>
+      <input type="text" class="comment-tags w-full border rounded-lg p-2 mb-2" placeholder="Hashtags separadas por vírgula">
+      <div class="flex gap-2">
+        <button class="publish-comment bg-[#2682EA] text-white px-3 py-1 rounded-lg">Publicar Comentário</button>
+        <button class="cancel-comment px-3 py-1 rounded-lg bg-gray-200">Cancelar</button>
+      </div>
+    </div>
+  `;
+
+  const commentsDiv = div.querySelector(".comments");
+  (post.comments||[]).forEach(c => commentsDiv.appendChild(renderComment(c)));
+
+  return div;
+}
+
+function renderComment(c) {
+  if (!c.id) c.id = uid();   // 🔥 garante que sempre terá id
+  const u = users[c.autor] || { nome: "—", arroba: "—" };
+  const div = document.createElement("div");
+  div.className = "comment bg-gray-50 rounded-xl p-3";
+  div.dataset.cid = c.id; // cada comentário recebe o ID
+
+  const selfActions = c.autor === CURRENT_USER
+    ? `<div class="flex gap-2 text-[11px]">
+         <button class="edit-comment text-[#2682EA]">Editar</button>
+         <button class="delete-comment text-red-600">Excluir</button>
+       </div>`
+    : "";
+
+  div.innerHTML = `
+    <div class="flex items-center gap-2 mb-1">
+      <img src="{% static 'imagem/account_circle_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}"
+           class="avatar w-6 h-6 rounded-full cursor-pointer" data-user="${c.autor}" alt="">
+      <span class="font-semibold text-sm">${u.nome}</span>
+      <span class="text-xs text-gray-500">${u.arroba}</span>
+      ${selfActions}
+    </div>
+
+    <p class="text-gray-700 text-sm mb-2 whitespace-pre-wrap">${c.texto ?? ""}</p>
+    <div class="flex flex-wrap gap-2 mb-2">
+      ${(c.hashtags || []).map(h => `<span class="bg-blue-100 text-[#2682EA] px-2 py-1 rounded-lg text-xs">${h}</span>`).join("")}
+    </div>
+
+    <div class="flex gap-4 text-gray-500 text-xs">
+      <button class="reply-btn" title="Responder">
+        <img src="{% static 'imagem/forum_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Comentar" class="w-5 h-5">
+        </button>
+      <button class="like-comment" data-liked="false">
+        <img src="{% static 'imagem/favorite_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Curtir" class="w-5 h-5">
+        <span>${c.likes || 0}</span></button>
+    </div>
+
+    <div class="replies pl-6 mt-2 space-y-2"></div>
+
+    <div class="reply-form hidden mt-2" data-parent-id="${c.id}">
+      <textarea class="reply-text w-full border rounded-lg p-2 mb-2" placeholder="Escreva sua resposta..."></textarea>
+      <input type="text" class="reply-tags w-full border rounded-lg p-2 mb-2" placeholder="Hashtags separadas por vírgula">
+      <div class="flex gap-2">
+        <button type="button" class="publish-reply bg-[#2682EA] text-white px-3 py-1 rounded-lg" data-parent-id="${c.id}">Responder</button>
+        <button type="button" class="cancel-reply px-3 py-1 rounded-lg bg-gray-200">Cancelar</button>
+      </div>
+    </div>
+  `;
+
+  const repliesDiv = div.querySelector(".replies");
+  (c.replies || []).forEach(r => repliesDiv.appendChild(renderComment(r)));
+
+  return div;
+}
+
+/* ===========================
+   EVENTOS (DELEGAÇÃO GLOBAL)
+=========================== */
+document.addEventListener("click", (e)=>{
+  // Avatares: mini perfil
+  const av = e.target.closest(".avatar");
+  if(av){
+    openMiniProfile(av.dataset.user || "voce");
+    return;
+  }
+
+  // Toggle form de comentário no post
+  const commentToggle = e.target.closest(".comment-toggle");
+  if(commentToggle){
+    const postDiv = commentToggle.closest(".post");
+    postDiv.querySelector(".comment-form").classList.toggle("hidden");
+    return;
+  }
+
+  // Cancelar comentário
+  const cancelComment = e.target.closest(".cancel-comment");
+  if(cancelComment){
+    const postDiv = cancelComment.closest(".post");
+    const form = postDiv.querySelector(".comment-form");
+    form.classList.add("hidden");
+    form.querySelector(".comment-text").value = "";
+    form.querySelector(".comment-tags").value = "";
+    return;
+  }
+
+  // Publicar comentário
+  const publishComment = e.target.closest(".publish-comment");
+  if(publishComment){
+    const postDiv = publishComment.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const p = posts.find(x=>x.id===postId);
+    const text = postDiv.querySelector(".comment-text").value.trim();
+    const tags = parseTags(postDiv.querySelector(".comment-tags").value);
+    if(!text) return;
+    const newC = { id: uid(), autor: CURRENT_USER, texto: text, hashtags: tags, likes:0, replies:[], createdAt: now() };
+    p.comments.push(newC);
+    addTagEvents(tags);
+    saveState();
+    renderPosts();
+    return;
+  }
+
+  // Toggle form de resposta (em qualquer nível)
+const replyBtn = e.target.closest(".reply-btn");
+if (replyBtn) {
+  const cDiv = replyBtn.closest(".comment");
+  if (cDiv) {
+    const cid = cDiv.dataset.cid;
+    const form = cDiv.querySelector(`.reply-form[data-parent-id="${cid}"]`);
+    if (form) form.classList.toggle("hidden");
+  } else {
+    // ↩ do post abre o form de comentário do post
+    const postDiv  = replyBtn.closest(".post");
+    const postForm = postDiv?.querySelector(".comment-form");
+    if (postForm) postForm.classList.toggle("hidden");
+  }
+  return;
+}
+
+  // Cancelar resposta (limpa só este form)
+const cancelReply = e.target.closest(".cancel-reply");
+if (cancelReply) {
+  const form = cancelReply.closest(".reply-form");
+  if (form) {
+    form.classList.add("hidden");
+    const t = form.querySelector(".reply-text");
+    const g = form.querySelector(".reply-tags");
+    if (t) t.value = "";
+    if (g) g.value = "";
+  }
+  return;
+}
+
+  // Publicar resposta (em comentário ou resposta)
+const publishReply = e.target.closest(".publish-reply");
+if (publishReply) {
+  e.preventDefault(); // evita submit do form e recarregar página
+
+  const postDiv = publishReply.closest(".post");
+  const postId  = +postDiv.dataset.id;
+  const post    = posts.find(p => p.id === postId);
+  if (!post) return;
+
+  // sempre usar o form clicado
+  const form = publishReply.closest(".reply-form");
+  const parentId = publishReply.dataset.parentId || form?.dataset.parentId;
+  const cid  = parentId || form?.dataset.parentId;
+  if (!cid) return;
+
+  const textEl = form.querySelector(".reply-text");
+  const tagsEl = form.querySelector(".reply-tags");
+  const text   = (textEl?.value || "").trim();
+  const tags   = parseTags(tagsEl?.value || "");
+  if (!text) return;
+
+  const target = findCommentById(post.comments, cid);
+  if (!target) return;
+
+  target.replies = target.replies || [];
+  target.replies.push({
+    id: uid(),
+    autor: CURRENT_USER,
+    texto: text,
+    hashtags: tags,
+    likes: 0,
+    replies: [],
+    createdAt: now()
+  });
+
+  addTagEvents(tags);
+  saveState();
+  renderPosts();
+  return;
+}
+
+  // Like em post
+  const likePost = e.target.closest(".like-post");
+  if(likePost){
+    const postDiv = likePost.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const p = posts.find(x=>x.id===postId);
+    const span = likePost.querySelector("span");
+    const liked = likePost.dataset.liked === "true";
+    const newVal = (parseInt(span.textContent)||0) + (liked ? -1 : 1);
+    span.textContent = newVal;
+    likePost.dataset.liked = liked ? "false" : "true";
+    p.likes = newVal;
+    saveState();
+    if(currentFilter==="popular") renderPosts();
+    return;
+  }
+
+  // Like em comentário/resposta
+  const likeComment = e.target.closest(".like-comment");
+  if(likeComment){
+    const postDiv = likeComment.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const p = posts.find(x=>x.id===postId);
+    const cid  = likeComment.closest(".comment").dataset.cid;
+    const c = findCommentById(p.comments, cid);
+    const span = likeComment.querySelector("span");
+    const liked = likeComment.dataset.liked === "true";
+    const newVal = (parseInt(span.textContent)||0) + (liked ? -1 : 1);
+    span.textContent = newVal;
+    likeComment.dataset.liked = liked ? "false" : "true";
+    if(c){ c.likes = newVal; saveState(); }
+    return;
+  }
+
+  // Abrir edição (post)
+  const editPostBtn = e.target.closest(".edit-post");
+  if(editPostBtn){
+    const postDiv = editPostBtn.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const p = posts.find(x=>x.id===postId);
+    openEditModal({type:"post", postId, cid:null, content:p.conteudo, tags:(p.hashtags||[]).join(", ")});
+    return;
+  }
+
+  // Abrir edição (comentário/resposta)
+  const editCommentBtn = e.target.closest(".edit-comment");
+  if(editCommentBtn){
+    const postDiv = editCommentBtn.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const p = posts.find(x=>x.id===postId);
+    const cid = editCommentBtn.closest(".comment").dataset.cid;
+    const c = findCommentById(p.comments, cid);
+    openEditModal({type:"comment", postId, cid, content:c.texto, tags:(c.hashtags||[]).join(", ")});
+    return;
+  }
+
+  // Excluir (post)
+  const deletePostBtn = e.target.closest(".delete-post");
+  if(deletePostBtn){
+    const postDiv = deletePostBtn.closest(".post");
+    const postId = +postDiv.dataset.id;
+    openDeleteModal({type:"post", postId, cid:null});
+    return;
+  }
+
+  // Excluir (comentário/resposta)
+  const deleteCommentBtn = e.target.closest(".delete-comment");
+  if(deleteCommentBtn){
+    const postDiv = deleteCommentBtn.closest(".post");
+    const postId = +postDiv.dataset.id;
+    const cid = deleteCommentBtn.closest(".comment").dataset.cid;
+    openDeleteModal({type:"comment", postId, cid});
+    return;
+  }
+
+  // Filtros
+  const fbtn = e.target.closest(".filter-btn");
+  if(fbtn){
+    setActiveFilter(fbtn);
+    renderPosts(fbtn.dataset.filter);
+    return;
+  }
+
+  // Criar post - abrir/fechar/publicar
+  if(e.target.id==="openPostModal"){
+    document.getElementById('postModal').classList.remove('hidden');
+    return;
+  }
+  if(e.target.id==="cancelPost"){
+    document.getElementById('postModal').classList.add('hidden');
+    return;
+  }
+  if(e.target.id==="publishPost"){
+    const text = document.getElementById('postContent').value.trim();
+    const tags = parseTags(document.getElementById('postHashtags').value);
+    if(!text) return;
+    posts.unshift({
+      id: Date.now(),
+      autor: CURRENT_USER,
+      tempo: "agora",
+      conteudo: text,
+      hashtags: tags,
+      likes: 0,
+      comments: [],
+      createdAt: now()
+    });
+    addTagEvents(tags);
+    saveState();
+    renderPosts();
+    document.getElementById('postContent').value = "";
+    document.getElementById('postHashtags').value = "";
+    document.getElementById('postModal').classList.add('hidden');
+    return;
+  }
+
+  // Carregar mais (corrigido para capturar clique no SVG/ícone também)
+  if(e.target.closest("#loadMore")){
+    const samples = [
+      { autor:"maria", conteudo:"Novo dataset liberado! Quem topa um mini-projeto com pandas? 🐼", hashtags:["#Pandas","#Projeto"], likes: 10 },
+      { autor:"pedro", conteudo:"Deploy de modelo com FastAPI concluído! 🙌", hashtags:["#FastAPI","#MLOps"], likes: 6 }
+    ];
+    const s = samples[Math.floor(Math.random()*samples.length)];
+    posts.push({
+      id: Date.now(),
+      autor: s.autor,
+      tempo: "agora",
+      conteudo: s.conteudo,
+      hashtags: s.hashtags,
+      likes: s.likes,
+      comments: [],
+      createdAt: now()
+    });
+    addTagEvents(s.hashtags);
+    saveState();
+    renderPosts();
+    return;
+  }
+
+  // Tópicos em alta: Hoje / 7 dias
+  if(e.target.id==="trendToday"){
+    trendWindow = "today";
+    document.getElementById("trendToday").classList.add("bg-[#2682EA]","text-white");
+    document.getElementById("trendToday").classList.remove("bg-gray-100","text-gray-700");
+    document.getElementById("trend7d").classList.remove("bg-[#2682EA]","text-white");
+    document.getElementById("trend7d").classList.add("bg-gray-100","text-gray-700");
+    recomputeTrending();
+    return;
+  }
+  if(e.target.id==="trend7d"){
+    trendWindow = "7d";
+    document.getElementById("trend7d").classList.add("bg-[#2682EA]","text-white");
+    document.getElementById("trend7d").classList.remove("bg-gray-100","text-gray-700");
+    document.getElementById("trendToday").classList.remove("bg-[#2682EA]","text-white");
+    document.getElementById("trendToday").classList.add("bg-gray-100","text-gray-700");
+    recomputeTrending();
+    return;
+  }
+
+  // Fechar mini perfil
+  if(e.target.id==="closeMiniProfile"){
+    document.getElementById('miniProfileModal').classList.add('hidden');
+    return;
+  }
+});
+
+/* ===========================
+   EDITAR / EXCLUIR - Modais
+=========================== */
+let editCtx = null;
+function openEditModal(ctx){
+  editCtx = ctx; // {type, postId, cid, content, tags}
+  document.getElementById("editText").value = ctx.content || "";
+  document.getElementById("editTags").value = ctx.tags || "";
+  document.getElementById("editModal").classList.remove("hidden");
+}
+document.getElementById("cancelEdit").addEventListener("click", ()=> {
+  document.getElementById("editModal").classList.add("hidden");
+  editCtx = null;
+});
+document.getElementById("saveEdit").addEventListener("click", ()=> {
+  if(!editCtx) return;
+  const text = document.getElementById("editText").value.trim();
+  const tags = parseTags(document.getElementById("editTags").value);
+  if(!text) return;
+
+  if(editCtx.type==="post"){
+    const p = posts.find(x=>x.id===editCtx.postId);
+    if(p && p.autor===CURRENT_USER){
+      p.conteudo = text;
+      p.hashtags = tags;
+      addTagEvents(tags);
+    }
+  } else {
+    const p = posts.find(x=>x.id===editCtx.postId);
+    if(p){
+      const c = findCommentById(p.comments, editCtx.cid);
+      if(c && c.autor===CURRENT_USER){
+        c.texto = text;
+        c.hashtags = tags;
+        addTagEvents(tags);
+      }
+    }
+  }
+  saveState();
+  renderPosts();
+  document.getElementById("editModal").classList.add("hidden");
+  editCtx = null;
+});
+
+let deleteCtx = null;
+function openDeleteModal(ctx){ // {type, postId, cid}
+  deleteCtx = ctx;
+  document.getElementById("deleteModal").classList.remove("hidden");
+}
+document.getElementById("cancelDelete").addEventListener("click", ()=> {
+  document.getElementById("deleteModal").classList.add("hidden");
+  deleteCtx = null;
+});
+document.getElementById("confirmDelete").addEventListener("click", ()=> {
+  if(!deleteCtx) return;
+  if(deleteCtx.type==="post"){
+    const idx = posts.findIndex(p=>p.id===deleteCtx.postId);
+    if(idx>-1 && posts[idx].autor===CURRENT_USER) posts.splice(idx,1);
+  } else {
+    const p = posts.find(x=>x.id===deleteCtx.postId);
+    if(p) removeCommentById(p.comments, deleteCtx.cid);
+  }
+  saveState();
+  renderPosts();
+  document.getElementById("deleteModal").classList.add("hidden");
+  deleteCtx = null;
+});
+
+/* ===========================
+   MINI PERFIL
+=========================== */
+function openMiniProfile(key){
+  const u = users[key]; if(!u) return;
+  document.getElementById('mpName').textContent = u.nome;
+  document.getElementById('mpMeta').textContent = `${u.arroba} • nível ${u.nivel}`;
+  document.getElementById('mpBio').textContent = u.bio;
+  document.getElementById('mpXP').textContent = u.xp;
+  document.getElementById('mpStreak').textContent = u.streak;
+  document.getElementById('mpRank').textContent = u.rank;
+  document.getElementById('mpStudy').textContent = u.study;
+  document.getElementById('mpLocation').textContent = u.local;
+  document.getElementById('mpLang').textContent = u.lang;
+  document.getElementById('mpGit').href = u.github;
+  document.getElementById('mpLinkedin').href = u.linkedin;
+  document.getElementById('miniProfileModal').classList.remove('hidden');
+}
+
+/* ===========================
+   BUSCA + FILTROS
+=========================== */
+const filterButtons = [...document.querySelectorAll('.filter-btn')];
+function setActiveFilter(activeBtn){
+  filterButtons.forEach(b=>{
+    b.classList.remove('bg-[#2682EA]','text-white');
+    b.classList.add('bg-gray-100','text-gray-700');
+  });
+  activeBtn.classList.remove('bg-gray-100','text-gray-700');
+  activeBtn.classList.add('bg-[#2682EA]','text-white');
+}
+
+/* ===========================
+   TÓPICOS EM ALTA (persistência)
+=========================== */
+function recomputeTrending(){
+  const ul = document.getElementById("trendingList");
+  const nowTs = now();
+  let windowMs = 24*60*60*1000; // today
+  if(trendWindow==="7d") windowMs = 7*24*60*60*1000;
+
+  const cutoff = nowTs - windowMs;
+  const counts = new Map();
+
+  tagEvents
+    .filter(evt => evt.ts >= cutoff)
+    .forEach(evt => {
+      const t = evt.tag;
+      counts.set(t, (counts.get(t)||0) + 1);
+    });
+
+  const top = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  if(top.length===0){
+    ul.innerHTML = `<li class="text-sm text-gray-500">Sem hashtags no período</li>`;
+    return;
+  }
+  ul.innerHTML = top.map(([tag,cnt])=>`
+    <li class="flex justify-between">
+      <span class="text-[#2682EA]">${tag}</span>
+      <span>${cnt} usos</span>
+    </li>`).join("");
+}
+
+/* ===========================
+   LOAD MORE (kits extras)
+=========================== */
+let loadCounter = 0;
+const loadSamples = [
+  { autor:"maria", conteudo:"Novo dataset liberado! Quem topa um mini-projeto com pandas? 🐼", hashtags:["#Pandas","#Projeto"], likes: 10 },
+  { autor:"pedro", conteudo:"Deploy de modelo com FastAPI concluído! 🙌", hashtags:["#FastAPI","#MLOps"], likes: 6 },
+  { autor:"ana",   conteudo:"Alguém recomenda bons materiais de POO em Python?", hashtags:["#Python","#POO"], likes: 14 },
+  { autor:"joao",  conteudo:"Testando regex avançadas hoje, bem divertido! 🔍", hashtags:["#Regex","#Strings"], likes: 4 }
+];
+
+/* ===========================
+   INIT
+=========================== */
+document.getElementById('searchInput').addEventListener('input', ()=> renderPosts());
+renderPosts();
+</script>
+
+{% endblock %}

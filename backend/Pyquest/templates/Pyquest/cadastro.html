@@ -1,0 +1,321 @@
+<!-- Pyquest/templates/Pyquest/cadastro.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyQuest - Cadastro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'blue': {
+                            200: '#BFDBFE',
+                            400: '#60A5FA',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            800: '#1E40AF',
+                            900: '#1E3A8A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #BFDBFE;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            background-color: #3B82F6;
+        }
+        
+        .logo-rotate {
+            transform: rotate(-90deg) scaleX(-1);
+        }
+        
+        .key-icon {
+            filter: invert(39%) sepia(13%) saturate(86%) hue-rotate(169deg) brightness(93%) contrast(88%);
+        }
+        
+        .error-message {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .input-error {
+            border-color: #EF4444;
+            background-color: #FEF2F2;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="flex flex-col md:flex-row w-full max-w-5xl rounded-2xl overflow-hidden card-shadow">
+        <!-- Left Panel - Form -->
+        <div class="w-full md:w-1/2 bg-white p-8 md:p-10 flex flex-col justify-center rounded-l-2xl">
+            <div class="mb-8 flex items-center">
+                <div class="flex items-center gap-2">
+                    <img src="/static/imagem/Python Sword & Coin Emblem.png" 
+                         alt="Logo PyQuest"
+                         class="w-12 h-12 logo-rotate">
+                    <h1 class="font-bold text-2xl text-blue-600">PyQuest</h1>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Crie sua conta</h2>
+                <p class="text-gray-600 mt-1">Junte-se à aventura de aprender Python</p>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form id="registerForm" method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <!-- Nome completo -->
+    <div>
+        <label class="block text-gray-700 font-medium mb-2" for="first_name">Nome completo</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-regular fa-user text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                id="first_name" 
+                name="first_name" 
+                placeholder="Digite seu nome completo"
+                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 
+                       focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                required
+            >
+        </div>
+    </div>
+
+    <!-- Email -->
+    <div>
+        <label class="block text-gray-700 font-medium mb-2" for="email">Email</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-regular fa-envelope text-gray-400"></i>
+            </div>
+            <input 
+                type="email" 
+                id="email" 
+                name="email"
+                placeholder="Digite seu email"
+                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 
+                       focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                required
+            >
+        </div>
+    </div>
+
+    <!-- Username -->
+    <div>
+        <label class="block text-gray-700 font-medium mb-2" for="username">Nome de usuário</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-regular fa-id-card text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                id="username" 
+                name="username"
+                placeholder="Escolha um nome de usuário"
+                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 
+                       focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                required
+            >
+        </div>
+    </div>
+
+    <!-- Senha -->
+    <div>
+        <label class="block text-gray-700 font-medium mb-2" for="password1">Senha</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <img src="/static/imagem/key_100dp_000000_FILL0_wght400_GRAD0_opsz48.png" alt="Senha" class="w-5 h-5 key-icon">
+            </div>
+            <input 
+                type="password" 
+                id="password1" 
+                name="password1"
+                placeholder="Crie uma senha segura"
+                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 
+                       focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                required
+            >
+        </div>
+    </div>
+
+    <!-- Confirmar senha -->
+    <div>
+        <label class="block text-gray-700 font-medium mb-2" for="password2">Confirmar senha</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <img src="/static/imagem/key_100dp_000000_FILL0_wght400_GRAD0_opsz48.png" alt="Confirmar senha" class="w-5 h-5 key-icon">
+            </div>
+            <input 
+                type="password" 
+                id="password2" 
+                name="password2"
+                placeholder="Digite novamente sua senha"
+                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 
+                       focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                required
+            >
+        </div>
+    </div>
+
+    <!-- Botão -->
+    <button 
+        type="submit"
+        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-semibold shadow-md transition flex items-center justify-center mt-4">
+        Criar conta
+        <i class="fa-solid fa-user-plus ml-2"></i>
+    </button>
+</form>
+
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Já tem uma conta? 
+                    <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 font-medium">Faça login</a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Features -->
+        <div class="w-full md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-8 md:p-10">
+            <div class="flex flex-col justify-center h-full space-y-8">
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <img src="/static/imagem/stadia_controller_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" 
+                             alt="Aprendizado Gamificado" class="w-11 h-6">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Aprendizado Gamificado</h3>
+                        <p class="text-blue-100">Desbloqueie conquistas e suba de nível enquanto aprende Python de forma divertida.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <img src="/static/imagem/trophy_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" 
+                             alt="Sistema de Conquistas" class="w-11 h-6">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Sistema de Conquistas</h3>
+                        <p class="text-blue-100">Colecione badges e troféus ao completar desafios e módulos de aprendizado.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <img src="/static/imagem/analytics_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" 
+                             alt="Progresso Detalhado" class="w-11 h-6">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Progresso Detalhado</h3>
+                        <p class="text-blue-100">Acompanhe seu desenvolvimento com métricas detalhadas e relatórios de evolução.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-900 bg-opacity-30 p-4 rounded-xl mt-6">
+                    <h3 class="font-bold text-lg mb-2">Por que se cadastrar?</h3>
+                    <p class="text-blue-100">Ao criar uma conta, você salva seu progresso, participa de rankings e desbloqueia conteúdos exclusivos para sua jornada Python!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const inputs = {
+                name: document.getElementById('name'),
+                email: document.getElementById('email'),
+                username: document.getElementById('username'),
+                password: document.getElementById('password'),
+                confirmPassword: document.getElementById('confirm-password'),
+                terms: document.getElementById('terms')
+            };
+            
+            // Função para mostrar erro
+            function showError(inputId, errorId, message) {
+                document.getElementById(errorId).textContent = message;
+                document.getElementById(errorId).classList.remove('hidden');
+                inputs[inputId].classList.add('input-error');
+            }
+            
+            // Função para esconder erro
+            function hideError(inputId, errorId) {
+                document.getElementById(errorId).classList.add('hidden');
+                inputs[inputId].classList.remove('input-error');
+            }
+            
+            // Validação em tempo real
+            inputs.name.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    showError('name', 'name-error', 'Por favor, informe seu nome completo');
+                } else {
+                    hideError('name', 'name-error');
+                }
+            });
+            
+            inputs.email.addEventListener('blur', function() {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(this.value)) {
+                    showError('email', 'email-error', 'Por favor, informe um email válido');
+                } else {
+                    hideError('email', 'email-error');
+                }
+            });
+            
+            inputs.username.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    showError('username', 'username-error', 'Por favor, informe um nome de usuário');
+                } else {
+                    hideError('username', 'username-error');
+                }
+            });
+            
+            inputs.password.addEventListener('blur', function() {
+                if (this.value.length < 6) {
+                    showError('password', 'password-error', 'A senha deve ter pelo menos 6 caracteres');
+                } else {
+                    hideError('password', 'password-error');
+                }
+            });
+            
+            inputs.confirmPassword.addEventListener('blur', function() {
+                if (this.value !== inputs.password.value) {
+                    showError('confirmPassword', 'confirm-password-error', 'As senhas não coincidem');
+                } else {
+                    hideError('confirmPassword', 'confirm-password-error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

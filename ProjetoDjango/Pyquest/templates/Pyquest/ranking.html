@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ranking{% endblock %}
+
+{% block content %}
+<div class="p-0 w-full">
+
+  <!-- Barra superior -->
+  <div class="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 p-6 shadow flex justify-between items-center w-full rounded-t-2xl">
+    <div>
+      <h2 class="text-lg font-bold">Sua Posição no Ranking</h2>
+      <p class="text-3xl font-extrabold">
+        #{{ posicao_usuario|default:"-" }}
+      </p>
+      <span class="text-sm">Esta semana</span>
+    </div>
+    <div class="text-right">
+      <h1 class="text-2xl font-semibold">Ranking Global</h1>
+      <p class="text-sm">Compete com outros estudantes e veja seu progresso</p>
+    </div>
+  </div>
+
+  <!-- Caixa branca -->
+  <div class="bg-white rounded-b-2xl p-6 shadow-md">
+
+    <!-- TOP 3 -->
+    <div class="bg-gradient-to-r from-blue-800 to-blue-800 text-white text-xl font-bold py-4 px-8  shadow-lg -mx-6 -mt-6 mb-8 text-center flex items-center justify-center">
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" class="w-8 h-8 mx-2"/>
+      TOP 3 GLOBAL
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" class="w-8 h-8 mx-2"/>
+    </div>
+    <p class="text-blue-600 text-center -mt-6 mb-8">Os melhores programadores Python da plataforma</p>
+
+    <div class="flex justify-center items-end gap-0 mt-10 relative" style="min-height: 250px;">
+      {% for perfil in perfis|slice:":3" %}
+        <div class="flex flex-col items-center transition-transform duration-300 hover:scale-105 z-10 mx-2
+        {% if forloop.counter == 1 %} mb-0
+        {% elif forloop.counter == 2 %} mb-10
+        {% else %} mb-16
+        {% endif %}">
+
+          {% if forloop.counter == 1 %}
+            <div class="crown-animation mb-2">
+              <img src="{% static 'imagem/crown_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}" class="w-8 h-8"/>
+            </div>
+          {% endif %}
+
+          <!-- Degrau -->
+          <div class="w-28 h-{% if forloop.counter == 1 %}24{% elif forloop.counter == 2 %}16{% else %}12{% endif %}
+                      {% if forloop.counter == 1 %} bg-gradient-to-r from-yellow-400 to-yellow-500
+                      {% elif forloop.counter == 2 %} bg-gradient-to-r from-gray-300 to-gray-400
+                      {% else %} bg-gradient-to-r from-amber-600 to-amber-700{% endif %}
+                      rounded-t-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
+            #{{ forloop.counter }}
+          </div>
+
+          <!-- Avatar -->
+          <div class="relative -mt-2">
+            <img src="{{ perfil.avatar.url }}" alt="{{ perfil.user.username }}"
+                 class="w-{% if forloop.counter == 1 %}20{% else %}16{% endif %} h-{% if forloop.counter == 1 %}20{% else %}16{% endif %} rounded-full border-4 
+                 {% if forloop.counter == 1 %}border-yellow-400{% elif forloop.counter == 2 %}border-gray-300{% else %}border-amber-700{% endif %} relative z-10 shadow-lg"/>
+          </div>
+
+          <p class="font-semibold mt-2 {% if forloop.counter == 1 %}text-lg{% endif %}">{{ perfil.user.username }}</p>
+          <p class="font-bold text-[#2682EA] {% if forloop.counter == 1 %}text-lg{% endif %}">{{ perfil.xp }} XP</p>
+
+          <div class="mt-2 bg-{% if forloop.counter == 1 %}yellow-100 text-yellow-800
+                              {% elif forloop.counter == 2 %}gray-100 text-gray-700
+                              {% else %}amber-100 text-amber-800{% endif %}
+                              px-3 py-1 rounded-full text-xs font-semibold">
+            {% if forloop.counter == 1 %}🥇 1º Lugar{% elif forloop.counter == 2 %}🥈 2º Lugar{% else %}🥉 3º Lugar{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Ranking completo -->
+  <div class="mt-8 w-full shadow-md rounded-2xl overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 p-6 w-full">
+      <h3 class="text-lg font-semibold">Ranking Completo - XP Total</h3>
+      <p class="text-sm text-blue-600">Veja todos os jogadores e suas posições</p>
+    </div>
+
+    <div class="bg-white p-6">
+      <div class="divide-y">
+        {% for perfil in perfis %}
+          <div class="flex justify-between items-center py-4 ranking-item hover:bg-blue-50 rounded pl-3 transition-colors duration-200">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="{{ perfil.avatar.url }}" 
+                alt="{{ perfil.user.username }}" 
+                class="w-16 h-16 rounded-full border-4 cursor-pointer"
+                onclick="openProfile(this)"
+                data-name="{{ perfil.user.username }}"
+                data-xp="{{ perfil.xp }}"
+                data-level="{{ perfil.nivel }}"
+                data-bio="{{ perfil.bio|default:'Esse usuário ainda não escreveu uma bio.' }}"
+                data-avatar="{{ perfil.avatar.url }}"
+                data-github="{{ perfil.github|default:'' }}"
+                data-linkedin="{{ perfil.linkedin|default:'' }}"
+/>
+
+
+                <div class="absolute -bottom-1 -right-1 bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold border border-white">
+                  {{ forloop.counter }}
+                </div>
+              </div>
+              <div>
+                <p class="font-semibold">{{ perfil.user.username }}</p>
+                <span class="text-sm text-gray-500">Nível {{ perfil.nivel }}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-[#2682EA]">{{ perfil.xp }} XP</p>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-gray-500 text-center py-6">Nenhum jogador encontrado no ranking.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Perfil -->
+<div id="profileModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-2xl w-[500px] max-w-[90vw] shadow-xl overflow-hidden modal-enter">
+    <div class="bg-blue-100 p-6 flex items-center gap-4 relative">
+      <img id="modal-avatar" src="" alt="avatar"
+           class="w-16 h-16 rounded-full border-2 border-white shadow-md">
+      <div>
+        <h2 id="modal-name" class="text-lg font-semibold text-blue-900"></h2>
+        <p id="modal-details" class="text-sm text-blue-700"></p>
+      </div>
+      <button onclick="closeProfile()" class="absolute right-4 top-4 text-gray-500 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm">✕</button>
+    </div>
+
+    <div id="modal-bio" class="bg-blue-900 text-white p-4 m-6 rounded-lg shadow">
+      Bio do usuário aparecerá aqui.
+    </div>
+
+    <div class="grid grid-cols-4 gap-4 px-6 pb-6 text-center">
+      <div class="bg-blue-50 p-3 rounded-lg shadow">
+        <p id="modal-xp" class="text-blue-700 font-semibold">0</p>
+        <p class="text-sm text-blue-600">XP Total</p>
+      </div>
+      <div class="bg-blue-50 p-3 rounded-lg shadow">
+        <p id="modal-level" class="text-blue-700 font-semibold">0</p>
+        <p class="text-sm text-blue-600">Nível</p>
+      </div>
+    </div>
+
+    <div class="flex gap-3 px-6 py-4">
+      <a id="modal-github" href="#" target="_blank" class="bg-gray-800 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-900 transition-colors">GitHub</a>
+      <a id="modal-linkedin" href="#" target="_blank" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">LinkedIn</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openProfile(el) {
+  document.getElementById("modal-avatar").src = el.dataset.avatar;
+  document.getElementById("modal-name").textContent = el.dataset.name;
+  document.getElementById("modal-details").textContent = `Nível ${el.dataset.level}`;
+  document.getElementById("modal-bio").textContent = el.dataset.bio;
+  document.getElementById("modal-xp").textContent = el.dataset.xp + " XP";
+  document.getElementById("modal-level").textContent = "Nível " + el.dataset.level;
+
+  // links de redes
+  document.getElementById("modal-github").href = el.dataset.github || "#";
+  document.getElementById("modal-linkedin").href = el.dataset.linkedin || "#";
+
+  document.getElementById("profileModal").classList.remove("hidden");
+}
+
+function closeProfile() {
+  document.getElementById("profileModal").classList.add("hidden");
+}
+
+document.getElementById("profileModal").addEventListener("click", function(e) {
+  if (e.target === this) closeProfile();
+});
+</script>
+
+
+
+<style>
+  /* Animações */
+  .crown-animation {
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+</style>
+{% endblock %}
+

@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conteúdo{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .progress-bar {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 45%;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+      border-radius: 9999px;
+      animation: progressAnimation 1.5s ease-in-out;
+    }
+    
+    @keyframes progressAnimation {
+      0% { width: 0%; }
+      100% { width: 45%; }
+    }
+    
+    .module-card {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .locked-module {
+      position: relative;
+    }
+    
+    .locked-module::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("{% static 'imagem/lock_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 50px;
+    }
+    
+    .floating-element {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .circular-chart {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    
+    .circle-bg {
+      fill: none;
+      stroke: #EFF6FF;
+      stroke-width: 3.8;
+    }
+    
+    .circle {
+      fill: none;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke: #3B82F6;
+      animation: progress 1.5s ease-out forwards;
+    }
+    
+    @keyframes progress {
+      0% { stroke-dasharray: 0 100; }
+    }
+    
+    .percentage {
+      fill: #1E40AF;
+      font-size: 0.5em;
+      text-anchor: middle;
+      font-weight: bold;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho com título e estatísticas -->
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-blue-700 mb-2">Trilha de Aprendizado</h1>
+  <p class="text-blue-600">Domine Python através de uma jornada gamificada e divertida</p>
+  
+  <!-- Cartões de visão geral -->
+  <div class="grid md:grid-cols-3 gap-6 mt-6">
+    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
+      <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Concluídos" class="w-10 h-10 mb-2">
+      <h3 class="font-bold text-lg">Capítulos Concluídos</h3>
+      <p class="text-4xl font-extrabold mt-1">0</p>
+    </div>
+    
+    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
+      <img src="{% static 'imagem/play_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Em Progresso" class="w-10 h-10 mb-2">
+      <h3 class="font-bold text-lg">Em Progresso</h3>
+      <p class="text-4xl font-extrabold mt-1">3</p>
+    </div>
+    
+    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
+      <img src="{% static 'imagem/lock_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Bloqueados" class="w-10 h-10 mb-2">
+      <h3 class="font-bold text-lg">Bloqueados</h3>
+      <p class="text-4xl font-extrabold mt-1">2</p>
+    </div>
+  </div>
+</div>
+
+<!-- Dica -->
+<div class="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-8 shadow flex items-start">
+  <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-6 h-6 mr-3 flex-shrink-0">
+  <p>Complete os capítulos em ordem para uma melhor experiência de aprendizado e desbloqueie conquistas especiais!</p>
+</div>
+
+<!-- Grid de módulos -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+  <!-- Módulo 1 -->
+  <a href="{% url 'modulos' %}" class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow p-5 relative block">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">Iniciante</span>
+      <div class="w-10 h-10">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle" stroke-dasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <text x="18" y="20.35" class="percentage">85%</text>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Fundamentos do Python" class="w-16 h-16 floating-element">
+    </div>
+    
+    <h3 class="font-bold text-lg text-blue-800 mb-2">Fundamentos do Python</h3>
+    <p class="text-sm text-blue-600 mb-4">Aprenda os conceitos básicos и essenciais do Python</p>
+
+    <!-- Barra de progresso -->
+    <div class="mt-4">
+      <div class="w-full bg-blue-200 rounded-full h-2">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full" style="width: 85%"></div>
+      </div>
+      <p class="text-xs text-blue-500 mt-2">2/3 módulos concluídos</p>
+    </div>
+    
+    <div class="absolute bottom-3 right-3">
+      <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Abrir" class="w-5 h-5 opacity-0 transition-opacity group-hover:opacity-100">
+    </div>
+  </a>
+
+  <!-- Módulo 2 -->
+  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow p-5 relative">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">Iniciante</span>
+      <div class="w-10 h-10">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle" stroke-dasharray="50, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <text x="18" y="20.35" class="percentage">50%</text>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'imagem/cached_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Controle de Fluxo" class="w-16 h-16">
+    </div>
+    
+    <h3 class="font-bold text-lg text-blue-800 mb-2">Controle de Fluxo</h3>
+    <p class="text-sm text-blue-600 mb-4">Domine condicionais e loops para controlar o fluxo do programa</p>
+
+    <!-- Barra de progresso -->
+    <div class="mt-4">
+      <div class="w-full bg-blue-200 rounded-full h-2">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full" style="width: 50%"></div>
+      </div>
+      <p class="text-xs text-blue-500 mt-2">1/2 módulos concluídos</p>
+    </div>
+  </div>
+
+  <!-- Módulo 3 -->
+  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow p-5 relative">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">Intermediário</span>
+      <div class="w-10 h-10">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <text x="18" y="20.35" class="percentage">0%</text>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'imagem/flowsheet_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Estruturas de Dados" class="w-16 h-16">
+    </div>
+    
+    <h3 class="font-bold text-lg text-blue-800 mb-2">Estruturas de Dados</h3>
+    <p class="text-sm text-blue-600 mb-4">Aprenda a usar listas, tuplas, dicionários e conjuntos</p>
+
+    <!-- Barra de progresso -->
+    <div class="mt-4">
+      <div class="w-full bg-blue-200 rounded-full h-2">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full" style="width: 0%"></div>
+      </div>
+      <p class="text-xs text-blue-500 mt-2">0/3 módulos concluídos</p>
+    </div>
+  </div>
+
+  <!-- Módulo 4 (Bloqueado) -->
+  <div class="module-card locked-module bg-white border border-blue-300 rounded-2xl shadow p-5 relative">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">Intermediário</span>
+    </div>
+    
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'imagem/functions_100dp_2682EAFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Funções" class="w-16 h-16 opacity-100">
+    </div>
+    
+    <h3 class="font-bold text-lg text-blue-700 mb-2 opacity-50">Funções</h3>
+    <p class="text-sm text-blue-600 mb-4 opacity-50">Organize seu código com funções e parâmetros</p>
+
+    <div class="mt-6 text-center">
+      <span class="text-xs bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded-full">Complete o módulo anterior para desbloquear</span>
+    </div>
+  </div>
+
+  <!-- Módulo 5 (Bloqueado) -->
+  <div class="module-card locked-module bg-white border border-blue-300 rounded-2xl shadow p-5 relative">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">Avançado</span>
+    </div>
+    
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48 (1).png' %}" alt="POO" class="w-16 h-16 opacity-100">
+    </div>
+    
+    <h3 class="font-bold text-lg text-blue-700 mb-2 opacity-50">Programação Orientada a Objetos</h3>
+    <p class="text-sm text-blue-600 mb-4 opacity-50">Domine classes, objetos e herança</p>
+
+    <div class="mt-6 text-center">
+      <span class="text-xs bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded-full">Complete o módulo anterior para desbloquear</span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

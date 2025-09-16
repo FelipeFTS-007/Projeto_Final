@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Conteúdo - Introdução ao Python{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .floating-element {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .shine-effect::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -75%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      pointer-events: none;
+    }
+    
+    .shine-effect:hover::before {
+      animation: shine 1s forwards;
+    }
+    
+    @keyframes shine {
+      0% { left: -75%; }
+      100% { left: 125%; }
+    }
+    
+    .tab-active {
+      background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+      color: white;
+    }
+    
+    .tab-inactive {
+      background-color: #EFF6FF;
+      color: #3B82F6;
+    }
+    
+    .tab-inactive:hover {
+      background-color: #DBEAFE;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- BOTÃO VOLTAR FIXO NO TOPO -->
+  <div class="mb-4">
+    <a href="{% url 'modulos' %}" class="text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-2 transition-colors">
+      <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
+      <span class="text-sm">Voltar aos capítulos</span>
+    </a>
+  </div>
+
+  <!-- Cabeçalho do Módulo -->
+  <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+    <div class="flex items-center gap-6 z-10">
+      <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="w-16 h-16 floating-element">
+      <div>
+        <h2 class="text-2xl font-bold">Introdução ao Python</h2>
+        <p class="text-blue-100">Primeiros passos com Python</p>
+      </div>
+    </div>
+    <div class="text-right font-bold text-lg z-10 mt-4 md:mt-0">100% Concluído</div>
+    
+    <!-- Elementos decorativos de fundo -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+      <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
+      <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
+      <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
+    </div>
+  </div>
+
+  <!-- Cards de progresso resumo -->
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="bg-white border border-blue-200 rounded-xl p-4 shadow-md card-hover">
+      <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center gap-2">
+          <div class="bg-blue-600 p-2 rounded-lg">
+            <img src="{% static 'imagem/menu_book_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Teoria" class="w-5 h-5">
+          </div>
+          <span class="font-semibold text-blue-800">Teoria</span>
+        </div>
+        <span class="text-blue-600 font-bold">3/3 Lições</span>
+      </div>
+      <div class="w-full h-2 bg-blue-200 rounded-full">
+        <div class="h-2 bg-blue-600 rounded-full w-full"></div>
+      </div>
+    </div>
+
+    <div class="bg-white border-blue-200 rounded-xl p-4 shadow-md card-hover">
+      <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center gap-2">
+          <div class="bg-blue-600 p-2 rounded-lg">
+            <img src="{% static 'imagem/code_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Prática" class="w-5 h-5">
+          </div>
+          <span class="font-semibold text-blue-800">Prática</span>
+        </div>
+        <span class="text-blue-600 font-bold">3/3 Lições</span>
+      </div>
+      <div class="w-full h-2 bg-blue-200 rounded-full">
+        <div class="h-2 bg-blue-600 rounded-full w-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abas Teoria / Prática -->
+  <div class="flex border-b border-blue-200 mt-4">
+    <button id="tab-teoria" class="flex-1 py-3 font-semibold tab-active rounded-t-xl">Teoria (3)</button>
+    <button id="tab-pratica" class="flex-1 py-3 font-semibold tab-inactive rounded-t-xl">Prática (3)</button>
+  </div>
+
+  <!-- Texto dinâmico após as abas -->
+  <div class="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-6 shadow flex items-center gap-3">
+    <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Ícone" class="w-6 h-6">
+    <span id="texto-abas-conteudo">Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática.</span>
+  </div>
+
+  <!-- Conteúdo das Tabs -->
+  <div id="conteudo-teoria" class="space-y-4 mt-4">
+    <!-- Card de Teoria 1 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Conceitos Fundamentais</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+25 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Explore os conceitos básicos de Python, como variáveis, tipos de dados e operadores. Ideal para entender a lógica por trás do código.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">10 min</span>
+        <a href="{% url 'teoria' %}">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Revisar</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card de Teoria 2 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Sintaxe e Estrutura</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+25 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Aprenda a escrever código corretamente, incluindo indentação, comandos básicos e estruturas de controle, essenciais para qualquer programa Python.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">15 min</span>
+        <a href="#">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Revisar</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card de Teoria 3 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md ">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Boas Práticas</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+25 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Descubra convenções de código, padrões de nomenclatura e dicas para escrever scripts limpos e fáceis de manter.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">10 min</span>
+        <a href="#">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Iniciar</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="conteudo-pratica" class="space-y-4 mt-4 hidden">
+    <!-- Cards Prática (estilo similar aos de teoria) -->
+    <!-- Card de Prática 1 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Exercícios Básicos</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+40 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Resolva exercícios simples para praticar variáveis, operadores e funções básicas. Ótimo para fixar a teoria estudada.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">15 min</span>
+        <a href="{% url 'pratica' %}">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Revisar</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card de Prática 2 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Desafios Intermediários</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+60 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Aplique conceitos em problemas mais complexos, utilizando estruturas de controle, listas e loops. Preparação para projetos reais.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">20 min</span>
+        <a href="#">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Revisar</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card de Prática 3 -->
+    <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-100 p-2 rounded-lg">
+            <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+          </div>
+          <h3 class="font-semibold text-blue-800">Projeto Prático</h3>
+        </div>
+        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+80 XP</div>
+      </div>
+      <p class="text-blue-600 text-sm mb-4">Desenvolva um projeto completo utilizando tudo que aprendeu. Ideal para consolidar habilidades e ganhar experiência prática real.</p>
+      <div class="flex justify-between items-center">
+        <span class="text-blue-500 text-xs">30 min</span>
+        <a href="#">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">Iniciar</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conquistas desbloqueáveis -->
+  <div class="mt-6">
+    <h3 class="text-blue-800 font-semibold mb-3 flex items-center gap-2">
+      <img src="{% static 'imagem/military_tech_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquistas" class="w-6 h-6">
+      Conquistas Desbloqueáveis
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="shine-effect bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-4 shadow-sm flex items-center gap-3 card-hover">
+        <div class="bg-blue-600 p-2 rounded-lg">
+          <img src="{% static 'imagem/trophy_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquista" class="w-8 h-8">
+        </div>
+        <div>
+          <h4 class="font-semibold text-blue-800">Iniciante em Python</h4>
+          <p class="text-blue-600 text-sm">Complete a primeira lição de teoria e pratique conceitos básicos.</p>
+        </div>
+        <div class="ml-auto font-bold text-blue-600">+10 XP</div>
+      </div>
+
+      <div class="shine-effect bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-4 shadow-sm flex items-center gap-3 card-hover">
+        <div class="bg-blue-600 p-2 rounded-lg">
+          <img src="{% static 'imagem/rocket_launch_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquista" class="w-8 h-8">
+        </div>
+        <div>
+          <h4 class="font-semibold text-blue-800">Primeiro Projeto</h4>
+          <p class="text-blue-600 text-sm">Finalize o projeto prático para ganhar experiência real.</p>
+        </div>
+        <div class="ml-auto font-bold text-blue-600">+40 XP</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Alternar tabs
+  const tabTeoria = document.getElementById('tab-teoria');
+  const tabPratica = document.getElementById('tab-pratica');
+  const conteudoTeoria = document.getElementById('conteudo-teoria');
+  const conteudoPratica = document.getElementById('conteudo-pratica');
+  const textoAbas = document.getElementById('texto-abas-conteudo');
+
+  tabTeoria.addEventListener('click', () => {
+    tabTeoria.classList.remove('tab-inactive');
+    tabTeoria.classList.add('tab-active');
+    tabPratica.classList.remove('tab-active');
+    tabPratica.classList.add('tab-inactive');
+    conteudoTeoria.classList.remove('hidden');
+    conteudoPratica.classList.add('hidden');
+    textoAbas.textContent = "Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática.";
+  });
+
+  tabPratica.addEventListener('click', () => {
+    tabPratica.classList.remove('tab-inactive');
+    tabPratica.classList.add('tab-active');
+    tabTeoria.classList.remove('tab-active');
+    tabTeoria.classList.add('tab-inactive');
+    conteudoPratica.classList.remove('hidden');
+    conteudoTeoria.classList.add('hidden');
+    textoAbas.textContent = "Aqui você poderá praticar os conceitos aprendidos na teoria, resolvendo exercícios, desafios e projetos práticos.";
+  });
+
+
+   // Marcar o item de conteúdo como ativo
+  document.addEventListener('DOMContentLoaded', function() {
+    // Encontrar o link de conteúdo na sidebar
+    const conteudoLink = document.getElementById('nav-conteudo');
+    
+    // Adicionar a classe ativa ao link de conteúdo
+    if (conteudoLink) {
+      conteudoLink.classList.add('bg-blue-500', 'text-white');
+      
+      // Atualizar o ícone para a versão branca
+      const conteudoIcon = conteudoLink.querySelector('.nav-icon');
+      if (conteudoIcon) {
+        const whiteIcon = conteudoIcon.getAttribute('data-white');
+        if (whiteIcon) {
+          conteudoIcon.src = whiteIcon;
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

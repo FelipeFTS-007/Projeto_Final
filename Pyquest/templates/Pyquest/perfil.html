@@ -1,0 +1,764 @@
+
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Perfil - PyQuest{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Animações personalizadas */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes pulse {
+    from { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    to { transform: scale(1); }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  .animate-pulse {
+    animation: pulse 0.5s ease-in-out;
+  }
+  
+  /* Estilização da barra de rolagem */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* CORREÇÃO: Fundos translúcidos para conquistas */
+  .conquista {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+  }
+  
+  .badge-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    border-radius: 0.75rem;
+    opacity: 0.3;
+  }
+
+  /* Cores de texto padronizadas */
+  .text-comum { color: rgb(59, 130, 246); }
+  .text-rara { color: rgb(16, 185, 129); }
+  .text-epica { color: rgb(139, 92, 246); }
+  .text-lendaria { color: rgb(245, 158, 11); }
+
+  /* Fundos dos círculos dos ícones */
+  .icon-comum {
+    background-color: rgb(59, 130, 246);
+    color: white;
+  }
+  .icon-rara {
+    background-color: rgb(16, 185, 129);
+    color: white;
+  }
+  .icon-epica {
+    background-color: rgb(139, 92, 246);
+    color: white;
+  }
+  .icon-lendaria {
+    background-color: rgb(245, 158, 11);
+    color: white;
+  }
+
+  /* Fundos padronizados */
+  .badge-bg-comum { background-color: rgb(59, 130, 246); }
+  .badge-bg-rara { background-color: rgb(16, 185, 129); }
+  .badge-bg-epica { background-color: rgb(139, 95, 246); }
+  .badge-bg-lendaria { background-color: rgb(245, 158, 11); }
+
+  /* Fundo metálico com brilho no hover */
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+  }
+  .shine-effect:hover {
+    transform: scale(1.03);
+  }
+  .shine-effect::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .shine-effect:hover::after {
+    opacity: 1;
+    animation: shine 1s forwards;
+  }
+  @keyframes shine {
+    0% { left: -75%; }
+    100% { left: 125%; }
+  }
+
+  .badge-pill {
+    display: inline-block;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-pill-comum {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: rgb(59, 130, 246);
+  }
+  .badge-pill-rara {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: rgb(16, 185, 129);
+  }
+  .badge-pill-epica {
+    background-color: rgba(139, 95, 246, 0.2);
+    color: rgb(139, 95, 246);
+  }
+  .badge-pill-lendaria {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: rgb(245, 158, 11);
+  }
+
+  .hidden-conquista { display: none; }
+
+  /* Categorias (não raridades) */
+  .categoria-progresso {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+  }
+
+  .categoria-precisao {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+  }
+
+  .categoria-especial {
+    background-color: rgba(139, 92, 246, 0.15);
+    color: #6d28d9;
+  }
+
+  .avatar-upload {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .avatar-upload:hover .avatar-overlay {
+    opacity: 1;
+  }
+  
+  .avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .modal {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .modal-hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+  }
+  
+  .modal-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .achievement-unlocked {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .achievement-unlocked:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .achievement-unlocked::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.5) 100%);
+    z-index: 1;
+    opacity: 0.7;
+  }
+  
+  .achievement-locked {
+    filter: grayscale(0.8);
+    opacity: 0.8;
+  }
+
+  .badge-pill-progresso {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+  }
+  .badge-pill-precisao {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+  }
+  .badge-pill-especial {
+    background-color: rgba(168, 85, 247, 0.15);
+    color: #9333ea;
+  }
+  .badge-pill-dominio {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+  }
+  .badge-pill-algoritmos {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+  }
+
+  /* Conteúdo das conquistas deve ficar acima do fundo */
+  .conquista-content {
+    position: relative;
+    z-index: 10;
+  }
+
+    /* Modal Conquista */
+  #modal-conquista {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  #modal-conquista.modal-hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+  }
+  #modal-conquista.modal-visible {
+    opacity: 1;
+    transform: scale(1);}
+</style>
+
+{% endblock %}
+
+{% block content %}
+<!-- Header do Perfil -->
+<div class="bg-blue-100 text-blue-800 rounded-2xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between relative">
+  <!-- Avatar + Nome -->
+  <div class="flex items-center space-x-4">
+    <div class="avatar-upload relative" id="avatar-container">
+      <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl border-4 border-blue-300 shadow-lg overflow-hidden">
+        <img id="avatar-display" src="{{ perfil.avatar.url }}" 
+             alt="Avatar" class="w-full h-full object-cover" id="avatar-image">
+      </div>
+      <div class="avatar-overlay">
+        <i class="fas fa-camera text-white text-xl"></i>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-2xl font-bold" id="username-header">{{ request.user.username }}</h2>
+      <div class="flex items-center space-x-2 mt-1">
+        <span class="text-sm font-semibold bg-blue-200 px-2 py-1 rounded-full">Nível {{ perfil.nivel }}</span>
+        <div class="relative w-24 h-2 bg-blue-300 rounded-full">
+        <div class="absolute h-full bg-blue-600 rounded-full" style="width: '{{ progresso_xp }}%'"></div>
+        </div>
+        <span class="text-xs text-blue-700">{{ progresso_xp|floatformat:0 }}%</span>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Estatísticas (centralizadas no header) -->
+  <div class="flex space-x-6 mt-6 md:mt-0 text-center mx-auto">
+    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
+      <p class="text-2xl font-bold text-white">{{ perfil.xp }}</p>
+      <p class="text-xs text-white">XP Total</p>
+    </div>
+    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
+      <p class="text-2xl font-bold text-white">{{ perfil.licoes }}</p>
+      <p class="text-xs text-white">Lições</p>
+    </div>
+    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
+      <p class="text-2xl font-bold text-white">{{ perfil.conquistas }}</p>
+      <p class="text-xs text-white">Conquistas</p>
+    </div>
+  </div>
+
+  <!-- Botão de Editar -->
+  <button id="edit-profile-btn" class="absolute top-4 right-4 bg-white hover:bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center space-x-2">
+    <div class="flex items-center">
+      <img src="{% static 'imagem/person_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="editar" class="w-5 h-5 object-contain mr-2"/>
+      <span class="font-medium">
+        Editar
+      </span>
+    </div>
+  </button>
+</div>
+
+<!-- Sobre o Usuário -->
+<div class="bg-blue-200 rounded-2xl shadow-md p-6 mt-6">
+  <h3 class="text-xl font-bold text-blue-900 mb-3 flex items-center">
+    <img 
+      src="{% static 'imagem/info_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}" 
+      alt="informação" 
+      class="w-6 h-6 object-contain mr-2"
+    />
+    Sobre o Usuário
+  </h3>
+  <p class="text-gray-700" id="user-description">{{ perfil.descricao }}</p>
+</div>
+
+<hr class="my-8 border-t-2 border-blue-200" />
+
+<!-- Cabeçalho da seção de conquistas -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+  <!-- Esquerda: título + contador -->
+  <div>
+    <h3 id="conquistasTitulo" class="text-2xl font-bold flex items-center gap-2">
+      <img src="{% static 'imagem/license_40dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="conquistas" class="w-10 h-10 object-contain mr-2"/>
+      Conquistas
+    </h3>
+    <!-- Contadores -->
+    <div class="mt-2 flex flex-col space-y-2">
+      <!-- X de Y Conquistas desbloqueadas -->
+      <div class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium shadow w-max">
+        <span id="contador-conquistas">
+        {{ desbloq_count }} de {{ total_conquistas }} conquistas
+      </span>
+
+      </div>
+    </div>
+  </div>
+  
+  <!-- Direita: filtros -->
+  <div class="flex gap-2 mt-4 sm:mt-0">
+    <!-- Ícone do filtro -->
+    <div class="w-6 h-6 flex items-center justify-center">
+      <img src="{% static 'imagem/filter_icon_136624.png' %}" alt="Filtro" class="w-5 h-5 object-contain" />
+    </div>
+    <select id="filtroRaridade" class="border rounded-md px-3 py-2 text-sm">
+      <option value="todas">Todas as Raridades</option>
+      <option value="comum">Comum</option>
+      <option value="rara">Rara</option>
+      <option value="epica">Épico</option>
+      <option value="lendaria">Lendário</option>
+    </select>
+
+    <select id="filtroCategoria" class="border rounded-md px-3 py-2 text-sm">
+      <option value="todas">Todas as Categorias</option>
+      <option value="progresso">Progresso</option>
+      <option value="habilidade">Habilidade</option>
+      <option value="precisao">Precisão</option>
+      <option value="dominio">Domínio</option>
+      <option value="especial">Especial</option>
+    </select>
+  </div>
+</div>
+
+<!-- Desbloqueadas destacado -->
+<div class="my-4">
+  <div class="w-full bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-base font-semibold shadow text-left flex items-center">
+    <img 
+      src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" 
+      alt="diamante" 
+      class="w-6 h-6 object-contain mr-2"
+    />
+    Desbloqueadas (<span id="contador-desbloqueadas">{{ conquistas_desbloqueadas|length }}</span>)
+  </div>
+</div>
+
+<!-- Grid de Conquistas Desbloqueadas -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {% for conquista in conquistas_desbloqueadas %}
+    <div class="conquista unlocked p-4 bg-white rounded-lg shadow shine-effect"
+         data-titulo="{{ conquista.titulo }}"
+         data-descricao="{{ conquista.descricao }}"
+         data-raridade="{{ conquista.raridade }}"
+         data-categoria="{{ conquista.categoria }}"
+         data-icone="{% if conquista.icone %}{{ conquista.icone.url }}{% endif %}"
+         data-progresso="{{ conquista.progresso|default:100 }}"
+         data-objetivo="{{ conquista.objetivo|default:'Sem objetivo definido' }}"
+
+         onclick="abrirConquista(this)">
+      <div class="badge-bg badge-bg-{{ conquista.raridade }}"></div>
+      <div class="conquista-content relative z-10 flex flex-col items-center">
+        <div class="w-16 h-16 flex items-center justify-center rounded-full icon-{{ conquista.raridade }} text-3xl">
+          {% if conquista.icone %}
+            <img src="{{ conquista.icone.url }}" alt="{{ conquista.titulo }}" class="w-12 h-12 object-contain">
+          {% else %}
+            <i class="fas fa-award text-gray-400"></i>
+          {% endif %}
+        </div>
+        <h3 class="mt-3 font-bold text-{{ conquista.raridade }}">{{ conquista.titulo }}</h3>
+        <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
+          <span class="badge-pill badge-pill-{{ conquista.raridade }}">{{ conquista.raridade|capfirst }}</span>
+          <span class="badge-pill badge-pill-{{ conquista.categoria }}">{{ conquista.categoria|capfirst }}</span>
+        </div>
+        <p class="mt-3 text-center text-sm">{{ conquista.descricao }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-gray-500">Nenhuma conquista desbloqueada ainda.</p>
+  {% endfor %}
+</div>
+
+
+<!-- Conquistas bloqueadas -->
+<div class="my-4 mt-8">
+  <div class="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-base font-semibold shadow text-left flex items-center">
+    <img 
+      src="{% static 'imagem/lock_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" 
+      alt="bloqueadas" 
+      class="w-6 h-6 object-contain mr-2"
+    />
+    Bloqueadas (<span id="contador-bloqueadas">{{ conquistas_bloqueadas|length }}</span>)
+  </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {% for conquista in conquistas_bloqueadas %}
+    <div class="conquista locked p-4 bg-white rounded-lg shadow achievement-locked"
+         data-titulo="{{ conquista.titulo }}"
+         data-descricao="{{ conquista.descricao }}"
+         data-raridade="{{ conquista.raridade }}"
+         data-categoria="{{ conquista.categoria }}"
+         data-icone="{% if conquista.icone %}{{ conquista.icone.url }}{% endif %}"
+         data-progresso="{{ conquista.progresso|default:0 }}"
+         data-objetivo="{{ conquista.objetivo|default:'Sem objetivo definido' }}"
+         onclick="abrirConquista(this)">
+      <div class="badge-bg badge-bg-{{ conquista.raridade }}"></div>
+      <div class="conquista-content relative z-10 flex flex-col items-center">
+        <div class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-300 text-3xl">
+          {% if conquista.icone %}
+            <img src="{{ conquista.icone.url }}" alt="{{ conquista.titulo }}" class="w-12 h-12 object-contain">
+          {% else %}
+            <i class="fas fa-award text-gray-400"></i>
+          {% endif %}
+        </div>
+        <h3 class="mt-3 font-bold text-gray-500">{{ conquista.titulo }}</h3>
+        <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
+          <span class="badge-pill badge-pill-{{ conquista.raridade }}">{{ conquista.raridade|capfirst }}</span>
+          <span class="badge-pill badge-pill-{{ conquista.categoria }}">{{ conquista.categoria|capfirst }}</span>
+        </div>
+        <p class="mt-3 text-center text-sm text-gray-400">{{ conquista.descricao }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-gray-400">Nenhuma conquista bloqueada.</p>
+  {% endfor %}
+</div>
+
+<!-- Modal Conquista -->
+<div id="modal-conquista" class="modal modal-hidden fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slideIn border-2 border-blue-200">
+    <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-4 flex justify-between items-center">
+      <h3 id="conquista-titulo" class="text-xl font-bold text-blue-900">Título da Conquista</h3>
+      <button type="button" onclick="fecharConquista()" class="text-blue-600 hover:text-blue-800">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <div class="p-6 flex flex-col items-center text-center">
+      <div id="conquista-icone" class="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-gray-200 shadow-lg text-3xl">🏆</div>
+      <p id="conquista-descricao" class="text-gray-700 mb-4">Descrição da conquista...</p>
+      <p id="conquista-objetivo" class="text-sm text-blue-600 italic mb-4">
+      Objetivo da conquista aparecerá aqui...</p>
+      <div class="flex gap-2 flex-wrap justify-center mb-6">
+        <span id="conquista-raridade" class="badge-pill bg-gray-100 text-gray-600">Raridade</span>
+        <span id="conquista-categoria" class="badge-pill bg-gray-100 text-gray-600">Categoria</span>
+      </div>
+      <div class="w-full">
+        <div class="flex justify-between text-sm mb-1">
+          <span class="text-gray-600">Progresso</span>
+          <span id="conquista-progresso-text" class="text-gray-800 font-semibold">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+          <div id="conquista-progresso" class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal de Edição de Perfil -->
+<div id="edit-profile-modal"
+     class="modal modal-hidden fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border-2 border-blue-300">
+
+    <!-- FORM REAL -->
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="bg-blue-100 text-blue-800 p-4 flex justify-between items-center">
+        <h3 class="text-xl font-bold">Editar Perfil</h3>
+        <button type="button" id="close-modal" class="text-blue-700 hover:text-blue-900">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col items-center mb-6">
+          <div class="relative mb-4">
+            <div class="w-24 h-24 bg-blue-200 rounded-full flex items-center justify-center text-3xl border-4 border-blue-300 shadow-lg overflow-hidden"
+                 id="avatar-preview">
+              {% if perfil.avatar %}
+                <img src="{{ perfil.avatar.url }}" alt="Avatar"
+                     class="w-full h-full object-cover">
+              {% else %}
+                <img src="{% static 'default-avatar.png' %}" alt="Avatar"
+                     class="w-full h-full object-cover">
+              {% endif %}
+            </div>
+
+            <!-- bolinha azul com câmera -->
+            <div id="btnUploadFoto"
+                 class="absolute bottom-0 right-0 bg-[#2682EA] w-6 h-6 flex items-center justify-center rounded-full shadow cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 7h4l2-3h6l2 3h4v13H3V7z"/>
+                <circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"
+                        fill="none"/>
+              </svg>
+            </div>
+
+            <!-- input real para upload -->
+            <input type="file" name="avatar" id="uploadFoto" accept="image/*" class="hidden">
+          </div>
+          <p class="text-sm text-gray-600">Clique na câmera para alterar sua foto</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nome de usuário</label>
+            <input type="text" id="username" value="{{ user.username }}" disabled
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+          </div>
+
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descrição do perfil</label>
+            <textarea name="descricao" id="description" rows="3"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ perfil.descricao }}</textarea>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-blue-800 p-4 font-bold text-center w-full">
+  Compartilhe suas Redes
+</h2>
+
+      <label for="github" class="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
+      <input type="url" name="github" id="github" value="{{ perfil.github|default:'' }}"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Digite seu GitHub">
+      </div>
+
+      <div>
+        <label for="linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+        <input type="url" name="linkedin" id="linkedin" value="{{ perfil.linkedin|default:'' }}"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Digite seu LinkedIn">
+      </div>
+      </div>
+      
+
+
+      <div class="bg-blue-100 px-6 py-4 flex justify-end space-x-3">
+        <button type="button" id="cancel-edit"
+                class="px-4 py-2 text-blue-700 hover:text-blue-900 font-medium rounded-lg">
+          Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition">
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+function abrirConquista(el) {
+  document.getElementById("conquista-titulo").textContent = el.dataset.titulo;
+  document.getElementById("conquista-descricao").textContent = el.dataset.descricao;
+  document.getElementById("conquista-objetivo").textContent = el.dataset.objetivo;
+
+
+  const iconeDiv = document.getElementById("conquista-icone");
+  iconeDiv.innerHTML = el.dataset.icone
+    ? `<img src="${el.dataset.icone}" class="w-16 h-16 object-contain">`
+    : "🏆";
+
+  const raridadeEl = document.getElementById("conquista-raridade");
+  raridadeEl.textContent = el.dataset.raridade.charAt(0).toUpperCase() + el.dataset.raridade.slice(1);
+  raridadeEl.className = `badge-pill badge-pill-${el.dataset.raridade}`;
+
+  const categoriaEl = document.getElementById("conquista-categoria");
+  categoriaEl.textContent = el.dataset.categoria.charAt(0).toUpperCase() + el.dataset.categoria.slice(1);
+  categoriaEl.className = `badge-pill badge-pill-${el.dataset.categoria}`;
+
+  const progresso = parseInt(el.dataset.progresso) || 0;
+  document.getElementById("conquista-progresso").style.width = progresso + "%";
+  document.getElementById("conquista-progresso-text").textContent = progresso + "%";
+
+  document.getElementById("modal-conquista").classList.remove("modal-hidden");
+  document.getElementById("modal-conquista").classList.add("modal-visible");
+}
+function fecharConquista() {
+  const modal = document.getElementById("modal-conquista");
+  modal.classList.remove("modal-visible");
+  modal.classList.add("modal-hidden");
+}
+document.getElementById("modal-conquista").addEventListener("click", function(e) {
+  if (e.target === this) fecharConquista();
+});
+
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  const modal = document.getElementById('edit-profile-modal');
+  const closeModalBtn = document.getElementById('close-modal');
+  const cancelEditBtn = document.getElementById('cancel-edit');
+  const btnUploadFoto = document.getElementById('btnUploadFoto');
+  const uploadFoto = document.getElementById('uploadFoto');
+
+  function openModal() {
+    modal.classList.remove('modal-hidden');
+    modal.classList.add('modal-visible');
+  }
+  function closeModal() {
+    modal.classList.remove('modal-visible');
+    modal.classList.add('modal-hidden');
+  }
+
+  editProfileBtn.addEventListener('click', openModal);
+  closeModalBtn.addEventListener('click', closeModal);
+  cancelEditBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // aciona input de upload ao clicar na camerazinha
+  btnUploadFoto.addEventListener('click', () => uploadFoto.click());
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // --- Modal ---
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  const modal = document.getElementById('edit-profile-modal');
+  const closeModalBtn = document.getElementById('close-modal');
+  const cancelEditBtn = document.getElementById('cancel-edit');
+  const btnUploadFoto = document.getElementById('btnUploadFoto');
+  const uploadFoto = document.getElementById('uploadFoto');
+
+  function openModal() {
+    modal.classList.remove('modal-hidden');
+    modal.classList.add('modal-visible');
+  }
+  function closeModal() {
+    modal.classList.remove('modal-visible');
+    modal.classList.add('modal-hidden');
+  }
+
+  editProfileBtn.addEventListener('click', openModal);
+  closeModalBtn.addEventListener('click', closeModal);
+  cancelEditBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  btnUploadFoto.addEventListener('click', () => uploadFoto.click());
+
+  // --- Filtros ---
+  const filtroRaridade = document.getElementById('filtroRaridade');
+  const filtroCategoria = document.getElementById('filtroCategoria');
+  const conquistas = document.querySelectorAll('.conquista');
+
+  function aplicarFiltros() {
+    const raridade = filtroRaridade.value;
+    const categoria = filtroCategoria.value;
+
+    conquistas.forEach(c => {
+      const r = c.dataset.raridade;
+      const cat = c.dataset.categoria;
+      let mostrar = true;
+
+      if (raridade !== 'todas' && r !== raridade) {
+        mostrar = false;
+      }
+      if (categoria !== 'todas' && cat !== categoria) {
+        mostrar = false;
+      }
+
+      c.style.display = mostrar ? '' : 'none';
+    });
+  }
+
+  filtroRaridade.addEventListener('change', aplicarFiltros);
+  filtroCategoria.addEventListener('change', aplicarFiltros);
+});
+</script>
+
+{% endblock %}

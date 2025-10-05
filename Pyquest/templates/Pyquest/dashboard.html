@@ -1,0 +1,760 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  <!-- Cards de resumo com design melhorado -->
+  <div class="grid md:grid-cols-6 gap-4">
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-clock text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">Tempo de estudo</h3>
+      <p class="text-lg font-bold text-white">1h 25m</p>
+      <div class="w-full bg-blue-400 rounded-full h-1 mt-2">
+        <div class="bg-white h-1 rounded-full" style="width: 75%"></div>
+      </div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-star text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">XP total</h3>
+      <p class="text-lg font-bold text-white">2.450</p>
+      <div class="text-xs text-blue-200 mt-1">+120 hoje</div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-cubes text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">Módulos</h3>
+      <p class="text-lg font-bold text-white">12/20</p>
+      <div class="w-full bg-blue-400 rounded-full h-1 mt-2">
+        <div class="bg-white h-1 rounded-full" style="width: 60%"></div>
+      </div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-fire text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">Sequência</h3>
+      <p class="text-lg font-bold text-white">7 Dias</p>
+      <div class="text-xs text-blue-200 mt-1">Meta: 21 dias</div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-bullseye text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">Precisão</h3>
+      <p class="text-lg font-bold text-white">89%</p>
+      <div class="text-xs text-blue-200 mt-1 flex items-center justify-center">
+        <i class="fas fa-arrow-up mr-1"></i> 5% desde ontem
+      </div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
+      <div class="flex justify-center mb-2">
+        <i class="fas fa-trophy text-white text-xl"></i>
+      </div>
+      <h3 class="text-xs font-semibold text-white mb-1">Acertos seguidos</h3>
+      <p class="text-lg font-bold text">
+
+
+                  <p class="text-lg font-bold text-white">14</p>
+            <div class="text-xs text-blue-200 mt-1">Recorde: 22</div>
+        </div>
+    </div>
+
+    <!-- Gráficos lado a lado com design melhorado -->
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Gráfico de Evolução de XP -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center">
+                    <i class="fas fa-chart-line mr-2"></i> Evolução do XP
+                </h2>
+                <div class="flex gap-2 bg-blue-100 p-1 rounded-lg">
+                    <button class="time-btn px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold transition-all duration-300" data-period="day">Dia</button>
+                    <button class="time-btn px-3 py-1 rounded-lg bg-transparent text-blue-700 font-semibold hover:bg-blue-200 transition-all duration-300" data-period="week">Semana</button>
+                    <button class="time-btn px-3 py-1 rounded-lg bg-transparent text-blue-700 font-semibold hover:bg-blue-200 transition-all duration-300" data-period="month">Mês</button>
+                </div>
+            </div>
+            <div class="relative h-72">
+                <canvas id="xpChart"></canvas>
+                <div class="absolute top-3 right-3 bg-white/80 py-1 px-2 rounded-lg shadow text-xs hidden" id="xpTooltip">
+                    <span class="font-bold" id="xpValue">0</span> XP
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Progresso por Categoria -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center">
+                    <i class="fas fa-chart-pie mr-2"></i> Progresso por Categoria
+                </h2>
+                <button class="text-blue-600 hover:text-blue-800 transition-colors" id="toggleLegend">
+                    <i class="fas fa-layer-group"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="h-64">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="flex flex-col justify-center space-y-3" id="categoryLegend">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-blue-600 mr-2"></div>
+                        <span class="text-sm">Básico</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
+                        <span class="text-sm">Funções</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-blue-400 mr-2"></div>
+                        <span class="text-sm">Estruturas</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-blue-300 mr-2"></div>
+                        <span class="text-sm">POO</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-blue-200 mr-2"></div>
+                        <span class="text-sm">Projetos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda linha de gráficos -->
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Radar Chart -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center">
+                    <i class="fas fa-brain mr-2"></i> Habilidades Dominadas
+                </h2>
+                <div class="flex items-center text-sm text-blue-600">
+                    <div class="w-3 h-3 rounded-full bg-blue-600 mr-1"></div>
+                    <span>Seu nível</span>
+                    <div class="w-3 h-3 rounded-full bg-blue-300 mx-2 ml-4"></div>
+                    <span>Média</span>
+                </div>
+            </div>
+            <div class="h-72">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Ranking Chart -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center">
+                    <i class="fas fa-trophy mr-2"></i> Evolução no Ranking
+                </h2>
+                <div class="relative inline-block text-left">
+                    <button id="rankingDropdownBtn" class="inline-flex justify-center w-full rounded-md border border-blue-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none transition-colors">
+                        Dia
+                        <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>
+                    </button>
+                    <div id="rankingDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                        <div class="py-1">
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="day">Dia</a>
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="week">Semana</a>
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="month">Mês</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="h-72">
+                <canvas id="rankingChart"></canvas>
+            </div>
+            <div class="flex justify-between items-center mt-3 text-sm text-blue-600">
+                <span>Posição atual: <strong>#42</strong></span>
+                <span class="flex items-center text-green-600">
+                    <i class="fas fa-arrow-up mr-1"></i> Subiu 8 posições
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Heatmap de atividade -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-blue-800 flex items-center">
+                <i class="fas fa-calendar-alt mr-2"></i> Atividade Anual
+            </h2>
+            <div class="relative inline-block text-left">
+                <button id="heatmapDropdownBtn" class="inline-flex justify-center w-full rounded-md border border-blue-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none transition-colors">
+                    2025
+                    <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>
+                </button>
+                <div id="heatmapDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10">
+                    <div class="py-1">
+                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2023">2023</a>
+                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2024">2024</a>
+                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2025">2025</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meses -->
+        <div id="heatmapMonths" class="flex justify-between text-xs text-gray-500 mb-1 px-1"></div>
+
+        <div id="heatmap" class="grid gap-1 w-full mb-4"></div>
+        
+        <div class="flex justify-between items-center">
+            <p class="text-xs text-gray-500">Cada quadrado representa um dia do ano</p>
+            <div class="flex gap-2 items-center text-xs text-gray-700">
+                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-gray-200"></div> Nenhuma</span>
+                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-100"></div> Pouco</span>
+                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-200"></div> Médio</span>
+                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-400"></div> Bastante</span>
+                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-600"></div> Muito</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas extras com design melhorado -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+        <h2 class="text-lg font-bold text-blue-800 mb-6 flex items-center">
+            <i class="fas fa-chart-bar mr-2"></i> Estatísticas Detalhadas
+        </h2>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
+                    <i class="fas fa-target mr-2 text-blue-500"></i> Desempenho
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Taxa de acertos</span>
+                            <span class="font-semibold">89%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 89%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Questões respondidas</span>
+                            <span class="font-semibold">342</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 68%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
+                    <i class="fas fa-calendar-check mr-2 text-blue-500"></i> Frequência
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Dias ativos (mês)</span>
+                            <span class="font-semibold">18/30</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Melhor sequência</span>
+                            <span class="font-semibold">22 dias</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 73%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
+                    <i class="fas fa-medal mr-2 text-blue-500"></i> Conquistas
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Ranking atual</span>
+                            <span class="font-semibold">Top 15%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 15%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conquistas</span>
+                            <span class="font-semibold">8/20</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-blue-100">
+            <h3 class="text-sm font-semibold text-blue-700 mb-3">Próximas metas</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="flex items-center bg-white p-3 rounded-lg shadow">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <i class="fas fa-flag text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium">Alcançar 3.000 XP</p>
+                        <p class="text-xs text-gray-500">550 XP restantes</p>
+                    </div>
+                </div>
+                <div class="flex items-center bg-white p-3 rounded-lg shadow">
+
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-bolt text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Sequência de 14 dias</p>
+                            <p class="text-xs text-gray-500">7 dias completos</p>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Dados simulados ---
+    const xpData = { 
+        day: [200,450,300,600,350,700,500], 
+        week: [1500,1800,1600,1900,2000,2202,2100], 
+        month: [6000,7500,8000,7200,8500,9000,9500] 
+    };
+    
+    const rankingData = { 
+        day: [50,35,25,15], 
+        week: [45,30,20,10], 
+        month: [40,25,15,5] 
+    };
+    
+    const categoryData = [25,20,30,15,10];
+    const radarData = [80,65,70,50,40];
+    const radarAvgData = [60,50,65,40,30];
+
+    // Primeiro: preparar os containers com opacidade 0
+    document.querySelectorAll('.bg-gradient-to-br').forEach((el, i) => {
+        el.style.opacity = 0;
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    });
+
+    // Inicializar os gráficos após um pequeno delay
+    setTimeout(() => {
+        // --- Inicializa gráficos ---
+        const xpChart = new Chart(document.getElementById('xpChart'), {
+            type: 'line', 
+            data: {
+                labels: ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'], 
+                datasets: [{
+                    label: 'XP ganho', 
+                    data: xpData.day, 
+                    borderColor: '#2563eb', 
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)', 
+                    fill: true, 
+                    tension: 0.4,
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        enabled: false
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                // Animação mais rápida para os gráficos
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // Adiciona interatividade ao gráfico de XP
+        const xpTooltip = document.getElementById('xpTooltip');
+        const xpValue = document.getElementById('xpValue');
+        const xpCanvas = document.getElementById('xpChart');
+        
+        xpCanvas.addEventListener('mousemove', (e) => {
+            const rect = xpCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const points = xpChart.getElementsAtEventForMode(e, 'index', { intersect: false });
+            
+            if (points.length > 0) {
+                const point = points[0];
+                const value = xpChart.data.datasets[0].data[point.index];
+                
+                xpValue.textContent = value;
+                xpTooltip.style.display = 'block';
+                xpTooltip.style.left = `${x + 10}px`;
+                xpTooltip.style.top = `${y - 10}px`;
+            } else {
+                xpTooltip.style.display = 'none';
+            }
+        });
+        
+        xpCanvas.addEventListener('mouseleave', () => {
+            xpTooltip.style.display = 'none';
+        });
+
+        const rankingChart = new Chart(document.getElementById('rankingChart'), {
+            type: 'line', 
+            data: {
+                labels: ['Semana 1','Semana 2','Semana 3','Semana 4'], 
+                datasets: [{
+                    label: 'Posição no Ranking', 
+                    data: rankingData.day, 
+                    borderColor: '#1d4ed8', 
+                    backgroundColor: 'rgba(29, 78, 216, 0.1)', 
+                    fill: true, 
+                    tension: 0.3,
+                    pointBackgroundColor: '#1d4ed8',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: {
+                    y: {
+                        reverse: true, 
+                        title: {
+                            display: true,
+                            text: 'Ranking'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut', 
+            data: {
+                labels: ['Básico','Funções','Estruturas','POO','Projetos'], 
+                datasets: [{
+                    data: categoryData, 
+                    backgroundColor: ['#1e40af','#2563eb','#3b82f6','#60a5fa','#93c5fd'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        const radarChart = new Chart(document.getElementById('radarChart'), {
+            type: 'radar', 
+            data: {
+                labels: ['Lógica','Funções','Estruturas','OOP','Projetos'], 
+                datasets: [
+                    {
+                        label: 'Seu nível', 
+                        data: radarData, 
+                        borderColor: '#2563eb', 
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)', 
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Média dos usuários', 
+                        data: radarAvgData, 
+                        borderColor: 'rgba(147, 197, 253, 0.8)', 
+                        backgroundColor: 'rgba(147, 197, 253, 0.2)', 
+                        pointBackgroundColor: 'rgba(147, 197, 253, 0.8)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 11
+                            }
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // Função para atualizar gráficos com animação
+        function updateChart(chart, newData) {
+            // Primeiro, escondemos o gráfico suavemente
+            chart.options.animation.duration = 400;
+            chart.data.datasets[0].data = new Array(newData.length).fill(0);
+            chart.update();
+            
+            // Depois de um pequeno delay, mostramos os novos dados com animação
+            setTimeout(() => {
+                chart.options.animation.duration = 800;
+                chart.data.datasets[0].data = newData;
+                chart.update();
+            }, 400);
+        }
+        
+        // Event listeners para botões de período
+        document.querySelectorAll('.time-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.time-btn').forEach(b => {
+                    b.classList.replace('bg-blue-600', 'bg-transparent');
+                    b.classList.replace('text-white', 'text-blue-700');
+                    b.classList.add('hover:bg-blue-200');
+                });
+                
+                btn.classList.replace('bg-transparent', 'bg-blue-600');
+                btn.classList.replace('text-blue-700', 'text-white');
+                btn.classList.remove('hover:bg-blue-200');
+                
+                updateChart(xpChart, xpData[btn.dataset.period]);
+            });
+        });
+
+        // Toggle legend para o gráfico de categorias
+        document.getElementById('toggleLegend').addEventListener('click', () => {
+            const legend = document.getElementById('categoryLegend');
+            legend.classList.toggle('hidden');
+        });
+
+        // Ranking dropdown
+        const rankingDropdownBtn = document.getElementById('rankingDropdownBtn');
+        const rankingDropdownMenu = document.getElementById('rankingDropdownMenu');
+        
+        rankingDropdownBtn.addEventListener('click', () => {
+            rankingDropdownMenu.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', e => {
+            if (!rankingDropdownBtn.contains(e.target) && !rankingDropdownMenu.contains(e.target)) {
+                rankingDropdownMenu.classList.add('hidden');
+            }
+        });
+        
+        document.querySelectorAll('.ranking-option').forEach(option => {
+            option.addEventListener('click', e => {
+                e.preventDefault(); 
+                const period = option.dataset.period; 
+                rankingDropdownBtn.innerHTML = `${option.textContent} <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>`;
+                updateChart(rankingChart, rankingData[period]); 
+                rankingDropdownMenu.classList.add('hidden');
+            });
+        });
+
+        // Referências do heatmap
+        const heatmap = document.getElementById("heatmap");
+        const monthsDiv = document.getElementById("heatmapMonths");
+        const dropdownBtn = document.getElementById("heatmapDropdownBtn");
+        const dropdownMenu = document.getElementById("heatmapDropdownMenu");
+
+        // Função para gerar dados fictícios de um ano
+        function generateYearlyData(year) {
+            const data = [];
+            const startDate = new Date(year, 0, 1);
+            const totalDays = (new Date(year + 1, 0, 1) - startDate) / (1000 * 60 * 60 * 24);
+            
+            for (let i = 0; i < totalDays; i++) {
+                const date = new Date(year, 0, i + 1);
+                // Mais atividade durante os dias de semana
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const baseLevel = isWeekend ? 0.3 : 0.7;
+                
+                // Aleatoriedade com viés para dias de semana
+                const level = Math.floor(Math.random() * 5 * baseLevel);
+                data.push({ level, date });
+            }
+            return data;
+        }
+
+        // Função para desenhar o heatmap
+        function drawYearlyHeatmap(year) {
+            heatmap.innerHTML = "";
+            monthsDiv.innerHTML = "";
+            const data = generateYearlyData(year);
+            const colors = ["bg-gray-200", "bg-blue-100", "bg-blue-200", "bg-blue-400", "bg-blue-600"];
+            
+            heatmap.style.display = "grid";
+            heatmap.style.gridTemplateColumns = "repeat(53, 1fr)";
+            heatmap.style.gridAutoRows = "1fr";
+            heatmap.style.gap = "2px";
+
+            // Adicionar quadrados vazios no início para alinhar os dias da semana
+            const firstDay = new Date(year, 0, 1).getDay();
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDiv = document.createElement("div");
+                emptyDiv.className = "w-3 h-3 rounded";
+                heatmap.appendChild(emptyDiv);
+            }
+
+            data.forEach(d => {
+                const div = document.createElement("div");
+                div.className = `w-3 h-3 rounded ${colors[d.level]} transition-colors hover:scale-110`;
+                div.title = `${d.date.toLocaleDateString()}: Nível ${d.level + 1} de atividade`;
+                heatmap.appendChild(div);
+            });
+
+            const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            monthNames.forEach(m => {
+                const span = document.createElement('span');
+                span.textContent = m;
+                monthsDiv.appendChild(span);
+            });
+        }
+
+        // Dropdown toggle
+        dropdownBtn.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', e => {
+            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+
+        // Seleção de ano
+        document.querySelectorAll('.heatmap-option').forEach(option => {
+            option.addEventListener('click', e => {
+                e.preventDefault();
+                const year = parseInt(option.dataset.year);
+                dropdownBtn.innerHTML = `${year} <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>`;
+                dropdownMenu.classList.add('hidden');
+                drawYearlyHeatmap(year);
+            });
+        });
+
+        // Inicializa com 2025
+        drawYearlyHeatmap(2025);
+
+        // Agora que os gráficos estão inicializados, fazer a animação dos containers
+        document.querySelectorAll('.bg-gradient-to-br').forEach((el, i) => {
+            setTimeout(() => {
+                el.style.opacity = 1;
+                el.style.transform = 'translateY(0)';
+            }, 100 + (i * 100));
+        });
+
+    }, 100); // Pequeno delay para garantir que o DOM esteja pronto
+});
+
+// Adiciona tooltips para os cards de estatísticas
+document.querySelectorAll('.transform').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'scale(1.05)';
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'scale(1)';
+    });
+});
+</script>
+{% endblock %}

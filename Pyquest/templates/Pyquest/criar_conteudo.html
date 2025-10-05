@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .progress-bar {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: var(--progress);
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+      border-radius: 9999px;
+    }
+    
+    @keyframes progressAnimation {
+      0% { width: 0%; }
+      100% { width: 45%; }
+    }
+    
+    .xp-badge {
+      background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .activity-item {
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+    
+    .activity-item:hover {
+      transform: translateY(-2px);
+      border-left-color: #3B82F6;
+    }
+
+    .activity-item.active {
+      transform: translateY(-2px);
+      border-left-color: #3B82F6;
+    }
+    
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .floating-element {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .circular-chart {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    
+    .circle-bg {
+      fill: none;
+      stroke: #EFF6FF;
+      stroke-width: 3.8;
+    }
+    
+    .circle {
+      fill: none;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke: #3B82F6;
+      animation: progress 1.5s ease-out forwards;
+    }
+    
+    @keyframes progress {
+      0% { stroke-dasharray: 0 100; }
+    }
+    
+    .percentage {
+      fill: #1E40AF;
+      font-size: 0.5em;
+      text-anchor: middle;
+      font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="flex-1 bg-white rounded-2xl p-6 flex flex-col gap-6">
+<!-- Boas-vindas com gradiente e animação -->
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 flex justify-between items-center shadow-lg relative overflow-hidden">
+  <div class="relative z-10">
+    <h2 class="text-2xl font-bold text-white">Olá, {{ nome }}!</h2>
+    <p class="text-blue-100 mt-1">Continue sua jornada de aprendizado Python. Você está indo bem!</p>
+    <div class="flex items-center mt-4">
+      <div class="bg-blue-800 text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
+        Nível {{ nivel }}
+      </div>
+      <div class="bg-blue-800 text-blue-100 text-xs font-medium px-3 py-1 rounded-full ml-2">
+        {{ xp }} XP
+      </div>
+    </div>
+  </div>
+  <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Boas-vindas" class="w-16 h-16 relative z-10 floating-element">
+  
+  <!-- Elementos decorativos de fundo -->
+      <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+        <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
+        <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
+        <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
+      </div>
+    </div>
+
+<!-- Cards de Estatísticas com layout melhorado -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 ">
+  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
+    <div class="flex justify-between items-start">
+      <h3 class="text-lg font-semibold text-blue-700">Progresso Diário</h3>
+      <img src="{% static 'imagem/trending_up_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Progresso" class="w-6 h-6">
+    </div>
+    <p class="mt-2 text-blue-600 font-bold text-2xl">{{ progresso }}%</p>
+    <div class="w-full bg-blue-200 h-2.5 rounded-full mt-3 progress-bar" style="--progress: {{ progresso }}%;"></div>
+    <p class="text-xs text-blue-500 mt-2">Meta: {{ meta }}% diário</p>
+  </div>
+  
+  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100 flex flex-col">
+    <div class="flex justify-between items-start">
+      <h3 class="text-lg font-semibold text-blue-700">Tempo de Estudo</h3>
+      <img src="{% static 'imagem/schedule_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-6 h-6">
+    </div>
+    <div class="flex items-center mt-2 flex-grow">
+      <img src="{% static 'imagem/local_cafe_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
+      <p class="text-blue-600 font-bold text-2xl ml-3">{{ tempo }}</p>
+    </div>
+    <p class="text-xs text-blue-500 mt-2">+{{ dif_tempo }} em relação à ontem</p>
+  </div>
+  
+  <div class="p-5 activity-item active rounded-2xl shadow-md card-hover border border-blue-100 flex flex-col">
+    <div class="flex justify-between items-start">
+      <h3 class="text-lg font-semibold text-blue-700">Sequência atual</h3>
+      <img src="{% static 'imagem/calendar_month_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Sequência" class="w-6 h-6">
+    </div>
+    <div class="flex items-center mt-2 flex-grow">
+      <img src="{% static 'imagem/mode_heat_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="" class="w-12 h-12">
+      <p class="text-blue-600 font-bold text-2xl ml-3">{{ sequencia }} Dias</p>
+    </div>
+    <p class="text-xs text-blue-500 mt-2">Mantenha a sequência para ganhar bônus!</p>
+  </div>
+</div>
+
+<!-- Cards de Missões e Conquistas com design aprimorado -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+  <div class=" activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold text-blue-700">Vidas</h3>
+      <img src="{% static 'imagem/favorite_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Vidas" class="w-6 h-6">
+    </div>
+    <div class="flex items-center">
+      <div class="relative">
+        <div class="w-16 h-16">
+      <svg viewBox="0 0 36 36" class="circular-chart">
+        <path class="circle"
+          stroke-dasharray="{{ progresso_vidas }}, 100"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        <text x="18" y="20.35" class="percentage">{{ vidas }}/{{ max_vidas }}</text>
+      </svg>
+
+
+        </div>
+      </div>
+      <p class="text-blue-600 font-bold text-xl ml-4">{{ vidas }}</p>
+    </div>
+    <p class="text-xs text-blue-500 mt-2">Regeneração: 
+    {% if proxima_vida > 0 %}
+      Regeneração: {{ proxima_vida }} min
+    {% else %}
+      Vidas completas
+    {% endif %}
+</p>
+  </div>
+
+  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border-blue-100">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold text-blue-700">XP Total</h3>
+      <img src="{% static 'imagem/chess_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-6 h-6">
+    </div>
+    <div class="flex items-center">
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-16 h-16">
+      <p class="text-blue-600 font-bold text-2xl ml-4">{{ xp }}</p>
+    </div>
+    <p class="text-xs text-blue-500 mt-2">+{{ xp_diario }} XP hoje</p>
+  </div>
+  
+  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold text-blue-700">Conquistas</h3>
+      <img src="{% static 'imagem/military_tech_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquistas" class="w-6 h-6">
+    </div>
+    <div class="flex items-center">
+      <img src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-16 h-16">
+      <div class="ml-4">
+        <p class="text-blue-600 font-bold text-2xl">{{ conquistas }}/{{ total_conquistas }}</p>
+        <p class="text-xs text-blue-500">conquistas</p>
+      </div>
+    </div>
+    <p class="text-xs text-blue-500 mt-2">3 conquistas próximas</p>
+  </div>
+</div>
+
+<!-- Últimas Atividades com visual modernizado -->
+<div class="bg-blue-200 rounded-2xl p-6 shadow-md border border-blue-100">
+  <div class="flex items-center justify-between mb-6">
+    <h3 class="text-xl font-bold text-blue-700 flex items-center">
+      <img src="{% static 'imagem/history_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Histórico" class="w-6 h-6 mr-2">
+      Últimas Atividades
+    </h3>
+    <span class="text-sm text-blue-500 font-medium bg-blue-100 px-3 py-1 rounded-full">Hoje</span>
+  </div>
+  
+  <ul class="space-y-4">
+  {% for atividade in atividades %}
+    <li class="activity-item bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md">
+      <div>
+        <p class="font-medium text-blue-800">{{ atividade.titulo }}</p>
+        <p class="text-sm text-blue-500">{{ atividade.data|date:"d/m H:i" }}</p>
+      </div>
+      <span class="xp-badge text-white font-bold py-1 px-3 rounded-full text-sm">+{{ atividade.xp_ganho }} XP</span>
+    </li>
+  {% empty %}
+    <li class="p-5 text-gray-500">Nenhuma atividade recente.</li>
+  {% endfor %}
+</ul>
+  
+</div>
+
+<!-- Botão Continuar Estudando com destaque -->
+<div class="mt-6 flex justify-center">
+  <button class="bg-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-l transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
+    Continuar Estudando
+    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+  </button>
+</div>
+
+</section>
+{% endblock %}

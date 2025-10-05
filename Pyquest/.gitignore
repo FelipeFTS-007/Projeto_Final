@@ -1,0 +1,29 @@
+# Arquivos de ambiente virtual
+venv/
+env/
+
+# Cache e arquivos temporários do Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Banco de dados local
+db.sqlite3
+
+# Arquivos de configurações do VSCode ou IDEs
+.vscode/
+.idea/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Migrations compiladas (opcional)
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# Arquivos estáticos gerados (se você compila)
+staticfiles/
+media/

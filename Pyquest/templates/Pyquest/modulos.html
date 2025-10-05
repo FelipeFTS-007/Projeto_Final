@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Módulos - Fundamentos do Python{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .progress-bar {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 75%;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+      border-radius: 9999px;
+      animation: progressAnimation 1.5s ease-in-out;
+    }
+    
+    @keyframes progressAnimation {
+      0% { width: 0%; }
+      100% { width: 75%; }
+    }
+    
+    .module-card {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .floating-element {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .circular-chart {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    
+    .circle-bg {
+      fill: none;
+      stroke: #EFF6FF;
+      stroke-width: 3.8;
+    }
+    
+    .circle {
+      fill: none;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke: #3B82F6;
+      animation: progress 1.5s ease-out forwards;
+    }
+    
+    @keyframes progress {
+      0% { stroke-dasharray: 0 100; }
+    }
+    
+    .percentage {
+      fill: #1E40AF;
+      font-size: 0.5em;
+      text-anchor: middle;
+      font-weight: bold;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- BOTÃO VOLTAR FIXO NO TOPO -->
+<div class="mb-6">
+  <a href="{% url 'conteudo' %}" class="text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-2 transition-colors">
+    <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
+    <span class="text-sm">Voltar aos capítulos</span>
+  </a>
+</div>
+
+<!-- BANNER DO CAPÍTULO -->
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-2xl p-6 mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg relative overflow-hidden">
+  <div class="flex items-center gap-6 z-10">
+    <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="w-16 h-16 floating-element">
+    <div>
+      <h2 class="text-2xl font-bold">Fundamentos do Python</h2>
+      <p class="text-sm text-blue-100">Aprenda os Conceitos Básicos e essenciais da linguagem Python</p>
+    </div>
+  </div>
+  
+  <!-- Elementos decorativos de fundo -->
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+    <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
+    <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
+    <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
+  </div>
+</div>
+
+<!-- PROGRESSO DO CAPÍTULO -->
+<div class="bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-2xl p-6 mb-6 shadow-md">
+  <div class="flex justify-between items-center mb-4">
+    <span class="font-bold text-blue-800">Progresso do Capítulo</span>
+    <span class="font-bold text-blue-600">75%</span>
+  </div>
+  <div class="w-full bg-blue-200 rounded-full h-3 mb-2 progress-bar"></div>
+  <div class="text-xs text-blue-600 flex justify-between">
+    <span>2 de 3 módulos concluídos</span>
+    <span>370 XP Total</span>
+  </div>
+</div>
+
+<!-- CARDS DE DICAS / BADGES -->
+<div class="grid md:grid-cols-2 gap-6 mb-6">
+  <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-md flex items-center gap-6 card-hover">
+    <div class="bg-blue-600 p-3 rounded-xl">
+      <img src="{% static 'imagem/emoji_objects_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-8 h-8">
+    </div>
+    <div>
+      <h4 class="font-bold text-blue-800">Dica do Dia</h4>
+      <p class="text-sm text-blue-700">Sempre comente seu código para facilitar a manutenção.</p>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-md flex items-center gap-6 card-hover">
+    <div class="bg-blue-600 p-3 rounded-xl">
+      <img src="{% static 'imagem/diamond_shine_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-8 h-8">
+    </div>
+    <div>
+      <h4 class="font-bold text-blue-800">Conquista Desbloqueada</h4>
+      <p class="text-sm text-blue-700">Você completou 2 módulos! Continue assim!</p>
+    </div>
+  </div>
+</div>
+
+<!-- CARDS DE MÓDULOS COM BARRA LATERAL E IMAGENS -->
+<div class="grid md:grid-cols-3 gap-6">
+  <!-- Módulo 1 -->
+  <a href="{% url 'tarefas' %}" class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+    <div class="w-full h-2 bg-blue-600"></div>
+    <div class="p-6">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="bg-blue-100 p-3 rounded-xl">
+          <img src="{% static 'imagem/python1.png' %}" alt="Introdução" class="w-10 h-10">
+        </div>
+        <h3 class="font-bold text-blue-800 text-lg">Introdução ao Python</h3>
+      </div>
+      <p class="text-sm text-blue-700 mb-4">Aprenda os conceitos básicos do Python, instalação, sintaxe inicial e primeiras funções.</p>
+      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
+        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-blue-700 mb-2">
+        <span>2/2 lições</span>
+        <span>100 XP</span>
+      </div>
+      <div class="text-xs text-blue-800 flex items-center font-semibold">
+        <span class="mr-1">Concluído</span>
+        <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
+      </div>
+    </div>
+  </a>
+
+  <!-- Módulo 2 -->
+  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+    <div class="w-full h-2 bg-blue-600"></div>
+    <div class="p-6">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="bg-blue-100 p-3 rounded-xl">
+          <img src="{% static 'imagem/variaveis2.png' %}" alt="Variáveis" class="w-10 h-10">
+        </div>
+        <h3 class="font-bold text-blue-800 text-lg">Variáveis e Tipos</h3>
+      </div>
+      <p class="text-sm text-blue-700 mb-4">Explore variáveis, tipos de dados, conversões e boas práticas para organizar seu código.</p>
+      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
+        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-blue-700 mb-2">
+        <span>3/3 lições</span>
+        <span>150 XP</span>
+      </div>
+      <div class="text-xs text-blue-800 flex items-center font-semibold">
+        <span class="mr-1">Concluído</span>
+        <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulo 3 -->
+  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+    <div class="w-full h-2 bg-blue-600"></div>
+    <div class="p-6">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="bg-blue-100 p-3 rounded-xl">
+          <img src="{% static 'imagem/calculate_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Operadores" class="w-10 h-10">
+        </div>
+        <h3 class="font-bold text-blue-800 text-lg">Operadores</h3>
+      </div>
+      <p class="text-sm text-blue-700 mb-4">Aprenda operadores aritméticos, lógicos e de comparação para manipular dados e tomar decisões.</p>
+      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
+        <div class="bg-blue-600 h-2 rounded-full" style="width: 80%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-blue-700 mb-2">
+        <span>2/3 lições</span>
+        <span>120 XP</span>
+      </div>
+      <div class="text-xs text-blue-800 flex items-center font-semibold">
+        <span class="mr-1">Em progresso</span>
+        <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-4 h-4">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTÃO DE CONTINUAR ESTUDANDO -->
+<div class="mt-8 flex justify-center">
+  <a href="#" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-900 transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
+    Continuar Estudando
+    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5 ml-2">
+  </a>
+</div>
+<script>
+   // Marcar o item de conteúdo como ativo
+  document.addEventListener('DOMContentLoaded', function() {
+    // Encontrar o link de conteúdo na sidebar
+    const conteudoLink = document.getElementById('nav-conteudo');
+    
+    // Adicionar a classe ativa ao link de conteúdo
+    if (conteudoLink) {
+      conteudoLink.classList.add('bg-blue-500', 'text-white');
+      
+      // Atualizar o ícone para a versão branca
+      const conteudoIcon = conteudoLink.querySelector('.nav-icon');
+      if (conteudoIcon) {
+        const whiteIcon = conteudoIcon.getAttribute('data-white');
+        if (whiteIcon) {
+          conteudoIcon.src = whiteIcon;
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

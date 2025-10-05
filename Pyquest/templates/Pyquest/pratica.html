@@ -1,0 +1,948 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Prática - Introdução ao Python{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .floating-element {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .shine-effect::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -75%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      pointer-events: none;
+    }
+    
+    .shine-effect:hover::before {
+      animation: shine 1s forwards;
+    }
+    
+    @keyframes shine {
+      0% { left: -75%; }
+      100% { left: 125%; }
+    }
+    
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+    
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    
+    .typewriter {
+      overflow: hidden;
+      border-right: .15em solid #3B82F6;
+      white-space: nowrap;
+      animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
+    }
+    
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #3B82F6; }
+    }
+    
+    .fade-in {
+      animation: fadeIn 1s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .interactive-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .interactive-card:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    }
+    
+    .interactive-card:active {
+      transform: translateY(1px) scale(0.98);
+    }
+    
+    .code-editor {
+      font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .draggable-item {
+      transition: all 0.2s ease;
+    }
+    
+    .draggable-item:active {
+      transform: scale(0.95);
+    }
+    
+    .drop-zone-active {
+      background-color: rgba(59, 130, 246, 0.1);
+      border: 2px dashed #3B82F6;
+    }
+    
+    .question {
+      display: none;
+    }
+    
+    .question.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    .hint-container {
+      display: none;
+      background-color: #f0f9ff;
+      border-left: 4px solid #3B82F6;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 0.5rem;
+    }
+    
+    .hint-container.active {
+      display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 fade-in">
+  <!-- Botão Voltar Interativo -->
+  <button onclick="window.history.back()" 
+    class="interactive-card flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-600 font-semibold rounded-xl hover:bg-blue-200 transition">
+    <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
+    Voltar
+  </button>
+
+  <!-- Cronômetro com Progresso Visual -->
+  <div class="max-w-4xl mx-auto flex justify-end">
+    <div class="flex items-center gap-3 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 px-4 py-2 rounded-xl font-bold shadow-lg card-hover">
+      <div class="relative w-8 h-8">
+        <svg class="progress-ring w-8 h-8" width="32" height="32">
+          <circle class="progress-ring__circle" stroke="#3B82F6" stroke-width="3" fill="transparent" r="14" cx="16" cy="16"
+            stroke-dasharray="88" stroke-dashoffset="52.8"></circle>
+        </svg>
+        <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="w-4 h-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      </div>
+      <span id="timer">⏱ Tempo: 00:00</span>
+    </div>
+  </div>
+
+  <!-- Questão 1: Escrever Código -->
+  <div class="question active bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg p-8 max-w-4xl mx-auto module-card" data-question="1">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-2xl p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="{% static 'imagem/code_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Código" class="w-6 h-6">
+        <div>
+          <h2 class="font-bold text-lg">Introdução ao Python</h2>
+          <span class="text-sm text-blue-100">Escrever Código</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="hint-btn bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-semibold flex items-center gap-1 interactive-card" data-question="1">
+          <img src="{% static 'imagem/lightbulb_2_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" class="h-4 w-4" alt=""> 
+          <span class="hint-count">3</span>
+        </button>
+        <button class="bg-blue-300 text-blue-800 px-3 py-1 rounded-md text-sm font-semibold pulse-animation">+30 XP</button>
+      </div>
+    </div>
+    
+    <h3 class="mt-6 text-blue-800 font-semibold text-center text-xl">Escreva um programa que exiba "Olá, Python!" na tela</h3>
+    
+    <!-- Container de dicas -->
+    <div class="hint-container" id="hints-1">
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 1:</p>
+        <p class="text-blue-700">Em Python, usamos a função <code class="bg-blue-100 px-1 rounded">print()</code> para exibir mensagens na tela.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 2:</p>
+        <p class="text-blue-700">A mensagem deve estar entre aspas, como <code class="bg-blue-100 px-1 rounded">"Olá, Python!"</code>.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 3:</p>
+        <p class="text-blue-700">O código completo seria: <code class="bg-blue-100 px-1 rounded">print("Olá, Python!")</code></p>
+      </div>
+    </div>
+    
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-900 rounded-xl p-4 code-editor">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-gray-400 text-sm">editor.py</span>
+          <button class="text-gray-400 hover:text-white interactive-card">
+            <img src="{% static 'imagem/play_arrow_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Executar" class="w-5 h-5">
+          </button>
+        </div>
+        <textarea id="code-input" class="w-full h-48 bg-gray-800 text-green-400 p-4 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="# Escreva seu código aqui\n# Use a função print()" 
+                  oninput="updateLineNumbers()"></textarea>
+        <div id="line-numbers" class="text-gray-500 text-xs mt-1 text-right">1</div>
+      </div>
+      
+      <div class="bg-gray-800 rounded-xl p-4">
+        <div class="text-gray-400 text-sm mb-3">Saída</div>
+        <div id="code-output" class="bg-gray-900 text-green-400 p-4 rounded-lg h-48 overflow-auto font-mono text-sm">
+          <div class="text-gray-500">// Aguardando execução...</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 text-center">
+      <button id="check-code" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-800 transition transform hover:scale-105 font-bold interactive-card">
+        <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Verificar" class="w-5 h-5 inline mr-2">
+        Verificar Resposta
+      </button>
+    </div>
+    
+    <div id="code-feedback" class="hidden mt-6 p-4 rounded-xl font-semibold text-center"></div>
+  </div>
+
+  <!-- Questão 2: Múltipla Escolha -->
+  <div class="question bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg p-8 max-w-4xl mx-auto module-card" data-question="2">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-2xl p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="{% static 'imagem/quiz_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Quiz" class="w-6 h-6">
+        <div>
+          <h2 class="font-bold text-lg">Introdução ao Python</h2>
+          <span class="text-sm text-blue-100">Múltipla Escolha</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="hint-btn bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-semibold flex items-center gap-1 interactive-card" data-question="2">
+          <img src="{% static 'imagem/lightbulb_2_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" class="h-4 w-4" alt=""> 
+          <span class="hint-count">3</span>
+        </button>
+        <button class="bg-blue-300 text-blue-800 px-3 py-1 rounded-md text-sm font-semibold pulse-animation">+25 XP</button>
+      </div>
+    </div>
+    
+    <h3 class="mt-6 text-blue-800 font-semibold text-center text-xl">Quem criou a linguagem Python?</h3>
+    
+    <!-- Container de dicas -->
+    <div class="hint-container" id="hints-2">
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 1:</p>
+        <p class="text-blue-700">O criador do Python não é o mesmo que criou o Linux.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 2:</p>
+        <p class="text-blue-700">Ele é um desenvolvedor holandês.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 3:</p>
+        <p class="text-blue-700">Seu nome é Guido van Rossum.</p>
+      </div>
+    </div>
+    
+    <div class="mt-6 grid gap-4">
+      <button class="choice px-6 py-4 border-2 border-blue-200 rounded-xl bg-white hover:border-blue-400 hover:bg-blue-50 text-left transition-all interactive-card" data-correct="false">
+        <span class="font-medium text-blue-800">A) Linus Torvalds</span>
+        <p class="text-sm text-gray-600 mt-1">Criador do Linux</p>
+      </button>
+      <button class="choice px-6 py-4 border-2 border-blue-200 rounded-xl bg-white hover:border-blue-400 hover:bg-blue-50 text-left transition-all interactive-card" data-correct="true">
+        <span class="font-medium text-blue-800">B) Guido van Rossum</span>
+        <p class="text-sm text-gray-600 mt-1">Desenvolvedor holandês</p>
+      </button>
+      <button class="choice px-6 py-4 border-2 border-blue-200 rounded-xl bg-white hover:border-blue-400 hover:bg-blue-50 text-left transition-all interactive-card" data-correct="false">
+        <span class="font-medium text-blue-800">C) Dennis Ritchie</span>
+        <p class="text-sm text-gray-600 mt-1">Criador da linguagem C</p>
+      </button>
+      <button class="choice px-6 py-4 border-2 border-blue-200 rounded-xl bg-white hover:border-blue-400 hover:bg-blue-50 text-left transition-all interactive-card" data-correct="false">
+        <span class="font-medium text-blue-800">D) Bjarne Stroustrup</span>
+        <p class="text-sm text-gray-600 mt-1">Criador do C++</p>
+      </button>
+    </div>
+    
+    <div id="mc-feedback" class="hidden mt-6 p-4 rounded-xl font-semibold text-center"></div>
+  </div>
+
+  <!-- Questão 3: Completar Lacunas -->
+  <div class="question bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg p-8 max-w-4xl mx-auto module-card" data-question="3">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-2xl p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="{% static 'imagem/edit_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Completar" class="w-6 h-6">
+        <div>
+          <h2 class="font-bold text-lg">Python Básico</h2>
+          <span class="text-sm text-blue-100">Completar Lacunas</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="hint-btn bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-semibold flex items-center gap-1 interactive-card" data-question="3">
+          <img src="{% static 'imagem/lightbulb_2_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" class="h-4 w-4" alt=""> 
+          <span class="hint-count">3</span>
+        </button>
+        <button class="bg-blue-300 text-blue-800 px-3 py-1 rounded-md text-sm font-semibold pulse-animation">+20 XP</button>
+      </div>
+    </div>
+    
+    <h3 class="mt-6 text-blue-800 font-semibold text-center text-xl">Complete o código:</h3>
+    
+    <!-- Container de dicas -->
+    <div class="hint-container" id="hints-3">
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 1:</p>
+        <p class="text-blue-700">Todas as lacunas devem ser preenchidas com a mesma palavra.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 2:</p>
+        <p class="text-blue-700">É uma função do Python usada para exibir informações na tela.</p>
+      </div>
+      <div class="hint-step" style="display: none;">
+        <p class="text-blue-800 font-semibold">Dica 3:</p>
+        <p class="text-blue-700">A resposta é <code class="bg-blue-100 px-1 rounded">print</code>.</p>
+      </div>
+    </div>
+    
+    <pre class="bg-gray-100 text-blue-800 font-mono p-4 rounded-lg text-left mt-6 overflow-x-auto">
+def saudacao():
+    <input type="text" class="blank w-24 border-b-2 border-blue-400 text-center font-mono px-1 bg-transparent focus:outline-none focus:border-blue-600" placeholder="______">("Olá, Python!")
+    <input type="text" class="blank w-24 border-b-2 border-blue-400 text-center font-mono px-1 bg-transparent focus:outline-none focus:border-blue-600" placeholder="______">("Seja bem-vindo!")
+    <input type="text" class="blank w-24 border-b-2 border-blue-400 text-center font-mono px-1 bg-transparent focus:outline-none focus:border-blue-600" placeholder="______">("Aprendendo rápido!")
+    </pre>
+    
+    <div class="mt-6 text-center">
+      <button id="check-blank" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-800 transition transform hover:scale-105 font-bold interactive-card">
+        <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Verificar" class="w-5 h-5 inline mr-2">
+        Verificar Resposta
+      </button>
+    </div>
+    
+    <div id="blank-feedback" class="hidden mt-6 p-4 rounded-xl font-semibold text-center"></div>
+  </div>
+
+  <!-- Questão 4: Arrastar e Soltar -->
+  <div class="question bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg p-8 max-w-4xl mx-auto module-card" data-question="4">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-2xl p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="{% static 'imagem/drag_handle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-6 h-6">
+        <div>
+          <h2 class="font-bold text-lg">Python Básico</h2>
+          <span class="text-sm text-blue-100">Arrastar e Soltar</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="hint-btn bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-semibold flex items-center gap-1 interactive-card" data-question="4">
+          <img src="{% static 'imagem/lightbulb_2_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" class="h-4 w-4" alt=""> 
+          <span class="hint-count">3</span>
+        </button>
+        <button class="bg-blue-300 text-blue-800 px-3 py-1 rounded-md text-sm font-semibold pulse-animation">+25 XP</button>
+        </div>
+      </div>
+      
+      <h3 class="mt-6 text-blue-800 font-semibold text-center text-xl">Monte a função correta:</h3>
+      
+      <!-- Container de dicas -->
+      <div class="hint-container" id="hints-4">
+        <div class="hint-step" style="display: none;">
+          <p class="text-blue-800 font-semibold">Dica 1:</p>
+          <p class="text-blue-700">A primeira palavra deve ser <code class="bg-blue-100 px-1 rounded">def</code> para definir uma função.</p>
+        </div>
+        <div class="hint-step" style="display: none;">
+          <p class="text-blue-800 font-semibold">Dica 2:</p>
+          <p class="text-blue-700">Em seguida vem o nome da função, depois os parênteses com dois pontos.</p>
+        </div>
+        <div class="hint-step" style="display: none;">
+          <p class="text-blue-800 font-semibold">Dica 3:</p>
+          <p class="text-blue-700">A ordem correta é: def, hello, ():, print('Hello')</p>
+        </div>
+      </div>
+      
+      <!-- Peças -->
+      <div class="mt-6 flex justify-center gap-3 flex-wrap" id="drag-pool">
+        <div class="draggable px-4 py-2 border-2 border-blue-300 rounded-lg cursor-move bg-blue-100 text-blue-800 font-mono draggable-item" draggable="true">def</div>
+        <div class="draggable px-4 py-2 border-2 border-blue-300 rounded-lg cursor-move bg-blue-100 text-blue-800 font-mono draggable-item" draggable="true">hello</div>
+        <div class="draggable px-4 py-2 border-2 border-blue-300 rounded-lg cursor-move bg-blue-100 text-blue-800 font-mono draggable-item" draggable="true">():</div>
+        <div class="draggable px-4 py-2 border-2 border-blue-300 rounded-lg cursor-move bg-blue-100 text-blue-800 font-mono draggable-item" draggable="true">print('Hello')</div>
+      </div>
+
+      <!-- Área de montagem -->
+      <div id="drop-zone" class="mt-6 min-h-[80px] border-2 border-dashed border-blue-400 rounded-lg p-4 flex gap-3 justify-center items-center relative drop-zone-active">
+        <span id="drop-placeholder" class="text-gray-400">Arraste as peças aqui</span>
+      </div>
+      
+      <div class="mt-6 text-center flex justify-center gap-3">
+        <button id="check-drag" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-800 transition transform hover:scale-105 font-bold interactive-card">
+          <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Verificar" class="w-5 h-5 inline mr-2">
+          Verificar Resposta
+        </button>
+        <button id="reset-drag" class="bg-white text-blue-800 border border-blue-300 px-8 py-3 rounded-xl shadow-lg hover:bg-blue-50 transition transform hover:scale-105 font-bold flex items-center gap-2 interactive-card">
+          <img src="{% static 'imagem/cached_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Recomeçar" class="w-5 h-5">
+          Reiniciar
+        </button>
+      </div>
+      
+      <div id="drag-feedback" class="hidden mt-6 p-4 rounded-xl font-semibold text-center"></div>
+    </div>
+
+    <!-- Tela Final -->
+    <div id="result-screen" class="hidden bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg p-8 max-w-4xl mx-auto text-center space-y-6 border border-blue-200 module-card">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-2xl p-6 -m-8 mb-6">
+        <h2 class="text-3xl font-bold flex items-center justify-center gap-3">
+          <img src="{% static 'imagem/celebration_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Parabéns" class="h-10 w-10">
+          Parabéns!
+        </h2>
+        <p class="mt-2 text-blue-100">Você concluiu o desafio com sucesso! 🎉</p>
+      </div>
+
+      <!-- Resumo de Desempenho -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="bg-white rounded-xl p-4 shadow-md card-hover">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <img src="{% static 'imagem/star_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="XP" class="h-8 w-8">
+            <span class="font-bold text-blue-600 text-xl"><span id="final-xp">0</span> XP</span>
+          </div>
+          <p class="text-sm text-gray-600">Total conquistado</p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow-md card-hover">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="h-8 w-8">
+            <span class="font-bold text-blue-600 text-xl"><span id="final-time">00:00</span></span>
+          </div>
+          <p class="text-sm text-gray-600">Tempo total</p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow-md card-hover">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <img src="{% static 'imagem/electric_bolt_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Bônus" class="h-8 w-8">
+            <span class="font-bold text-blue-600 text-xl">+<span id="time-bonus">0</span> XP</span>
+          </div>
+          <p class="text-sm text-gray-600">Bônus por tempo</p>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="mt-8">
+        <h3 class="font-bold text-lg text-blue-800 flex items-center justify-center gap-2 mb-4">
+          <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Ranking" class="h-6 w-6">
+          Ranking de Tempo
+        </h3>
+        <div id="ranking" class="space-y-3 text-left">
+          <!-- Ranking será preenchido pelo JavaScript -->
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="flex justify-center gap-4 mt-8">
+        <button onclick="location.reload()" 
+          class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-800 transition transform hover:scale-105 font-bold flex items-center gap-2 interactive-card">
+          <img src="{% static 'imagem/cached_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Recomeçar" class="h-5 w-5">
+          Recomeçar
+        </button>
+        
+        <button onclick="shareResults()" 
+          class="bg-white text-blue-600 border border-blue-300 px-8 py-3 rounded-xl shadow-lg hover:bg-blue-50 transition transform hover:scale-105 font-bold flex items-center gap-2 interactive-card">
+          <img src="{% static 'imagem/share_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Compartilhar" class="h-5 w-5">
+          Compartilhar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Marcar o item de conteúdo como ativo
+  document.addEventListener('DOMContentLoaded', function() {
+    // Encontrar o link de conteúdo na sidebar
+    const conteudoLink = document.getElementById('nav-conteudo');
+    
+    // Adicionar a classe ativa ao link de conteúdo
+    if (conteudoLink) {
+      conteudoLink.classList.add('bg-blue-500', 'text-white');
+      
+      // Atualizar o ícone para a versão branca
+      const conteudoIcon = conteudoLink.querySelector('.nav-icon');
+      if (conteudoIcon) {
+        const whiteIcon = conteudoIcon.getAttribute('data-white');
+        if (whiteIcon) {
+          conteudoIcon.src = whiteIcon;
+        }
+      }
+    }
+  });
+
+  // ===== VARIÁVEIS GLOBAIS =====
+  let seconds = 0;
+  const timerElement = document.getElementById("timer");
+  const progressCircle = document.querySelector('.progress-ring__circle');
+  const totalTime = 25 * 60; // 25 minutos em segundos
+  let timerInterval;
+  let totalXP = 0;
+  let currentQuestion = 1;
+  const totalQuestions = 4;
+  
+  // Sistema de questões
+  let answeredQuestions = new Set(); // Questões respondidas corretamente
+  let wrongQuestions = new Set(); // IDs das questões respondidas incorretamente
+  let allQuestionsAnswered = false; // Flag para indicar se todas as questões foram vistas
+  let reviewMode = false; // Modo de revisão de questões erradas
+
+  // Sistema de dicas
+  let totalHints = 3; // Total de dicas disponíveis para toda a tarefa
+  let usedHints = 0; // Dicas já utilizadas
+
+  // ===== INICIALIZAÇÃO =====
+  window.addEventListener("load", () => {
+    startTimer();
+    updateLineNumbers();
+    initializeDragAndDrop();
+    setupHintSystem();
+    updateAllHintCounts(); // Atualizar contadores de dica em todas as questões
+  });
+
+  // ===== SISTEMA DE DICAS =====
+  function setupHintSystem() {
+    document.querySelectorAll('.hint-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const questionId = e.currentTarget.getAttribute('data-question');
+        const hintContainer = document.getElementById(`hints-${questionId}`);
+        const hintCountElement = btn.querySelector('.hint-count');
+        
+        // Verificar se ainda há dicas disponíveis
+        if (usedHints < totalHints) {
+          // Mostrar próxima dica
+          const hintSteps = hintContainer.querySelectorAll('.hint-step');
+          const nextHintIndex = usedHints; // 0, 1, 2
+          
+          if (nextHintIndex < hintSteps.length) {
+            hintSteps[nextHintIndex].style.display = 'block';
+            hintContainer.classList.add('active');
+            
+            // Atualizar contador global de dicas
+            usedHints++;
+            updateAllHintCounts();
+          }
+        } else {
+          // Não há mais dicas disponíveis
+          alert("Você já usou todas as dicas disponíveis para esta tarefa!");
+        }
+      });
+    });
+  }
+
+  // Atualizar todos os contadores de dica
+  function updateAllHintCounts() {
+    const remainingHints = totalHints - usedHints;
+    document.querySelectorAll('.hint-count').forEach(element => {
+      element.textContent = remainingHints;
+    });
+  }
+
+  // ===== CRONÔMETRO =====
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      seconds++;
+      let minutes = Math.floor(seconds / 60);
+      let secs = seconds % 60;
+      timerElement.textContent = `⏱ Tempo: ${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      
+      // Atualizar progresso do círculo
+      const progress = (seconds / totalTime) * 88;
+      progressCircle.style.strokeDashoffset = 88 - progress;
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    return seconds;
+  }
+
+  // ===== NAVEGAÇÃO ENTRE QUESTÕES =====
+  function nextQuestion() {
+    // Esconder questão atual
+    document.querySelector(`.question[data-question="${currentQuestion}"]`).classList.remove('active');
+    
+    if (reviewMode) {
+      // Modo de revisão - questões erradas
+      if (wrongQuestions.size > 0) {
+        // Pega a primeira questão errada da lista
+        currentQuestion = Array.from(wrongQuestions)[0];
+        
+        // Mostrar próxima questão
+        setTimeout(() => {
+          document.querySelector(`.question[data-question="${currentQuestion}"]`).classList.add('active');
+        }, 500);
+      } else {
+        // Todas as questões respondidas corretamente, mostrar tela final
+        setTimeout(() => {
+          finishQuiz();
+        }, 500);
+      }
+    } else {
+      // Modo normal - próxima questão sequencial
+      if (currentQuestion < totalQuestions) {
+        currentQuestion++;
+        
+        // Mostrar próxima questão
+        setTimeout(() => {
+          document.querySelector(`.question[data-question="${currentQuestion}"]`).classList.add('active');
+        }, 500);
+      } else {
+        // Todas as questões foram vistas, entrar no modo de revisão
+        allQuestionsAnswered = true;
+        reviewMode = true;
+        
+        if (wrongQuestions.size > 0) {
+          // Há questões erradas para revisar
+          currentQuestion = Array.from(wrongQuestions)[0];
+          
+          setTimeout(() => {
+            document.querySelector(`.question[data-question="${currentQuestion}"]`).classList.add('active');
+          }, 500);
+        } else {
+          // Nenhuma questão errada, mostrar tela final
+          setTimeout(() => {
+            finishQuiz();
+          }, 500);
+        }
+      }
+    }
+  }
+
+  // ===== QUESTÃO 1: EDITOR DE CÓDIGO =====
+  function updateLineNumbers() {
+    const textarea = document.getElementById('code-input');
+    const lines = textarea.value.split('\n').length;
+    document.getElementById('line-numbers').textContent = lines;
+  }
+
+  document.getElementById('check-code').addEventListener('click', () => {
+    const input = document.getElementById('code-input').value.trim();
+    const feedback = document.getElementById('code-feedback');
+    const output = document.getElementById('code-output');
+    
+    // Simular execução
+    output.innerHTML = '<div class="text-gray-500">Executando código...</div>';
+    
+    setTimeout(() => {
+      output.innerHTML = '<div class="text-green-400">Olá, Python!</div>';
+      
+      if (input.includes('print("Olá, Python!")') || input.includes("print('Olá, Python!')")) {
+        feedback.innerHTML = '<div class="text-green-600 bg-green-50 p-4 rounded-xl">✅ Correto! Código executado com sucesso!</div>';
+        addXP(30);
+        answeredQuestions.add(1);
+        
+        // Remover da lista de questões erradas se estiver lá
+        if (wrongQuestions.has(1)) {
+          wrongQuestions.delete(1);
+        }
+      } else {
+        feedback.innerHTML = '<div class="text-red-600 bg-red-50 p-4 rounded-xl">❌ Verifique se usou a função print() corretamente.</div>';
+        
+        // Adicionar questão à lista de erradas se não estiver respondida corretamente
+        if (!answeredQuestions.has(1)) {
+          wrongQuestions.add(1);
+        }
+      }
+      
+      feedback.classList.remove('hidden');
+      
+      // Avançar para próxima questão após 2 segundos
+      setTimeout(nextQuestion, 2000);
+    }, 1000);
+  });
+
+  // ===== QUESTÃO 2: MÚLTIPla ESCOLHA =====
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const feedback = document.getElementById('mc-feedback');
+      
+      if (btn.dataset.correct === "true") {
+        feedback.innerHTML = '<div class="text-green-600 bg-green-50 p-4 rounded-xl">✅ Correto! Guido van Rossum criou o Python em 1991.</div>';
+        addXP(25);
+        answeredQuestions.add(2);
+        
+        // Remover da lista de questões erradas se estiver lá
+        if (wrongQuestions.has(2)) {
+          wrongQuestions.delete(2);
+        }
+      } else {
+        feedback.innerHTML = '<div class="text-red-600 bg-red-50 p-4 rounded-xl">❌ Tente novamente. Dica: Não é o criador do Linux.</div>';
+        
+        // Adicionar questão à lista de erradas se não estiver respondida corretamente
+        if (!answeredQuestions.has(2)) {
+          wrongQuestions.add(2);
+        }
+      }
+      
+      feedback.classList.remove('hidden');
+      
+      // Avançar para próxima questão após 2 segundos
+      setTimeout(nextQuestion, 2000);
+    });
+  });
+
+  // ===== QUESTÃO 3: COMPLETAR LACUNAS =====
+  document.getElementById('check-blank').addEventListener('click', () => {
+    const blanks = Array.from(document.querySelectorAll('.blank'));
+    const feedback = document.getElementById('blank-feedback');
+    
+    const allCorrect = blanks.every(input => input.value.trim().toLowerCase() === 'print');
+    
+    if (allCorrect) {
+      feedback.innerHTML = '<div class="text-green-600 bg-green-50 p-4 rounded-xl">✅ Correto! Todas as lacunas preenchidas corretamente.</div>';
+      addXP(20);
+      answeredQuestions.add(3);
+      
+      // Remover da lista de questões erradas se estiver lá
+        if (wrongQuestions.has(3)) {
+          wrongQuestions.delete(3);
+        }
+      } else {
+        feedback.innerHTML = '<div class="text-red-600 bg-red-50 p-4 rounded-xl">❌ Tente novamente. Todas as lacunas devem ser "print".</div>';
+        
+        // Adicionar questão à lista de erradas se não estiver respondida corretamente
+        if (!answeredQuestions.has(3)) {
+          wrongQuestions.add(3);
+        }
+      }
+      
+      feedback.classList.remove('hidden');
+      
+      // Avançar para próxima questão após 2 segundos
+      setTimeout(nextQuestion, 2000);
+    });
+
+  // ===== QUESTÃO 4: ARRASTAR E SOLTAR =====
+  function initializeDragAndDrop() {
+    const pool = document.getElementById('drag-pool');
+    const dropZone = document.getElementById('drop-zone');
+    const dropPlaceholder = document.getElementById('drop-placeholder');
+    
+    function refreshPlaceholder() {
+      dropPlaceholder.style.display = dropZone.querySelectorAll('.draggable').length > 0 ? "none" : "block";
+    }
+    
+    function shuffleChildren(parent) {
+      const items = Array.from(parent.children);
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        parent.appendChild(items[j]);
+      }
+    }
+    
+    document.querySelectorAll('#drag-pool .draggable').forEach(item => {
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.textContent);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      
+      item.addEventListener('click', () => {
+        if (item.parentElement === pool) {
+          dropZone.appendChild(item);
+          refreshPlaceholder();
+        }
+      });
+    });
+    
+    dropZone.addEventListener('dragover', e => e.preventDefault());
+    
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      const text = e.dataTransfer.getData('text/plain');
+      const dragged = [...pool.children].find(el => el.textContent === text);
+      if (dragged) dropZone.appendChild(dragged);
+      refreshPlaceholder();
+    });
+    
+    document.getElementById('check-drag').addEventListener('click', () => {
+      const sequence = Array.from(dropZone.querySelectorAll('.draggable')).map(d => d.textContent.trim());
+      const feedback = document.getElementById('drag-feedback');
+      const correct = ['def', 'hello', '():', "print('Hello')"];
+      
+      if (JSON.stringify(sequence) === JSON.stringify(correct)) {
+        feedback.innerHTML = '<div class="text-green-600 bg-green-50 p-4 rounded-xl">✅ Correto! Função montada corretamente.</div>';
+        addXP(25);
+        answeredQuestions.add(4);
+        
+        // Remover da lista de questões erradas se estiver lá
+        if (wrongQuestions.has(4)) {
+          wrongQuestions.delete(4);
+        }
+      } else {
+        feedback.innerHTML = '<div class="text-red-600 bg-red-50 p-4 rounded-xl">❌ Tente novamente. A ordem correta é: def, hello, ():, print(\'Hello\')</div>';
+        
+        // Adicionar questão à lista de erradas se não estiver respondida corretamente
+        if (!answeredQuestions.has(4)) {
+          wrongQuestions.add(4);
+        }
+      }
+      
+      feedback.classList.remove('hidden');
+      
+      // Avançar para próxima questão após 2 segundos
+      setTimeout(nextQuestion, 2000);
+    });
+    
+    document.getElementById('reset-drag').addEventListener('click', () => {
+      [...dropZone.querySelectorAll('.draggable')].forEach(child => pool.appendChild(child));
+      shuffleChildren(pool);
+      refreshPlaceholder();
+    });
+    
+    refreshPlaceholder();
+  }
+
+  // ===== SISTEMA DE XP =====
+  function addXP(amount) {
+    totalXP += amount;
+    
+    // Efeito visual de ganho de XP
+    const xpEffect = document.createElement('div');
+    xpEffect.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold animate-bounce';
+    xpEffect.textContent = `+${amount} XP`;
+    document.body.appendChild(xpEffect);
+    
+    setTimeout(() => {
+      xpEffect.remove();
+    }, 2000);
+  }
+
+  // ===== TELA FINAL =====
+  function finishQuiz() {
+    const elapsed = stopTimer();
+    
+    // Calcula bônus de tempo
+    let timeBonus = 0;
+    if (elapsed < 120) timeBonus = 50;  // Menos de 2 minutos
+    else if (elapsed < 180) timeBonus = 25; // Menos de 3 minutos
+    
+    totalXP += timeBonus;
+    
+    // Mostrar tela final
+    const resultScreen = document.getElementById("result-screen");
+    resultScreen.classList.remove("hidden");
+    resultScreen.classList.add("active");
+    
+    // Atualizar XP e tempo
+    document.getElementById("final-xp").textContent = totalXP - timeBonus;
+    document.getElementById("time-bonus").textContent = timeBonus;
+    
+    const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const sec = String(elapsed % 60).padStart(2, '0');
+    document.getElementById("final-time").textContent = `${min}:${sec}`;
+    
+    // Gerar ranking
+    const ranking = [
+      { user: "Ana", time: 65, xp: 320 },
+      { user: "Lucas", time: 72, xp: 310 },
+      { user: "Marcos", time: 90, xp: 300 },
+      { user: "Julia", time: 120, xp: 290 },
+      { user: "Você", time: elapsed, xp: totalXP }
+    ];
+    
+    // Ordenar por tempo (menor primeiro)
+    ranking.sort((a, b) => a.time - b.time);
+    
+    const rankingElement = document.getElementById("ranking");
+    rankingElement.innerHTML = "";
+    
+    ranking.forEach((item, index) => {
+      const rankItem = document.createElement("div");
+      rankItem.className = `flex justify-between items-center p-3 rounded-lg ${item.user === "Você" ? "bg-blue-100 font-bold" : "bg-white"}`;
+      
+      const minutes = Math.floor(item.time / 60);
+      const seconds = item.time % 60;
+      const timeFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      rankItem.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="font-bold ${index < 3 ? "text-yellow-500" : "text-gray-600"}">${index + 1}º</span>
+          <span class="${item.user === "Você" ? "text-blue-600 font-bold" : "text-gray-800"}">${item.user}</span>
+        </div>
+        <div class="text-right">
+          <div class="text-sm text-gray-600">${timeFormatted}</div>
+          <div class="text-xs text-blue-600">${item.xp} XP</div>
+        </div>
+      `;
+      
+      rankingElement.appendChild(rankItem);
+    });
+  }
+
+  // ===== COMPARTILHAR RESULTADOS =====
+  function shareResults() {
+    const time = document.getElementById('final-time').textContent;
+    const xp = document.getElementById('final-xp').textContent;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'PyQuest - Desafio Concluído!',
+        text: `🎉 Concluí o desafio Python no PyQuest em ${time} e ganhei ${xp} XP!`,
+        url: window.location.href
+      });
+    } else {
+      alert(`🎉 Concluí o desafio Python no PyQuest em ${time} e ganhei ${xp} XP!\n\nCompartilhe essa conquista!`);
+    }
+  }
+</script>
+{% endblock %}

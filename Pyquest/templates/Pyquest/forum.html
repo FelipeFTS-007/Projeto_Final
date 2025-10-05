@@ -1,0 +1,1054 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fórum - PyQuest{% endblock %}
+
+{% block extra_css %}
+<style>
+  .post { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .post:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .comment { border-left: 3px solid #e5e7eb; }
+  .comment:hover { border-left-color: #2682EA; }
+  .reply-form { transition: all 0.3s ease; }
+  .filter-btn { transition: all 0.2s ease; }
+  .filter-btn:hover { transform: translateY(-1px); }
+  .avatar { transition: transform 0.2s ease; }
+  .avatar:hover { transform: scale(1.05); }
+  
+  /* CORREÇÃO DA IMAGEM - REMOVIDO OBJECT-COVER */
+  .post-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    max-height: 500px; /* Altura máxima, mas não corta */
+    object-fit: contain; /* Mantém proporção sem cortar */
+  }
+  
+  .post-image:hover {
+    transform: scale(1.01);
+  }
+  
+  /* Estilos para o emoji picker */
+  .emoji-picker-container {
+    position: relative;
+    margin-bottom: 8px;
+  }
+  
+  .emoji-trigger {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+  }
+  
+  .emoji-trigger:hover {
+    background: #e5e7eb;
+    transform: scale(1.05);
+  }
+  
+  .emoji-panel {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 12px;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    backdrop-filter: blur(10px);
+  }
+  
+  .emoji-category {
+    margin-bottom: 12px;
+  }
+  
+  .emoji-category h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+  }
+  
+  .emoji-btn {
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 1.3rem;
+    transition: all 0.2s ease;
+  }
+  
+  .emoji-btn:hover {
+    background: #2682EA;
+    transform: scale(1.2);
+  }
+  
+  .file-upload-preview {
+    margin-top: 8px;
+  }
+  
+  .image-preview {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    margin-top: 4px;
+    border: 2px solid #e5e7eb;
+    object-fit: contain; /* Corrige preview também */
+  }
+  
+  /* Estilos modernos para os modais */
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 24px 0;
+  }
+  
+  .modal-body {
+    padding: 20px 24px;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 0 24px 20px;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #2682EA 0%, #1a67c9 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(38, 130, 234, 0.4);
+  }
+  
+  .btn-secondary {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-secondary:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+  }
+  
+  .form-input {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+  }
+  
+  .form-input:focus {
+    border-color: #2682EA;
+    box-shadow: 0 0 0 3px rgba(38, 130, 234, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  .file-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .file-upload-area:hover {
+    border-color: #2682EA;
+    background: #f8fafc;
+  }
+  
+  .file-upload-area.dragover {
+    border-color: #2682EA;
+    background: #f0f7ff;
+    transform: scale(1.02);
+  }
+  
+  .upload-icon {
+    font-size: 2rem;
+    color: #2682EA;
+    margin-bottom: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 p-6">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="flex-1">
+    <!-- Estatísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+        <p class="text-gray-600 font-medium">Membros Totais</p>
+        <p class="text-2xl font-bold text-[#2682EA]">{{ total_users }}</p>
+      </div>
+      <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+        <p class="text-gray-600 font-medium">Ativos Hoje</p>
+        <p class="text-2xl font-bold text-[#2682EA]">{{ active_today }}</p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+        <p class="text-gray-600 font-medium">Posts Hoje</p>
+        <p class="text-2xl font-bold text-[#2682EA]">{{ posts_today }}</p>
+      </div>
+    </div>
+
+    <!-- Busca e filtros -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-gray-100">
+      <form method="get" class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2 focus-within:border-[#2682EA] transition-colors duration-300">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input name="q" value="{{ request.GET.q }}" type="text" placeholder="Buscar no fórum..."
+               class="w-full outline-none text-gray-600 bg-transparent" />
+      </form>
+
+      <div id="filters" class="flex flex-wrap gap-2 mt-3">
+        <a href="?filter=all" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'all' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Todos os Posts</a>
+        <a href="?filter=popular" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'popular' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais Populares</a>
+        <a href="?filter=recent" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'recent' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais Recentes</a>
+        <a href="?filter=following" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'following' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Seguindo</a>
+      </div>
+    </div>
+
+    <!-- LISTA DE POSTS -->
+    <div id="postsContainer" class="space-y-4">
+      {% for post in posts %}
+      <div class="post bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="{{ post.autor.perfil.avatar.url }}" "
+               class="avatar w-12 h-12 rounded-full cursor-pointer border-2 border-[#2682EA] p-1" alt="">
+          <div class="flex-1">
+            <p class="font-semibold text-gray-800">{{ post.autor.username }}</p>
+            <p class="text-sm text-gray-500">@{{ post.autor.username }} • {{ post.created_at|timesince }} atrás</p>
+            {% if post.autor == request.user %}
+            <div class="flex gap-3 text-xs mt-2">
+              <button type="button" onclick="openEditModal('{{ post.id }}', '{{ post.conteudo|escapejs }}', '{{ post.hashtags.all|join:', '|escapejs }}', '{% if post.imagem %}{{ post.imagem.url }}{% endif %}')" 
+                      class="text-[#2682EA] hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Editar
+              </button>
+              <button type="button" onclick="openDeleteModal('{{ post.id }}')"
+                      class="text-red-600 hover:text-red-800 font-medium flex items-center gap-1 transition-colors duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Excluir
+              </button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <p class="text-gray-700 mb-4 whitespace-pre-wrap text-lg leading-relaxed">{{ post.conteudo }}</p>
+        
+        {% if post.imagem %}
+        <div class="mb-4 flex justify-center">
+          <img src="{{ post.imagem.url }}" alt="Imagem do post" class="post-image">
+        </div>
+        {% endif %}
+        
+        <div class="flex flex-wrap gap-2 mb-4">
+          {% for tag in post.hashtags.all %}
+          <span class="bg-gradient-to-r from-blue-50 to-blue-100 text-[#2682EA] px-3 py-1.5 rounded-full text-xs font-medium border border-blue-200 hover:border-[#2682EA] transition-colors duration-200">#{{ tag.nome }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Interações -->
+        <div class="flex gap-6 text-gray-500 text-sm border-t border-gray-100 pt-4">
+          <button type="button" onclick="toggleComments('{{ post.id }}')" class="flex items-center gap-2 hover:text-[#2682EA] transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span>{{ post.comentarios.count }}</span>
+          </button>
+
+          <!-- LIKE SYSTEM CORRIGIDO -->
+          <form action="{% url 'like_post' post.id %}" method="post" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="flex items-center gap-2 hover:text-red-500 transition-colors duration-200 focus:outline-none">
+              {% if user in post.likes.all %}
+                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              {% else %}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              {% endif %}
+              <span>{{ post.likes.count }}</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Área de comentários -->
+        <div id="comments-{{ post.id }}" style="display:none;" class="mt-6 pt-4 border-t border-gray-100">
+          <!-- Formulário de comentário -->
+          <div class="mb-6">
+            <form class="comment-form" data-post-id="{{ post.id }}">
+              {% csrf_token %}
+              
+              <div class="emoji-picker-container mb-3">
+                <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀</button>
+                <div class="emoji-panel">
+                  <div class="emoji-category">
+                    <h4>Smileys</h4>
+                    <div class="emoji-grid">
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😀</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😃</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😄</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😁</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😆</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😅</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😂</button>
+                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">🤣</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <textarea name="texto" id="comment-{{ post.id }}" rows="3" class="w-full form-input"
+                        placeholder="Escreva um comentário..."></textarea>
+              <button type="submit" class="btn-primary text-sm px-4 py-2 mt-2">
+                Comentar
+              </button>
+            </form>
+          </div>
+          
+          <!-- Lista de comentários -->
+          <div class="space-y-4">
+            {% for comentario in post.comentarios.all %}
+              {% if not comentario.parent %}
+              <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
+                <p class="text-sm text-gray-800 mb-2">
+                  <b class="text-[#2682EA]">{{ comentario.autor.username }}</b>: 
+                  {{ comentario.texto }}
+                </p>
+
+                <div class="flex items-center gap-4 text-xs">
+                  <!-- Like no comentário -->
+                  <form action="{% url 'like_comment' comentario.id %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors duration-200 focus:outline-none">
+                      {% if user in comentario.likes.all %}
+                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                      {% else %}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                      {% endif %}
+                      <span>{{ comentario.likes.count }}</span>
+                    </button>
+                  </form>
+
+                  <!-- Botão para responder -->
+                  <button type="button" onclick="toggleReplyForm('{{ comentario.id }}')" 
+                          class="text-[#2682EA] hover:underline font-medium">
+                    Responder
+                  </button>
+                </div>
+
+                <!-- Formulário de resposta -->
+                <div id="reply-form-{{ comentario.id }}" style="display:none;" class="mt-3 ml-4">
+                  <form class="reply-form" data-post-id="{{ post.id }}" data-parent-id="{{ comentario.id }}">
+                    {% csrf_token %}
+                    
+                    <div class="emoji-picker-container mb-2">
+                      <button type="button" class="emoji-trigger text-sm" onclick="toggleEmojiPicker(this)">😀</button>
+                      <div class="emoji-panel">
+                        <div class="emoji-category">
+                          <h4>Smileys</h4>
+                          <div class="emoji-grid">
+                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😀</button>
+                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😃</button>
+                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😄</button>
+                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😁</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <textarea name="texto" id="reply-{{ comentario.id }}" rows="2" class="w-full form-input text-sm" 
+                              placeholder="Responder a @{{ comentario.autor.username }}..."></textarea>
+                    <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">
+                      Responder
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Respostas -->
+                {% for reply in comentario.replies.all %}
+                  <div class="ml-6 mt-3 bg-white border rounded-lg p-3">
+                    <p class="text-xs text-gray-700">
+                      <b class="text-[#2682EA]">{{ reply.autor.username }}</b> 
+                      {% if reply.mencionado %}
+                        <span class="text-gray-500">→ @{{ reply.mencionado.username }}</span>
+                      {% endif %}
+                      : {{ reply.texto }}
+                    </p>
+                    
+                    <form action="{% url 'like_comment' reply.id %}" method="post" class="inline">
+                      {% csrf_token %}
+                      <button type="submit" class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors duration-200 focus:outline-none text-xs mt-1">
+                        {% if user in reply.likes.all %}
+                          <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          </svg>
+                        {% else %}
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                          </svg>
+                        {% endif %}
+                        <span>{{ reply.likes.count }}</span>
+                      </button>
+                    </form>
+                  </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            {% empty %}
+              <p class="text-gray-400 text-sm text-center py-4">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-12">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <p class="text-gray-500 text-lg">Nenhum post encontrado.</p>
+        <p class="text-gray-400 text-sm mt-1">Seja o primeiro a criar um post!</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-8">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary mx-2">Anterior</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary mx-2">Próximo</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- SIDEBAR DIREITA -->
+  <div class="w-full md:w-80 flex-shrink-0 space-y-6">
+    <!-- Tópicos em alta -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
+      <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>
+        Tópicos em Alta
+      </h3>
+      <ul class="space-y-2 text-sm">
+        {% for tag in trending_tags %}
+        <li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+          <span class="text-[#2682EA] font-medium">#{{ tag.nome }}</span>
+          <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">{{ tag.count }} usos</span>
+        </li>
+        {% empty %}
+        <li class="text-gray-500 text-sm text-center py-4">Nenhuma hashtag no período</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Contribuidores destaque -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
+      <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        Contribuidores Destaque
+      </h3>
+      <ul class="space-y-2 text-sm">
+        {% for user in top_users %}
+        <li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+          <span class="flex items-center gap-2 cursor-pointer avatar group">
+            
+            <img src="{{ user.perfil.avatar.url }}" class="w-6 h-6 rounded-full group-hover:scale-110 transition-transform duration-200"> 
+            <span class="font-medium text-gray-700">{{ user.username }}</span>
+          </span>
+          <span class="bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white px-2 py-1 rounded-full text-xs font-bold">{{ user.perfil.xp }} XP</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Ações rápidas -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
+      <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Ações Rápidas
+      </h3>
+      <div class="space-y-2">
+        <button id="openPostModal" class="w-full btn-primary py-3 rounded-xl text-lg font-semibold transform hover:scale-105 transition-transform duration-300">
+          Criar Post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRIAR POST - MODERNO -->
+<div id="postModal" class="hidden fixed inset-0 z-50">
+  <div class="modal-overlay absolute inset-0" onclick="closePostModal()"></div>
+  <div class="modal-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
+    <div class="modal-header">
+      <h2 class="text-xl font-bold text-gray-800">Criar Novo Post</h2>
+    </div>
+    <form action="{% url 'create_post' %}" method="post" enctype="multipart/form-data" class="modal-body">
+      {% csrf_token %}
+      
+      <div class="emoji-picker-container mb-4">
+        <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀 Adicionar emoji</button>
+        <div class="emoji-panel">
+          <div class="emoji-category">
+            <h4>Smileys</h4>
+            <div class="emoji-grid">
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😀</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😃</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😄</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😁</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😆</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😅</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">😂</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">🤣</button>
+            </div>
+          </div>
+          <div class="emoji-category">
+            <h4>Símbolos</h4>
+            <div class="emoji-grid">
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">❤️</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">⭐</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">🔥</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">💯</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">✅</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">❌</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">❓</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'postContent')">❗</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <textarea name="conteudo" id="postContent" class="w-full form-input mb-4" placeholder="O que você está pensando?" rows="5"></textarea>
+      
+      <!-- Área de upload moderna -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Imagem (opcional)</label>
+        <div class="file-upload-area" onclick="document.getElementById('postImage').click()">
+          <div class="upload-icon">📷</div>
+          <p class="text-gray-600 font-medium">Clique para adicionar uma imagem</p>
+          <p class="text-gray-400 text-sm">ou arraste e solte aqui</p>
+        </div>
+        <input type="file" name="imagem" id="postImage" accept="image/*" class="hidden" onchange="previewImage(this, 'postImagePreview')">
+        <div id="postImagePreview" class="file-upload-preview mt-2"></div>
+      </div>
+      
+      <input name="hashtags" type="text" class="w-full form-input mb-4" placeholder="Adicione hashtags separadas por vírgula (ex: python, django, programação)" />
+      
+      <div class="modal-footer flex justify-end gap-3 pt-4">
+        <button type="button" onclick="closePostModal()" class="btn-secondary">Cancelar</button>
+        <button type="submit" class="btn-primary">Publicar Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR POST - MODERNO -->
+<div id="editModal" class="hidden fixed inset-0 z-50">
+  <div class="modal-overlay absolute inset-0" onclick="closeEditModal()"></div>
+  <div class="modal-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
+    <div class="modal-header">
+      <h2 class="text-xl font-bold text-gray-800">Editar Post</h2>
+    </div>
+    <form id="editForm" method="POST" enctype="multipart/form-data" class="modal-body">
+      {% csrf_token %}
+      
+      <div class="emoji-picker-container mb-4">
+        <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀 Adicionar emoji</button>
+        <div class="emoji-panel">
+          <div class="emoji-category">
+            <h4>Smileys</h4>
+            <div class="emoji-grid">
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'editContent')">😀</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'editContent')">😃</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'editContent')">😄</button>
+              <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'editContent')">😁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <textarea id="editContent" name="conteudo" class="w-full form-input mb-4" rows="5"></textarea>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Imagem (opcional)</label>
+        <div class="file-upload-area" onclick="document.getElementById('editImage').click()">
+          <div class="upload-icon">🖼️</div>
+          <p class="text-gray-600 font-medium">Clique para alterar a imagem</p>
+          <p class="text-gray-400 text-sm">ou arraste e solte aqui</p>
+        </div>
+        <input type="file" name="imagem" id="editImage" accept="image/*" class="hidden" onchange="previewImage(this, 'editImagePreview')">
+        <div id="editImagePreview" class="file-upload-preview mt-2"></div>
+      </div>
+      
+      <input id="editHashtags" name="hashtags" type="text" class="w-full form-input mb-4" placeholder="Hashtags separadas por vírgula" />
+      
+      <div class="modal-footer flex justify-end gap-3 pt-4">
+        <button type="button" onclick="closeEditModal()" class="btn-secondary">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUSÃO - MODERNO -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50">
+  <div class="modal-overlay absolute inset-0" onclick="closeDeleteModal()"></div>
+  <div class="modal-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+    <div class="modal-body text-center">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">Confirmar Exclusão</h2>
+      <p class="text-gray-600 mb-6">Tem certeza que deseja excluir este post? Esta ação não poderá ser desfeita.</p>
+      <form id="deleteForm" method="POST">
+        {% csrf_token %}
+        <div class="flex justify-center gap-3">
+          <button type="button" onclick="closeDeleteModal()" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl font-semibold transition-colors duration-300">Excluir</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ===== FUNÇÕES BÁSICAS DE MODAL =====
+function openPostModal() {
+  document.getElementById("postModal").classList.remove("hidden");
+}
+
+function closePostModal() {
+  document.getElementById("postModal").classList.add("hidden");
+}
+
+document.getElementById("openPostModal").addEventListener("click", openPostModal);
+
+let currentDeleteId = null;
+
+function openDeleteModal(postId) {
+  currentDeleteId = postId;
+  const form = document.getElementById("deleteForm");
+  form.action = `/forum/${postId}/delete/`;
+  document.getElementById("deleteModal").classList.remove("hidden");
+}
+
+function closeDeleteModal() {
+  currentDeleteId = null;
+  document.getElementById("deleteModal").classList.add("hidden");
+}
+
+let currentEditId = null;
+
+function openEditModal(postId, content, hashtags, imageUrl) {
+  currentEditId = postId;
+  document.getElementById("editContent").value = content;
+  document.getElementById("editHashtags").value = hashtags;
+  document.getElementById("editForm").action = `/forum/${postId}/edit/`;
+  
+  // Mostrar imagem atual se existir
+  const editImagePreview = document.getElementById('editImagePreview');
+  if (imageUrl && imageUrl !== 'None') {
+    editImagePreview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Imagem atual:</p>
+                                 <img src="${imageUrl}" class="image-preview">`;
+  } else {
+    editImagePreview.innerHTML = '<p class="text-sm text-gray-600">Nenhuma imagem atual</p>';
+  }
+  
+  document.getElementById("editModal").classList.remove("hidden");
+}
+
+function closeEditModal() {
+  currentEditId = null;
+  document.getElementById("editModal").classList.add("hidden");
+}
+
+// ===== FUNÇÕES DE EMOJI PICKER =====
+function toggleEmojiPicker(button) {
+  const panel = button.nextElementSibling;
+  const isVisible = panel.style.display === 'block';
+  
+  // Fechar todos os outros painéis
+  document.querySelectorAll('.emoji-panel').forEach(p => {
+    if (p !== panel) p.style.display = 'none';
+  });
+  
+  // Alternar o painel atual
+  panel.style.display = isVisible ? 'none' : 'block';
+}
+
+function insertEmoji(emojiButton, targetId) {
+  const emoji = emojiButton.textContent;
+  const textarea = document.getElementById(targetId);
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  
+  textarea.value = text.substring(0, start) + emoji + text.substring(end);
+  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+  textarea.focus();
+  
+  // Fechar o painel de emojis após a inserção
+  emojiButton.closest('.emoji-panel').style.display = 'none';
+}
+
+// ===== FUNÇÃO DE PREVIEW DE IMAGEM =====
+function previewImage(input, previewId) {
+  const preview = document.getElementById(previewId);
+  const file = input.files[0];
+  
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Prévia:</p>
+                          <img src="${e.target.result}" class="image-preview">`;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.innerHTML = '';
+  }
+}
+
+// ===== FUNÇÕES DE UI =====
+function toggleComments(postId) {
+  const commentsDiv = document.getElementById(`comments-${postId}`);
+  commentsDiv.style.display = commentsDiv.style.display === "none" ? "block" : "none";
+}
+
+function toggleReplyForm(commentId) {
+  const formDiv = document.getElementById(`reply-form-${commentId}`);
+  document.querySelectorAll('[id^="reply-form-"]').forEach(form => {
+    if (form.id !== `reply-form-${commentId}`) {
+      form.style.display = "none";
+    }
+  });
+  
+  formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
+  if (formDiv.style.display === "block") {
+    const textarea = formDiv.querySelector('textarea');
+    if (textarea) textarea.focus();
+  }
+}
+
+// ===== UTILITIES =====
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Fechar emoji picker ao clicar fora
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('.emoji-picker-container')) {
+    document.querySelectorAll('.emoji-panel').forEach(panel => {
+      panel.style.display = 'none';
+    });
+  }
+});
+
+// Drag and drop para upload de imagens
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadAreas = document.querySelectorAll('.file-upload-area');
+  uploadAreas.forEach(area => {
+    area.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      this.classList.add('dragover');
+    });
+    
+    area.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      this.classList.remove('dragover');
+    });
+    
+    area.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const input = this.nextElementSibling;
+        input.files = files;
+        const event = new Event('change');
+        input.dispatchEvent(event);
+      }
+    });
+  });
+});
+
+// ===== LIKE SYSTEM SIMPLIFICADO (SEM AJAX) =====
+// Removemos o sistema AJAX complexo e voltamos ao comportamento original
+// Os likes agora funcionam com submit normal do formulário
+
+// ===== COMMENT SYSTEM SIMPLIFICADO =====
+class CommentSystem {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    document.addEventListener('submit', (e) => {
+      if (e.target.classList.contains('comment-form')) {
+        e.preventDefault();
+        this.handleCommentSubmit(e.target);
+      }
+      
+      if (e.target.classList.contains('reply-form')) {
+        e.preventDefault();
+        this.handleReplySubmit(e.target);
+      }
+    });
+  }
+
+  async handleCommentSubmit(form) {
+    const postId = form.dataset.postId;
+    const formData = new FormData(form);
+    const textarea = form.querySelector('textarea');
+    const commentText = textarea.value.trim();
+    
+    if (!commentText) return;
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Enviando...';
+
+    try {
+      const response = await fetch(`/forum/${postId}/comment/`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Network error');
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        this.addNewComment(form, postId, data);
+        textarea.value = '';
+      } else {
+        throw new Error('Server error');
+      }
+    } catch (error) {
+      console.error('Comment error:', error);
+      alert('Erro ao enviar comentário. Tente novamente.');
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    }
+  }
+
+  addNewComment(form, postId, data) {
+    const commentsContainer = form.closest('#comments-' + postId).querySelector('.space-y-4');
+    
+    const newCommentHtml = `
+      <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
+        <p class="text-sm text-gray-800 mb-2"><b class="text-[#2682EA]">${data.author}</b>: ${data.text}</p>
+        <div class="flex items-center gap-4 text-xs">
+          <form action="/forum/comment/${data.comment_id}/like/" method="post" class="inline">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+            <button type="submit" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors duration-200 focus:outline-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+              <span>0</span>
+            </button>
+          </form>
+          <button type="button" onclick="toggleReplyForm('${data.comment_id}')" 
+                  class="text-[#2682EA] hover:underline font-medium">
+            Responder
+          </button>
+        </div>
+        <div id="reply-form-${data.comment_id}" style="display:none;" class="mt-3 ml-4">
+          <form class="reply-form" data-post-id="${postId}" data-parent-id="${data.comment_id}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+            <textarea name="texto" rows="2" class="w-full form-input text-sm" 
+                      placeholder="Responder a @${data.author}..."></textarea>
+            <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">
+              Responder
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const emptyMessage = commentsContainer.querySelector('p.text-gray-400');
+    if (emptyMessage) emptyMessage.remove();
+
+    commentsContainer.insertAdjacentHTML('afterbegin', newCommentHtml);
+    
+    const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
+    if (commentCount) {
+      commentCount.textContent = parseInt(commentCount.textContent) + 1;
+    }
+  }
+
+  async handleReplySubmit(form) {
+    const postId = form.dataset.postId;
+    const parentId = form.dataset.parentId;
+    const formData = new FormData(form);
+    const textarea = form.querySelector('textarea');
+    const replyText = textarea.value.trim();
+    
+    if (!replyText) return;
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Enviando...';
+
+    try {
+      const response = await fetch(`/forum/${postId}/reply/${parentId}/`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Network error');
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        this.addNewReply(form, postId, data);
+        textarea.value = '';
+      } else {
+        throw new Error('Server error');
+      }
+    } catch (error) {
+      console.error('Reply error:', error);
+      alert('Erro ao enviar resposta. Tente novamente.');
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    }
+  }
+
+  addNewReply(form, postId, data) {
+    const parentComment = form.closest('.comment');
+    let repliesContainer = parentComment.querySelector('.ml-6');
+    
+    if (!repliesContainer) {
+      repliesContainer = document.createElement('div');
+      repliesContainer.className = 'ml-6 mt-3';
+      parentComment.appendChild(repliesContainer);
+    }
+
+    const newReplyHtml = `
+      <div class="bg-white border rounded-lg p-3 mb-2">
+        <p class="text-xs text-gray-700">
+          <b class="text-[#2682EA]">${data.author}</b> 
+          <span class="text-gray-500">→ @${data.mentioned}</span>
+          : ${data.text}
+        </p>
+        <form action="/forum/comment/${data.reply_id}/like/" method="post" class="inline">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+          <button type="submit" class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors duration-200 focus:outline-none text-xs mt-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <span>0</span>
+          </button>
+        </form>
+      </div>
+    `;
+
+    repliesContainer.insertAdjacentHTML('beforeend', newReplyHtml);
+    
+    const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
+    if (commentCount) {
+      commentCount.textContent = parseInt(commentCount.textContent) + 1;
+    }
+  }
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+  new CommentSystem();
+  console.log('Forum system initialized successfully');
+});
+</script>
+{% endblock %}

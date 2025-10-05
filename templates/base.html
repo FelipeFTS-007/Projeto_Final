@@ -1,0 +1,592 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>PyQuest - {% block title %}{% endblock %}</title>
+  <style>
+    /* Animações personalizadas */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .animate-slideIn {
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .animate-pulse {
+      animation: pulse 0.5s ease-in-out;
+    }
+    
+    /* Estilização da barra de rolagem */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-blue-200">
+
+<!-- HEADER -->
+<header class="flex justify-between items-center bg-white px-6 py-2 rounded-xl mt-4 mx-6">
+
+  <!-- Logo -->
+  <div class="flex items-center gap-2">
+    <img src="{% static 'imagem/Python Sword & Coin Emblem.png' %}" 
+         alt="Logo PyQuest"
+         class="w-12 h-12 transform -rotate-90 scale-x-[-1]">
+    <h1 class="font-bold text-2xl text-blue-600">PyQuest</h1>
+  </div>
+
+  <!-- Caixinhas -->
+  <div class="flex gap-8 items-center text-lg">
+    <div class="bg-blue-200 px-3 py-1.5 rounded-xl text-blue-500 font-bold flex items-center">
+      <img src="{% static 'imagem/favorite_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="" class="w-5 h-5 mr-1.5">
+      <h2>{{ perfil.vidas }}</h2>
+    </div>
+    <div class="bg-blue-200 px-3 py-1.5 rounded-xl text-blue-500 font-bold flex items-center">
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-5 h-5 mr-1.5">
+      <h2>{{ perfil.xp }} XP</h2>
+    </div>
+    <div class="bg-blue-200 px-3 py-1.5 rounded-xl text-blue-500 font-bold flex items-center">
+      <img src="{% static 'imagem/mode_heat_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="" class="w-5 h-5 mr-1.5">
+      <h2>{{ perfil.sequencia }} dias</h2>
+    </div>
+  </div>
+
+<!-- Ícones + Perfil -->
+<div class="flex items-center gap-6 text-blue-600 font-semibold">
+
+  <button id="btn-config" class="p-2 rounded-xl hover:scale-110 hover:bg-blue-200 transition">
+    <img src="{% static 'imagem/settings_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Configurações" class="w-6 h-6">
+  </button>
+
+  <!-- Botão Notificações -->
+  <button id="btn-notify" class="relative p-2 rounded-xl hover:scale-110 hover:bg-blue-200 transition">
+    <img src="{% static 'imagem/notifications_40dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Notificações" class="w-6 h-6">
+    <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">3</span>
+  </button>
+
+  <!-- Perfil (junto no mesmo flex) -->
+  <div class="flex items-center gap-2 ml-5 mr-3">
+    <img id="avatar-display" src="{{ perfil.avatar.url }}" 
+         alt="Perfil" class="w-8 h-8 rounded-full border-1">
+    <div class="flex flex-col">
+      <span class="text-lg font-bold">{{ request.user.username }}</span>
+      <span class="text-xs">Nível {{ perfil.nivel }}</span>
+    </div>
+  </div>
+</div>
+
+</header>
+
+  <!-- MAIN LAYOUT -->
+<main class="flex gap-4 mx-6 mt-4">
+
+<!-- NAVIGATION -->
+<nav id="sidebar" class="bg-white w-56 min-h-[calc(100vh-6rem)] rounded-2xl p-4 flex flex-col">
+  
+  <div class="flex-1"> <!-- Container para os itens de navegação superiores -->
+    <!-- Home ativo inicial -->
+    <a href="{% url 'home' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'home' %}bg-blue-500 text-white{% endif %}"
+       id="nav-home">
+      <img 
+        src="{% if request.resolver_match.url_name == 'home' %}{% static 'imagem/home_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/home_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}"
+        data-black="{% static 'imagem/home_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-white="{% static 'imagem/home_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Home" class="w-6 h-6 nav-icon">
+      <span>Home</span>
+    </a>
+
+    <!-- Conteúdo -->
+    <a href="{% url 'conteudo' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'conteudo' %}bg-blue-500 text-white{% endif %}"
+       id="nav-conteudo">
+      <img 
+        src="{% if request.resolver_match.url_name == 'conteudo' %}{% static 'imagem/book_ribbon_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/book_ribbon_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-black="{% static 'imagem/book_ribbon_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-white="{% static 'imagem/book_ribbon_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Conteúdo" class="w-6 h-6 nav-icon">
+      <span>Conteúdo</span>
+    </a>
+
+    <!-- Dashboard -->
+    <a href="{% url 'dashboard' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-500 text-white{% endif %}"
+       id="nav-dashboard">
+      <img 
+        src="{% if request.resolver_match.url_name == 'dashboard' %}{% static 'imagem/analytics_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/analytics_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-white="{% static 'imagem/analytics_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-black="{% static 'imagem/analytics_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Dashboard" class="w-6 h-6 nav-icon">
+      <span>Dashboard</span>
+    </a>
+
+    <!-- Ranking -->
+    <a href="{% url 'ranking' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'ranking' %}bg-blue-500 text-white{% endif %}"
+       id="nav-ranking">
+      <img 
+        src="{% if request.resolver_match.url_name == 'ranking' %}{% static 'imagem/social_leaderboard_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/social_leaderboard_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-white="{% static 'imagem/social_leaderboard_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-black="{% static 'imagem/social_leaderboard_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Ranking" class="w-6 h-6 nav-icon">
+      <span>Ranking</span>
+    </a>
+
+    <!-- Fórum -->
+    <a href="{% url 'forum' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'forum' %}bg-blue-500 text-white{% endif %}"
+       id="nav-forum">
+      <img 
+        src="{% if request.resolver_match.url_name == 'forum' %}{% static 'imagem/forum_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/forum_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-white="{% static 'imagem/forum_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-black="{% static 'imagem/forum_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Fórum" class="w-6 h-6 nav-icon">
+      <span>Fórum</span>
+    </a>
+
+    <!-- Perfil -->
+    <a href="{% url 'perfil' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'perfil' %}bg-blue-500 text-white{% endif %}"
+       id="nav-perfil">
+      <img 
+        src="{% if request.resolver_match.url_name == 'perfil' %}{% static 'imagem/person_edit_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/person_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-white="{% static 'imagem/person_edit_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-black="{% static 'imagem/person_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Perfil" class="w-6 h-6 nav-icon">
+      <span>Perfil</span>
+    </a>
+
+  {% if request.user.groups.all.0.name == 'professores' or request.user.is_staff %}
+    <a href="{% url 'criar_conteudo' %}" 
+      class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition {% if request.resolver_match.url_name == 'criar_conteudo' %}bg-blue-500 text-white{% endif %}"
+      id="nav-criar-conteudo">
+      <img 
+        src="{% if request.resolver_match.url_name == 'criar_conteudo' %}{% static 'imagem/contract_edit_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}{% else %}{% static 'imagem/contract_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}{% endif %}" 
+        data-white="{% static 'imagem/contract_edit_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}"
+        data-black="{% static 'imagem/contract_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}"
+        alt="Criar_conteudo" class="w-6 h-6 nav-icon">
+      <span>Criar Conteúdo</span>
+    </a>
+  {% endif %}
+
+  <!-- Botão de Logout mais próximo dos outros itens -->
+  <div class="pt-4 mt-4 border-t border-gray-200"> <!-- Reduzi a margem superior -->
+    <a href="{% url 'logout' %}" 
+       class="nav-btn flex items-center hover:scale-110 gap-3 px-4 py-3 rounded-xl font-medium border-2 border-transparent hover:border-blue-400 transition"
+       id="nav-logout">
+      <img 
+        src="{% static 'imagem/logout_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" 
+        alt="Sair" class="w-6 h-6">
+      <span>Sair</span>
+    </a>
+  </div>
+  </div>
+</nav>
+
+<!-- Modal Configurações Atualizado -->
+<div id="config-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fadeIn">
+  <div class="bg-white dark:bg-gray-800 w-11/12 max-w-md rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+    <!-- Cabeçalho do Modal -->
+    <div class="bg-blue-600 text-white p-5 flex justify-between items-center">
+      <h2 class="text-xl font-bold">Configurações</h2>
+      <button id="close-config" class="text-white hover:text-blue-200 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Conteúdo do Modal -->
+    <div class="p-5 max-h-96 overflow-y-auto custom-scrollbar">
+      
+      <!-- Configurações de Notificações -->
+      <div class="space-y-4 mb-6">
+        <h3 class="font-semibold text-gray-700 dark:text-gray-300">Notificações</h3>
+        
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition cursor-pointer">
+          <div>
+            <span class="block text-gray-700 dark:text-gray-300">Notificações por email</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">Receba atualizações importantes</span>
+          </div>
+          <input type="checkbox" class="hidden peer" id="toggle-email">
+          <div class="relative w-12 h-6 flex items-center bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-blue-500">
+            <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-1 peer-checked:translate-x-7"></div>
+          </div>
+        </label>
+        
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition cursor-pointer">
+          <div>
+            <span class="block text-gray-700 dark:text-gray-300">Notificações push</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">Permitir notificações do navegador</span>
+          </div>
+          <input type="checkbox" class="hidden peer" id="toggle-push">
+          <div class="relative w-12 h-6 flex items-center bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-blue-500">
+            <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-1 peer-checked:translate-x-7"></div>
+          </div>
+        </label>
+        
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition cursor-pointer">
+          <div>
+            <span class="block text-gray-700 dark:text-gray-300">Som de notificação</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">Reproduzir som ao receber notificações</span>
+          </div>
+          <input type="checkbox" class="hidden peer" id="toggle-sound">
+          <div class="relative w-12 h-6 flex items-center bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-blue-500">
+            <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-1 peer-checked:translate-x-7"></div>
+          </div>
+        </label>
+      </div>
+      
+      <!-- Configurações de Privacidade -->
+      <div class="space-y-4">
+        <h3 class="font-semibold text-gray-700 dark:text-gray-300">Privacidade</h3>
+        
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition cursor-pointer">
+          <div>
+            <span class="block text-gray-700 dark:text-gray-300">Perfil privado</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">Ocultar seu perfil de outros usuários</span>
+          </div>
+          <input type="checkbox" class="hidden peer" id="toggle-private">
+          <div class="relative w-12 h-6 flex items-center bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-blue-500">
+            <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-1 peer-checked:translate-x-7"></div>
+          </div>
+        </label>
+        
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition cursor-pointer">
+          <div>
+            <span class="block text-gray-700 dark:text-gray-300">Modo incógnito</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">Não aparecer online para outros</span>
+          </div>
+          <input type="checkbox" class="hidden peer" id="toggle-incognito">
+          <div class="relative w-12 h-6 flex items-center bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-blue-500">
+            <div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-1 peer-checked:translate-x-7"></div>
+          </div>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Rodapé do Modal -->
+    <div class="bg-gray-100 dark:bg-gray-700 p-4 flex justify-end gap-3">
+      <button id="cancel-config" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancelar</button>
+      <button id="save-config" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Salvar Alterações
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Caixa de Notificações Atualizada -->
+<div id="notify-box" class="hidden fixed top-20 right-6 w-80 bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden z-40 border border-gray-200 dark:border-gray-700 animate-slideIn">
+  <!-- Cabeçalho das Notificações -->
+  <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <h3 class="font-semibold">Notificações</h3>
+    <button id="clear-notifications" class="text-sm bg-blue-500 hover:bg-blue-400 px-2 py-1 rounded transition">Limpar Tudo</button>
+  </div>
+  
+  <!-- Lista de Notificações -->
+  <div class="max-h-96 overflow-y-auto custom-scrollbar">
+    <div class="p-2">
+      <!-- Notificação não lida -->
+      <div class="notify-item p-3 rounded-lg bg-blue-50 dark:bg-gray-700 mb-2 cursor-pointer hover:shadow-md transition" data-id="1">
+        <div class="flex gap-3">
+          <div class="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-medium text-gray-800 dark:text-gray-200">Missão concluída!</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Você completou "Introdução ao Python" +100 XP</p>
+            <span class="text-xs text-blue-500 dark:text-blue-400">Há 5 minutos</span>
+          </div>
+          <button class="notify-dismiss self-start text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Notificação não lida -->
+      <div class="notify-item p-3 rounded-lg bg-blue-50 dark:bg-gray-700 mb-2 cursor-pointer hover:shadow-md transition" data-id="2">
+        <div class="flex gap-3">
+          <div class="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin extremely="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-medium text-gray-800 dark:text-gray-200">Novo nível alcançado!</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Parabéns! Você alcançou o nível 12</p>
+            <span class="text-xs text-blue-500 dark:text-blue-400">Há 1 hora</span>
+          </div>
+          <button class="notify-dismiss self-start text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Notificação não lida -->
+      <div class="notify-item p-3 rounded-lg bg-blue-50 dark:bg-gray-700 mb-2 cursor-pointer hover:shadow-md transition" data-id="3">
+        <div class="flex gap-3">
+          <div class="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-medium text-gray-800 dark:text-gray-200">Nova mensagem</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Você recebeu uma mensagem de PythonMaster</p>
+            <span class="text-xs text-blue-500 dark:text-blue-400">Há 3 horas</span>
+          </div>
+          <button class="notify-dismiss self-start text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Notificação lida -->
+      <div class="notify-item p-3 rounded-lg mb-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" data-id="4">
+        <div class="flex gap-3">
+          <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-medium text-gray-600 dark:text-gray-400">Desafio em andamento</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Seu desafio semanal termina em 2 dias</p>
+            <span class="text-xs text-gray-400">Ontem</span>
+          </div>
+          <button class="notify-dismiss self-start text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Rodapé das Notificações -->
+  <div class="bg-gray-100 dark:bg-gray-700 p-3 text-center">
+    <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Ver todas as notificações</a>
+  </div>
+</div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <section class="flex-1 bg-white rounded-2xl p-6">
+    {% block content %}
+    <!-- O conteúdo específico de cada página será inserido aqui -->
+    {% endblock %}
+  </section>
+</main>
+
+<script>
+  // Botão Configurações
+  const btnConfig = document.getElementById("btn-config");
+  const configModal = document.getElementById("config-modal");
+  const closeConfig = document.getElementById("close-config");
+  const cancelConfig = document.getElementById("cancel-config");
+  const saveConfig = document.getElementById("save-config");
+
+  btnConfig.addEventListener("click", () => {
+    configModal.classList.remove("hidden");
+    document.body.style.overflow = 'hidden'; // Impede scroll do body
+  });
+
+  function closeConfigModal() {
+    configModal.classList.add("hidden");
+    document.body.style.overflow = ''; // Restaura scroll do body
+  }
+
+  closeConfig.addEventListener("click", closeConfigModal);
+  cancelConfig.addEventListener("click", closeConfigModal);
+
+  // Fecha ao clicar fora do modal
+  configModal.addEventListener("click", (e) => {
+    if (e.target === configModal) {
+      closeConfigModal();
+    }
+  });
+
+  // Salvar configurações
+  saveConfig.addEventListener("click", () => {
+    // Animação de sucesso
+    saveConfig.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      Salvo!
+    `;
+    saveConfig.classList.add('bg-green-600', 'hover:bg-green-700');
+    
+    setTimeout(() => {
+      closeConfigModal();
+      // Restaura o botão após um tempo
+      setTimeout(() => {
+        saveConfig.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Salvar Alterações
+        `;
+        saveConfig.classList.remove('bg-green-600', 'hover:bg-green-700');
+      }, 1000);
+    }, 1000);
+  });
+
+  // Alternadores de tema
+  document.querySelectorAll('.theme-option').forEach(option => {
+    option.addEventListener('click', () => {
+      // Remove a seleção anterior
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.classList.remove('border-blue-500', 'bg-blue-100', 'dark:bg-blue-900');
+      });
+      
+      // Adiciona a seleção atual
+      option.classList.add('border-blue-500', 'bg-blue-100', 'dark:bg-blue-900');
+      
+      // Aqui você pode adicionar a lógica para mudar o tema
+      const theme = option.getAttribute('data-theme');
+      console.log('Tema selecionado:', theme);
+    });
+  });
+
+  // Botão Notificações
+  const btnNotify = document.getElementById("btn-notify");
+  const notifyBox = document.getElementById("notify-box");
+  const clearNotifications = document.getElementById("clear-notifications");
+  const notificationCounter = document.querySelector('#btn-notify span');
+
+  btnNotify.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notifyBox.classList.toggle("hidden");
+    
+    // Si estiver abrindo, atualiza o contador
+    if (!notifyBox.classList.contains("hidden")) {
+      const unreadNotifications = document.querySelectorAll('.notify-item.bg-blue-50, .notify-item.dark\\:bg-gray-700');
+      unreadNotifications.forEach(notification => {
+        notification.classList.remove('bg-blue-50', 'dark:bg-gray-700');
+        notification.classList.add('bg-white', 'dark:bg-gray-800');
+      });
+      
+      // Atualiza o contador para zero
+      if (notificationCounter) {
+        notificationCounter.textContent = '0';
+        notificationCounter.classList.remove('animate-pulse');
+      }
+    }
+  });
+
+  // Fechar notificações ao clicar fora
+  document.addEventListener('click', (e) => {
+    if (!notifyBox.contains(e.target) && e.target !== btnNotify && !btnNotify.contains(e.target)) {
+      notifyBox.classList.add('hidden');
+    }
+  });
+
+  // Limpar todas as notificações
+  clearNotifications.addEventListener('click', () => {
+    const notificationItems = document.querySelectorAll('.notify-item');
+    notificationItems.forEach(item => {
+      item.style.opacity = '0';
+      item.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => {
+        item.remove();
+      }, 300);
+    });
+    
+    // Atualiza o contador para zero
+    if (notificationCounter) {
+      notificationCounter.textContent = '0';
+      notificationCounter.classList.remove('animate-pulse');
+    }
+    
+    // Mostra mensagem de lista vazia
+    setTimeout(() => {
+      const emptyMessage = document.createElement('div');
+      emptyMessage.className = 'p-4 text-center text-gray-500';
+      emptyMessage.textContent = 'Nenhuma notificação';
+      notifyBox.querySelector('.p-2').appendChild(emptyMessage);
+    }, 350);
+  });
+
+  // Fechar notificações individualmente
+  document.querySelectorAll('.notify-dismiss').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const notificationItem = button.closest('.notify-item');
+      notificationItem.style.opacity = '0';
+      notificationItem.style.transition = 'opacity 0.3s ease';
+      
+      setTimeout(() => {
+        notificationItem.remove();
+        
+        // Atualiza o contador
+        const unreadCount = document.querySelectorAll('.notify-item.bg-blue-50, .notify-item.dark\\:bg-gray-700').length;
+        if (notificationCounter) {
+          notificationCounter.textContent = unreadCount;
+          if (unreadCount === 0) {
+            notificationCounter.classList.remove('animate-pulse');
+          }
+        }
+      }, 300);
+    });
+  });
+
+  // Interação com itens de notificação
+  document.querySelectorAll('.notify-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (!e.target.closest('.notify-dismiss')) {
+        console.log('Notificação clicada:', item.getAttribute('data-id'));
+        // Aqui você pode adicionar a ação ao clicar na notificação
+      }
+    });
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

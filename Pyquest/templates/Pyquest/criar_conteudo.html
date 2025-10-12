@@ -1,272 +1,4049 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Página Inicial{% endblock %}
+{% block title %}Criar Conteúdo - PyQuest{% endblock %}
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-    
     .card-hover {
-      transition: all 0.3s ease;
+        transition: all 0.3s ease;
     }
     
     .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
     }
     
-    .progress-bar {
-      overflow: hidden;
-      position: relative;
+    .module-card {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
     
-    .progress-bar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: var(--progress);
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-      border-radius: 9999px;
-    }
-    
-    @keyframes progressAnimation {
-      0% { width: 0%; }
-      100% { width: 45%; }
-    }
-    
-    .xp-badge {
-      background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .activity-item {
-      transition: all 0.3s ease;
-      border-left: 4px solid transparent;
-    }
-    
-    .activity-item:hover {
-      transform: translateY(-2px);
-      border-left-color: #3B82F6;
-    }
-
-    .activity-item.active {
-      transform: translateY(-2px);
-      border-left-color: #3B82F6;
-    }
-    
-    
-    .pulse-animation {
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
     }
     
     .floating-element {
-      animation: float 6s ease-in-out infinite;
+        animation: float 6s ease-in-out infinite;
     }
     
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .interactive-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .interactive-card:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-section {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .question-item {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .question-item:hover {
+        border-color: #3B82F6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #64748b;
+        transition: color 0.3s ease;
+    }
+    
+    .drag-handle:hover {
+        color: #3B82F6;
+    }
+    
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .correct-option {
+        background-color: #f0f9ff;
+        border-left: 4px solid #3B82F6;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+    
+    .empty-state img {
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .step.active {
+        color: #3B82F6;
+        font-weight: 600;
+    }
+    
+    .step-number {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .step.active .step-number {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .step-connector {
+        width: 4rem;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 1rem;
+    }
+    
+    .step.active ~ .step-connector {
+        background: #3B82F6;
+    }
+    
+    .content-preview {
+        background: #f8fafc;
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 1.5rem;
+        min-height: 200px;
+    }
+    
+    .question-preview {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #3B82F6;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+    
+    /* Novos estilos adicionados */
+    .step.completed {
+        color: #10B981;
+    }
+    
+    .step.completed .step-number {
+        background: #10B981;
+        color: white;
+    }
+    
+    .question-item.dragging {
+        opacity: 0.5;
+        transform: rotate(5deg);
+    }
+    
+    .question-item.drag-over {
+        border: 2px dashed #3B82F6;
+    }
+    
+    .validation-error {
+        color: #EF4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-control.error {
+        border-color: #EF4444;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        background: #E5E7EB;
+        border-radius: 3px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+        width: 25%;
+        transition: width 0.5s ease;
+    }
+    
+    .save-indicator {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: #10B981;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 1000;
+    }
+    
+    .question-counter {
+        background: #3B82F6;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .auto-save-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #64748B;
     }
 
-    .circular-chart {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
+    /* Estilos para o Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
     }
     
-    .circle-bg {
-      fill: none;
-      stroke: #EFF6FF;
-      stroke-width: 3.8;
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
     }
     
-    .circle {
-      fill: none;
-      stroke-width: 2.8;
-      stroke-linecap: round;
-      stroke: #3B82F6;
-      animation: progress 1.5s ease-out forwards;
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 0;
+        width: 90%;
+        max-width: 500px;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
     
-    @keyframes progress {
-      0% { stroke-dasharray: 0 100; }
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
     }
     
-    .percentage {
-      fill: #1E40AF;
-      font-size: 0.5em;
-      text-anchor: middle;
-      font-weight: bold;
+    .modal-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
+    
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* Novos estilos para o editor estilo Google Docs */
+    .editor-container {
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .editor-toolbar {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dadce0;
+        padding: 8px 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+    }
+    
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        border-right: 1px solid #e0e0e0;
+    }
+    
+    .toolbar-group:last-child {
+        border-right: none;
+    }
+    
+    .toolbar-button {
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5f6368;
+        transition: all 0.2s ease;
+        min-width: 32px;
+        height: 32px;
+    }
+    
+    .toolbar-button:hover {
+        background: #f1f3f4;
+        color: #1a73e8;
+    }
+    
+    .toolbar-button.active {
+        background: #e8f0fe;
+        color: #1a73e8;
+    }
+    
+    .toolbar-select {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 4px 8px;
+        background: white;
+        color: #3c4043;
+        font-size: 13px;
+        cursor: pointer;
+        height: 32px;
+    }
+    
+    .toolbar-select:focus {
+        outline: none;
+        border-color: #1a73e8;
+    }
+    
+    .editor-content {
+        background: white;
+        min-height: 400px;
+        padding: 20px;
+        line-height: 1.6;
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        color: #202124;
+        outline: none;
+        overflow-y: auto;
+        max-height: 600px;
+    }
+    
+    .editor-content:focus {
+        outline: none;
+    }
+    
+    .editor-content h1, .editor-content h2, .editor-content h3 {
+        margin: 12px 0;
+        color: #202124;
+        font-weight: 400;
+    }
+    
+    .editor-content h1 {
+        font-size: 24px;
+    }
+    
+    .editor-content h2 {
+        font-size: 20px;
+    }
+    
+    .editor-content h3 {
+        font-size: 16px;
+    }
+    
+    .editor-content p {
+        margin: 8px 0;
+    }
+    
+    .editor-content ul, .editor-content ol {
+        margin: 8px 0;
+        padding-left: 24px;
+    }
+    
+    .editor-content blockquote {
+        border-left: 4px solid #dadce0;
+        margin: 12px 0;
+        padding-left: 16px;
+        color: #5f6368;
+        font-style: italic;
+    }
+    
+    .editor-content code {
+        background: #f1f3f4;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    
+    .editor-content pre {
+        background: #f8f9fa;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 12px;
+        margin: 12px 0;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .color-picker {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .color-options {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        display: none;
+    }
+    
+    .color-option {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .color-option:hover {
+        transform: scale(1.1);
+    }
+    
+    .toolbar-divider {
+        width: 1px;
+        height: 20px;
+        background: #e0e0e0;
+        margin: 0 8px;
+    }
+    
+    .word-count {
+        color: #5f6368;
+        font-size: 12px;
+        margin-left: auto;
+        padding: 0 8px;
+    }
+    
+    /* Estilo para texto selecionado */
+    .editor-content ::selection {
+        background: #c2e7ff;
+    }
+    
+    /* Estilos para imagens no editor */
+    .editor-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        margin: 8px 0;
+    }
+    
+    /* Estilo para links */
+    .editor-content a {
+        color: #1a73e8;
+        text-decoration: underline;
+    }
+    
+    /* Estilo para tabelas */
+    .editor-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0;
+    }
+    
+    .editor-content table, .editor-content th, .editor-content td {
+        border: 1px solid #dadce0;
+    }
+    
+    .editor-content th, .editor-content td {
+        padding: 8px 12px;
+        text-align: left;
+    }
+    
+    .editor-content th {
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+
+    .option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.option-item:hover {
+    background-color: #f8fafc;
+}
+
+.option-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    color: #374151; /* Cor preta padrão */
+    background-color: white;
+}
+
+.option-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.correct-option {
+    background-color: #f0f9ff !important;
+    border-left: 4px solid #3b82f6;
+    padding-left: 8px;
+}
+
+/* Remover qualquer estilo vermelho indesejado */
+.option-input.error {
+    border-color: #ef4444;
+    color: #374151; /* Manter cor preta mesmo quando há erro */
+}
+
+
+/* Estilos para o Editor de Código */
+/* Estilos mínimos para a questão de código */
+.code-preview {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    min-height: 40px;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+}
+
+.output-preview {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    min-height: 40px;
+    font-family: 'Courier New', monospace;
+}
+
+.run-button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.3s ease;
+}
+
+.run-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+}
+
+.run-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.instruction-preview {
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+
+/* Estilos consolidados para Completar Lacunas */
+.blank-preview {
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+    font-weight: 500;
+    background: #fef3c7;
+    border: 2px dashed #f59e0b;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
+}
+
+.blank-filled {
+    background: #d1fae5;
+    border: 2px solid #10b981;
+    color: #065f46;
+    font-weight: 600;
+}
+
+.word-bank {
+    min-height: 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.word-option {
+    background: #dbeafe;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-weight: 500;
+}
+
+.word-option:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.word-option:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+}
+
+.fill-blank-textarea {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    min-height: 120px;
+}
+
+
+
+
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="flex-1 bg-white rounded-2xl p-6 flex flex-col gap-6">
-<!-- Boas-vindas com gradiente e animação -->
-<div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 flex justify-between items-center shadow-lg relative overflow-hidden">
-  <div class="relative z-10">
-    <h2 class="text-2xl font-bold text-white">Olá, {{ nome }}!</h2>
-    <p class="text-blue-100 mt-1">Continue sua jornada de aprendizado Python. Você está indo bem!</p>
-    <div class="flex items-center mt-4">
-      <div class="bg-blue-800 text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
-        Nível {{ nivel }}
-      </div>
-      <div class="bg-blue-800 text-blue-100 text-xs font-medium px-3 py-1 rounded-full ml-2">
-        {{ xp }} XP
-      </div>
-    </div>
-  </div>
-  <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Boas-vindas" class="w-16 h-16 relative z-10 floating-element">
-  
-  <!-- Elementos decorativos de fundo -->
-      <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-        <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
-        <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
-        <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
-      </div>
-    </div>
-
-<!-- Cards de Estatísticas com layout melhorado -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5 ">
-  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-blue-700">Progresso Diário</h3>
-      <img src="{% static 'imagem/trending_up_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Progresso" class="w-6 h-6">
-    </div>
-    <p class="mt-2 text-blue-600 font-bold text-2xl">{{ progresso }}%</p>
-    <div class="w-full bg-blue-200 h-2.5 rounded-full mt-3 progress-bar" style="--progress: {{ progresso }}%;"></div>
-    <p class="text-xs text-blue-500 mt-2">Meta: {{ meta }}% diário</p>
-  </div>
-  
-  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100 flex flex-col">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-blue-700">Tempo de Estudo</h3>
-      <img src="{% static 'imagem/schedule_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-6 h-6">
-    </div>
-    <div class="flex items-center mt-2 flex-grow">
-      <img src="{% static 'imagem/local_cafe_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
-      <p class="text-blue-600 font-bold text-2xl ml-3">{{ tempo }}</p>
-    </div>
-    <p class="text-xs text-blue-500 mt-2">+{{ dif_tempo }} em relação à ontem</p>
-  </div>
-  
-  <div class="p-5 activity-item active rounded-2xl shadow-md card-hover border border-blue-100 flex flex-col">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-blue-700">Sequência atual</h3>
-      <img src="{% static 'imagem/calendar_month_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Sequência" class="w-6 h-6">
-    </div>
-    <div class="flex items-center mt-2 flex-grow">
-      <img src="{% static 'imagem/mode_heat_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="" class="w-12 h-12">
-      <p class="text-blue-600 font-bold text-2xl ml-3">{{ sequencia }} Dias</p>
-    </div>
-    <p class="text-xs text-blue-500 mt-2">Mantenha a sequência para ganhar bônus!</p>
-  </div>
-</div>
-
-<!-- Cards de Missões e Conquistas com design aprimorado -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-  <div class=" activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-blue-700">Vidas</h3>
-      <img src="{% static 'imagem/favorite_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Vidas" class="w-6 h-6">
-    </div>
-    <div class="flex items-center">
-      <div class="relative">
-        <div class="w-16 h-16">
-      <svg viewBox="0 0 36 36" class="circular-chart">
-        <path class="circle"
-          stroke-dasharray="{{ progresso_vidas }}, 100"
-          d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"/>
-        <text x="18" y="20.35" class="percentage">{{ vidas }}/{{ max_vidas }}</text>
-      </svg>
-
-
+<div class="space-y-8 fade-in">
+    <!-- Cabeçalho -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Criar Conteúdo</h1>
+                <p class="text-blue-100 text-lg">Desenvolva materiais de aprendizado interativos para seus alunos</p>
+            </div>
+            <img src="{% static 'imagem/edit_note_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Criar Conteúdo" class="w-16 h-16 floating-element">
         </div>
-      </div>
-      <p class="text-blue-600 font-bold text-xl ml-4">{{ vidas }}</p>
+        
+        <!-- Barra de Progresso -->
+        <div class="mt-4">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="flex justify-between text-blue-200 text-sm">
+                <span>Estrutura</span>
+                <span>Conteúdo Teórico</span>
+                <span>Exercícios Práticos</span>
+                <span>Revisão</span>
+            </div>
+        </div>
     </div>
-    <p class="text-xs text-blue-500 mt-2">Regeneração: 
-    {% if proxima_vida > 0 %}
-      Regeneração: {{ proxima_vida }} min
-    {% else %}
-      Vidas completas
-    {% endif %}
-</p>
-  </div>
 
-  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border-blue-100">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-blue-700">XP Total</h3>
-      <img src="{% static 'imagem/chess_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-6 h-6">
+    <!-- Indicador de Passos -->
+    <div class="step-indicator">
+        <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <span>Estrutura</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <span>Conteúdo Teórico</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="3">
+            <div class="step-number">3</div>
+            <span>Exercícios Práticos</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="4">
+            <div class="step-number">4</div>
+            <span>Revisão</span>
+        </div>
     </div>
-    <div class="flex items-center">
-      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-16 h-16">
-      <p class="text-blue-600 font-bold text-2xl ml-4">{{ xp }}</p>
+
+    <!-- Form Principal -->
+    <form id="content-form" class="space-y-6">
+        <!-- PASSO 1: ESTRUTURA DO CONTEÚDO -->
+        <div id="step-1" class="form-section">
+            <div class="form-section-header">
+                <h2 class="text-xl font-bold">📚 Estrutura do Conteúdo</h2>
+                <span class="text-blue-200">Passo 1 de 4</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Capítulo -->
+                <div>
+                    <label for="chapter-select" class="block text-sm font-medium text-gray-700 mb-2">Capítulo</label>
+                    <select id="chapter-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                        <option value="" selected disabled>Selecionar Capítulo</option>
+                        <option value="chapter-1">Introdução ao Python</option>
+                        <option value="chapter-2">Fundamentos da Programação</option>
+                        <option value="chapter-3">Estruturas de Controle</option>
+                        <option value="new">+ Criar Novo Capítulo</option>
+                    </select>
+                    <div class="validation-error" id="chapter-error"></div>
+                </div>
+                
+                <!-- Módulo -->
+                <div>
+                    <label for="module-select" class="block text-sm font-medium text-gray-700 mb-2">Módulo</label>
+                    <select id="module-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control" disabled>
+                        <option value="" selected disabled>Selecione um capítulo primeiro</option>
+                    </select>
+                    <div class="validation-error" id="module-error"></div>
+                </div>
+                
+                <!-- Tarefa -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarefa</label>
+                    <div class="space-y-3">
+                        <input type="text" placeholder="Título da Tarefa" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="theory-checkbox" checked>
+                                <span class="text-sm text-gray-700">Conteúdo Teórico</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="exercises-checkbox" checked>
+                                <span class="text-sm text-gray-700">Exercícios Práticos</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="validation-error" id="task-error"></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button type="button" onclick="validateStep1()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+                    Próximo → Conteúdo Teórico
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 2: CONTEÚDO TEÓRICO -->
+<div id="step-2" class="form-section hidden">
+    <div class="form-section-header">
+        <h2 class="text-xl font-bold">📖 Conteúdo Teórico</h2>
+        <span class="text-blue-200">Passo 2 de 4</span>
     </div>
-    <p class="text-xs text-blue-500 mt-2">+{{ xp_diario }} XP hoje</p>
-  </div>
-  
-  <div class="activity-item active p-5 rounded-2xl shadow-md card-hover border border-blue-100">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-blue-700">Conquistas</h3>
-      <img src="{% static 'imagem/military_tech_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquistas" class="w-6 h-6">
+    
+    <div class="space-y-4">
+        <div>
+            <label for="lesson-title" class="block text-sm font-medium text-gray-700 mb-2">Título da Aula Teórica</label>
+            <input type="text" id="lesson-title" placeholder="Ex: Introdução ao Python" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+            <div class="validation-error" id="lesson-title-error"></div>
+        </div>
+        
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <label class="block text-sm font-medium text-gray-700">Conteúdo da Aula</label>
+                <button type="button" id="add-topic-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Adicionar Tópico
+                </button>
+            </div>
+            
+            <!-- Container de Tópicos -->
+            <div id="topics-container" class="space-y-4">
+                <!-- Tópico padrão (inicial) -->
+                <div class="topic-item border border-gray-300 rounded-lg overflow-hidden">
+                    <div class="topic-header bg-gray-50 p-4 border-b border-gray-300 flex justify-between items-center">
+                        <div class="flex items-center gap-3 flex-1">
+                            <div class="drag-handle cursor-move">
+                                <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                            </div>
+                            <input type="text" class="topic-title bg-transparent border-none text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1" 
+                                   value="Introdução" placeholder="Nome do tópico">
+                        </div>
+                        <button type="button" class="remove-topic text-red-500 hover:text-red-700 interactive-card" aria-label="Remover tópico">
+                            <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+                        </button>
+                    </div>
+                    <div class="topic-content p-4">
+                        <!-- Editor estilo Google Docs -->
+                        <div class="editor-container">
+                            <!-- Barra de Ferramentas -->
+                            <div class="editor-toolbar">
+                                <!-- Grupo de Formatação de Texto -->
+                                <div class="toolbar-group">
+                                    <select class="toolbar-select format-block">
+                                        <option value="p">Texto normal</option>
+                                        <option value="h1">Título 1</option>
+                                        <option value="h2">Título 2</option>
+                                        <option value="h3">Título 3</option>
+                                        <option value="blockquote">Citação</option>
+                                        <option value="pre">Bloco de código</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Fonte -->
+                                <div class="toolbar-group">
+                                    <select class="toolbar-select font-family">
+                                        <option value="Arial, sans-serif">Arial</option>
+                                        <option value="'Times New Roman', serif">Times New Roman</option>
+                                        <option value="'Courier New', monospace">Courier New</option>
+                                        <option value="Georgia, serif">Georgia</option>
+                                        <option value="Verdana, sans-serif">Verdana</option>
+                                    </select>
+                                    
+                                    <select class="toolbar-select font-size">
+                                        <option value="1">8px</option>
+                                        <option value="2">10px</option>
+                                        <option value="3">12px</option>
+                                        <option value="4" selected>14px</option>
+                                        <option value="5">18px</option>
+                                        <option value="6">24px</option>
+                                        <option value="7">36px</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Estilo de Texto -->
+                                <div class="toolbar-group">
+                                    <button type="button" class="toolbar-button" data-command="bold" title="Negrito (Ctrl+B)">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="italic" title="Itálico (Ctrl+I)">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="underline" title="Sublinhado (Ctrl+U)">
+                                        <u>U</u>
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="strikeThrough" title="Tachado">
+                                        <s>S</s>
+                                    </button>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Cores -->
+                                <div class="toolbar-group">
+                                    <div class="color-picker">
+                                        <button type="button" class="toolbar-button text-color-button" title="Cor do texto">
+                                            <span style="color: #202124;">A</span>
+                                        </button>
+                                        <div class="color-options text-color-options">
+                                            <div class="color-option" style="background-color: #202124;" data-color="#202124"></div>
+                                            <div class="color-option" style="background-color: #5f6368;" data-color="#5f6368"></div>
+                                            <div class="color-option" style="background-color: #ea4335;" data-color="#ea4335"></div>
+                                            <div class="color-option" style="background-color: #fbbc04;" data-color="#fbbc04"></div>
+                                            <div class="color-option" style="background-color: #34a853;" data-color="#34a853"></div>
+                                            <div class="color-option" style="background-color: #4285f4;" data-color="#4285f4"></div>
+                                            <div class="color-option" style="background-color: #1a73e8;" data-color="#1a73e8"></div>
+                                            <div class="color-option" style="background-color: #8e24aa;" data-color="#8e24aa"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="color-picker">
+                                        <button type="button" class="toolbar-button highlight-color-button" title="Cor de destaque">
+                                            <span style="background-color: #fbbc04; padding: 2px 4px; border-radius: 2px;">A</span>
+                                        </button>
+                                        <div class="color-options highlight-color-options">
+                                            <div class="color-option" style="background-color: #fbbc04;" data-color="#fbbc04"></div>
+                                            <div class="color-option" style="background-color: #c2e7ff;" data-color="#c2e7ff"></div>
+                                            <div class="color-option" style="background-color: #aecbfa;" data-color="#aecbfa"></div>
+                                            <div class="color-option" style="background-color: #fdcfe8;" data-color="#fdcfe8"></div>
+                                            <div class="color-option" style="background-color: #e6c9a8;" data-color="#e6c9a8"></div>
+                                            <div class="color-option" style="background-color: #a8dab5;" data-color="#a8dab5"></div>
+                                            <div class="color-option" style="background-color: #fff475;" data-color="#fff475"></div>
+                                            <div class="color-option" style="background-color: #ffffff; border: 1px solid #dadce0;" data-color="transparent"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Alinhamento -->
+                                <div class="toolbar-group">
+                                    <button type="button" class="toolbar-button" data-command="justifyLeft" title="Alinhar à esquerda">
+                                        <img src="{% static 'imagem/format_align_left_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Alinhar à esquerda" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="justifyCenter" title="Centralizar">
+                                        <img src="{% static 'imagem/format_align_center_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Centralizar" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="justifyRight" title="Alinhar à direita">
+                                        <img src="{% static 'imagem/format_align_right_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Alinhar à direita" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="justifyFull" title="Justificar">
+                                        <img src="{% static 'imagem/format_align_justify_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Justificar" class="w-4 h-4">
+                                    </button>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Listas -->
+                                <div class="toolbar-group">
+                                    <button type="button" class="toolbar-button" data-command="insertUnorderedList" title="Lista com marcadores">
+                                        <img src="{% static 'imagem/format_list_bulleted_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista com marcadores" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="insertOrderedList" title="Lista numerada">
+                                        <img src="{% static 'imagem/format_list_numbered_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista numerada" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="outdent" title="Diminuir recuo">
+                                        <img src="{% static 'imagem/format_indent_decrease_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Diminuir recuo" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button" data-command="indent" title="Aumentar recuo">
+                                        <img src="{% static 'imagem/format_indent_increase_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Aumentar recuo" class="w-4 h-4">
+                                    </button>
+                                </div>
+                                
+                                <div class="toolbar-divider"></div>
+                                
+                                <!-- Grupo de Inserção -->
+                                <div class="toolbar-group">
+                                    <button type="button" class="toolbar-button insert-link" title="Inserir link">
+                                        <img src="{% static 'imagem/link_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir link" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button insert-image" title="Inserir imagem">
+                                        <img src="{% static 'imagem/image_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir imagem" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button insert-table" title="Inserir tabela">
+                                        <img src="{% static 'imagem/table_chart_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir tabela" class="w-4 h-4">
+                                    </button>
+                                    <button type="button" class="toolbar-button insert-code" title="Inserir código">
+                                        <img src="{% static 'imagem/code_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir código" class="w-4 h-4">
+                                    </button>
+                                </div>
+                                
+                                <!-- Contador de palavras -->
+                                <div class="word-count">
+                                    <span class="word-count-display">0 palavras</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Área de Conteúdo Editável -->
+                            <div class="editor-content topic-editor" contenteditable="true" placeholder="Comece a escrever o conteúdo deste tópico aqui...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="validation-error" id="theory-content-error"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="estimated-time" class="block text-sm font-medium text-gray-700 mb-2">Tempo Estimado (minutos)</label>
+                <input type="number" id="estimated-time" min="1" max="120" placeholder="Ex: 45" class="w-full p-3 border border-gray-300 rounded-lg form-control">
+                <div class="validation-error" id="time-error"></div>
+            </div>
+            <div>
+                <label for="difficulty-level" class="block text-sm font-medium text-gray-700 mb-2">Nível de Dificuldade</label>
+                <select id="difficulty-level" class="w-full p-3 border border-gray-300 rounded-lg form-control">
+                    <option value="beginner">Iniciante</option>
+                    <option value="intermediate">Intermediário</option>
+                    <option value="advanced">Avançado</option>
+                </select>
+            </div>
+        </div>
     </div>
-    <div class="flex items-center">
-      <img src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-16 h-16">
-      <div class="ml-4">
-        <p class="text-blue-600 font-bold text-2xl">{{ conquistas }}/{{ total_conquistas }}</p>
-        <p class="text-xs text-blue-500">conquistas</p>
-      </div>
+    
+    <div class="mt-6 flex justify-between">
+        <button type="button" onclick="prevStep(1)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+            ← Voltar
+        </button>
+        <button type="button" onclick="validateStep2()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+            Próximo → Exercícios Práticos
+        </button>
     </div>
-    <p class="text-xs text-blue-500 mt-2">3 conquistas próximas</p>
-  </div>
 </div>
 
-<!-- Últimas Atividades com visual modernizado -->
-<div class="bg-blue-200 rounded-2xl p-6 shadow-md border border-blue-100">
-  <div class="flex items-center justify-between mb-6">
-    <h3 class="text-xl font-bold text-blue-700 flex items-center">
-      <img src="{% static 'imagem/history_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Histórico" class="w-6 h-6 mr-2">
-      Últimas Atividades
-    </h3>
-    <span class="text-sm text-blue-500 font-medium bg-blue-100 px-3 py-1 rounded-full">Hoje</span>
-  </div>
-  
-  <ul class="space-y-4">
-  {% for atividade in atividades %}
-    <li class="activity-item bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md">
-      <div>
-        <p class="font-medium text-blue-800">{{ atividade.titulo }}</p>
-        <p class="text-sm text-blue-500">{{ atividade.data|date:"d/m H:i" }}</p>
-      </div>
-      <span class="xp-badge text-white font-bold py-1 px-3 rounded-full text-sm">+{{ atividade.xp_ganho }} XP</span>
-    </li>
-  {% empty %}
-    <li class="p-5 text-gray-500">Nenhuma atividade recente.</li>
-  {% endfor %}
-</ul>
-  
+        <!-- PASSO 3: EXERCÍCIOS PRÁTICOS -->
+        <div id="step-3" class="form-section hidden">
+            <div class="form-section-header">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold">💻 Exercícios Práticos</h2>
+                    <span class="question-counter" id="question-count">0</span>
+                </div>
+                <span class="text-blue-200">Passo 3 de 4</span>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Seletor de Tipo de Exercício -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Adicionar Novo Exercício</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button type="button" onclick="addQuestion('multiple-choice')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/quiz_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Múltipla Escolha" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Múltipla Escolha</span>
+                        </button>
+                        
+                        <button type="button" onclick="addQuestion('code')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/code_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Escrever Código" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Escrever Código</span>
+                        </button>
+                        
+                        <button type="button" onclick="addQuestion('fill-blank')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/edit_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Completar Lacunas" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Completar Lacunas</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de Exercícios -->
+                <div id="questions-list" class="space-y-4">
+                    <div class="empty-state">
+                        <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem exercícios" class="w-16 h-16 mx-auto">
+                        <p class="text-gray-500">Nenhum exercício adicionado ainda</p>
+                        <p class="text-sm text-gray-400">Clique em um dos tipos acima para começar</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button type="button" onclick="prevStep(2)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+                    ← Voltar
+                </button>
+                <button type="button" onclick="validateStep3()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+                    Próximo → Revisão
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 4: REVISÃO E PUBLICAÇÃO -->
+        <div id="step-4" class="form-section hidden">
+            <div class="form-section-header">
+                <h2 class="text-xl font-bold">👁️ Revisão Final</h2>
+                <span class="text-blue-200">Passo 4 de 4</span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Preview do Conteúdo -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Pré-visualização do Conteúdo</h3>
+                    <div class="content-preview">
+                        <div id="content-preview-area">
+                            <p class="text-gray-500 text-center py-8">O preview do conteúdo aparecerá aqui</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações Finais -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Publicação</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Publicar Imediatamente</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="publish-immediately">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Permitir Comentários</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="allow-comments" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Ativar Progresso do Aluno</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="track-progress" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label for="task-xp" class="block text-sm font-medium text-gray-700 mb-2">XP da Tarefa</label>
+                                <input type="number" id="task-xp" min="0" max="1000" value="100" class="w-full p-3 border border-gray-300 rounded-lg form-control">
+                            </div>
+                            
+                            <div class="auto-save-toggle">
+                                <input type="checkbox" id="auto-save" checked>
+                                <label for="auto-save">Salvamento automático</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <img src="{% static 'imagem/info_35dp_92400e_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Informação" class="w-5 h-5 mt-0.5">
+                            <div>
+                                <h4 class="font-semibold text-yellow-800">Antes de Publicar</h4>
+                                <p class="text-yellow-700 text-sm mt-1">Revise todo o conteúdo, exercícios e configurações. Após a publicação, o conteúdo ficará disponível para todos os alunos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button type="button" onclick="prevStep(3)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+                    ← Voltar
+                </button>
+                <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/publish_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Publicar" class="w-5 h-5">
+                    Publicar Conteúdo
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
-<!-- Botão Continuar Estudando com destaque -->
-<div class="mt-6 flex justify-center">
-  <button class="bg-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-l transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
-    Continuar Estudando
-    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
-  </button>
+
+<!-- Modal para Criar Novo Capítulo -->
+<div class="modal-overlay" id="chapter-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Criar Novo Capítulo</h3>
+            <button type="button" class="modal-close" onclick="closeChapterModal()">×</button>
+        </div>
+        
+        <form id="new-chapter-form">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label for="new-chapter-title" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título do Capítulo *
+                    </label>
+                    <input type="text" id="new-chapter-title" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                           placeholder="Ex: Introdução ao Python"
+                           required>
+                    <div class="validation-error" id="new-chapter-title-error"></div>
+                </div>
+                
+                <div>
+                    <label for="new-chapter-description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descrição do Capítulo
+                    </label>
+                    <textarea id="new-chapter-description" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                              placeholder="Descreva o objetivo e conteúdo deste capítulo..."></textarea>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <img src="{% static 'imagem/info_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Informação" class="w-5 h-5 mt-0.5">
+                        <div>
+                            <h4 class="font-semibold text-blue-800 text-sm">Sobre Capítulos</h4>
+                            <p class="text-blue-700 text-xs mt-1">Capítulos organizam o conteúdo em grandes temas. Cada capítulo pode conter múltiplos módulos com aulas específicas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeChapterModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition interactive-card">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Criar Capítulo
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-</section>
+<!-- Modal para Criar Novo Módulo -->
+<div class="modal-overlay" id="module-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Criar Novo Módulo</h3>
+            <button type="button" class="modal-close" onclick="closeModuleModal()">×</button>
+        </div>
+        
+        <form id="new-module-form">
+            <div class="modal-body space-y-4">
+                <!-- Mostrar o capítulo selecionado (apenas informativo) -->
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-blue-700">
+                        <img src="{% static 'imagem/folder_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Capítulo" class="w-4 h-4">
+                        <span class="text-sm font-medium">Capítulo:</span>
+                        <span id="selected-chapter-name" class="text-sm">-</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="new-module-title" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título do Módulo *
+                    </label>
+                    <input type="text" id="new-module-title" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                           placeholder="Ex: Variáveis e Tipos de Dados"
+                           required>
+                    <div class="validation-error" id="new-module-title-error"></div>
+                </div>
+                
+                <div>
+                    <label for="new-module-description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descrição do Módulo
+                    </label>
+                    <textarea id="new-module-description" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                              placeholder="Descreva o objetivo e conteúdo deste módulo..."></textarea>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <img src="{% static 'imagem/info_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Informação" class="w-5 h-5 mt-0.5">
+                        <div>
+                            <h4 class="font-semibold text-blue-800 text-sm">Sobre Módulos</h4>
+                            <p class="text-blue-700 text-xs mt-1">Módulos organizam o conteúdo dentro de um capítulo. Cada módulo contém aulas e exercícios específicos sobre um tópico.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeModuleModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition interactive-card">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Criar Módulo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Indicador de salvamento -->
+<div class="save-indicator" id="save-indicator">
+    <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Salvo" class="w-5 h-5">
+    <span>Alterações salvas</span>
+</div>
+
+
+<!-- Template para novos tópicos -->
+<template id="topic-template">
+    <div class="topic-item border border-gray-300 rounded-lg overflow-hidden">
+        <div class="topic-header bg-gray-50 p-4 border-b border-gray-300 flex justify-between items-center">
+            <div class="flex items-center gap-3 flex-1">
+                <div class="drag-handle cursor-move">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <input type="text" class="topic-title bg-transparent border-none text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1" 
+                       placeholder="Nome do tópico">
+            </div>
+            <button type="button" class="remove-topic text-red-500 hover:text-red-700 interactive-card" aria-label="Remover tópico">
+                <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+            </button>
+        </div>
+        <div class="topic-content p-4">
+            <!-- Editor estilo Google Docs -->
+            <div class="editor-container">
+                <!-- Barra de Ferramentas -->
+                <div class="editor-toolbar">
+                    <!-- Grupo de Formatação de Texto -->
+                    <div class="toolbar-group">
+                        <select class="toolbar-select format-block">
+                            <option value="p">Texto normal</option>
+                            <option value="h1">Título 1</option>
+                            <option value="h2">Título 2</option>
+                            <option value="h3">Título 3</option>
+                            <option value="blockquote">Citação</option>
+                            <option value="pre">Bloco de código</option>
+                        </select>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Fonte -->
+                    <div class="toolbar-group">
+                        <select class="toolbar-select font-family">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="Georgia, serif">Georgia</option>
+                            <option value="Verdana, sans-serif">Verdana</option>
+                        </select>
+                        
+                        <select class="toolbar-select font-size">
+                            <option value="1">8px</option>
+                            <option value="2">10px</option>
+                            <option value="3">12px</option>
+                            <option value="4" selected>14px</option>
+                            <option value="5">18px</option>
+                            <option value="6">24px</option>
+                            <option value="7">36px</option>
+                        </select>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Estilo de Texto -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button" data-command="bold" title="Negrito (Ctrl+B)">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="italic" title="Itálico (Ctrl+I)">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="underline" title="Sublinhado (Ctrl+U)">
+                            <u>U</u>
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="strikeThrough" title="Tachado">
+                            <s>S</s>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Cores -->
+                    <div class="toolbar-group">
+                        <div class="color-picker">
+                            <button type="button" class="toolbar-button text-color-button" title="Cor do texto">
+                                <span style="color: #202124;">A</span>
+                            </button>
+                            <div class="color-options text-color-options">
+                                <div class="color-option" style="background-color: #202124;" data-color="#202124"></div>
+                                <div class="color-option" style="background-color: #5f6368;" data-color="#5f6368"></div>
+                                <div class="color-option" style="background-color: #ea4335;" data-color="#ea4335"></div>
+                                <div class="color-option" style="background-color: #fbbc04;" data-color="#fbbc04"></div>
+                                <div class="color-option" style="background-color: #34a853;" data-color="#34a853"></div>
+                                <div class="color-option" style="background-color: #4285f4;" data-color="#4285f4"></div>
+                                <div class="color-option" style="background-color: #1a73e8;" data-color="#1a73e8"></div>
+                                <div class="color-option" style="background-color: #8e24aa;" data-color="#8e24aa"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="color-picker">
+                            <button type="button" class="toolbar-button highlight-color-button" title="Cor de destaque">
+                                <span style="background-color: #fbbc04; padding: 2px 4px; border-radius: 2px;">A</span>
+                            </button>
+                            <div class="color-options highlight-color-options">
+                                <div class="color-option" style="background-color: #fbbc04;" data-color="#fbbc04"></div>
+                                <div class="color-option" style="background-color: #c2e7ff;" data-color="#c2e7ff"></div>
+                                <div class="color-option" style="background-color: #aecbfa;" data-color="#aecbfa"></div>
+                                <div class="color-option" style="background-color: #fdcfe8;" data-color="#fdcfe8"></div>
+                                <div class="color-option" style="background-color: #e6c9a8;" data-color="#e6c9a8"></div>
+                                <div class="color-option" style="background-color: #a8dab5;" data-color="#a8dab5"></div>
+                                <div class="color-option" style="background-color: #fff475;" data-color="#fff475"></div>
+                                <div class="color-option" style="background-color: #ffffff; border: 1px solid #dadce0;" data-color="transparent"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Alinhamento -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button" data-command="justifyLeft" title="Alinhar à esquerda">
+                            <img src="{% static 'imagem/format_align_left_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Alinhar à esquerda" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="justifyCenter" title="Centralizar">
+                            <img src="{% static 'imagem/format_align_center_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Centralizar" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="justifyRight" title="Alinhar à direita">
+                            <img src="{% static 'imagem/format_align_right_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Alinhar à direita" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="justifyFull" title="Justificar">
+                            <img src="{% static 'imagem/format_align_justify_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Justificar" class="w-4 h-4">
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Listas -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button" data-command="insertUnorderedList" title="Lista com marcadores">
+                            <img src="{% static 'imagem/format_list_bulleted_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista com marcadores" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="insertOrderedList" title="Lista numerada">
+                            <img src="{% static 'imagem/format_list_numbered_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista numerada" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="outdent" title="Diminuir recuo">
+                            <img src="{% static 'imagem/format_indent_decrease_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Diminuir recuo" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="indent" title="Aumentar recuo">
+                            <img src="{% static 'imagem/format_indent_increase_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Aumentar recuo" class="w-4 h-4">
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Inserção -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button insert-link" title="Inserir link">
+                            <img src="{% static 'imagem/link_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir link" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button insert-image" title="Inserir imagem">
+                            <img src="{% static 'imagem/image_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir imagem" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button insert-table" title="Inserir tabela">
+                            <img src="{% static 'imagem/table_chart_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir tabela" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button insert-code" title="Inserir código">
+                            <img src="{% static 'imagem/code_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Inserir código" class="w-4 h-4">
+                        </button>
+                    </div>
+                    
+                    <!-- Contador de palavras -->
+                    <div class="word-count">
+                        <span class="word-count-display">0 palavras</span>
+                    </div>
+                </div>
+                
+                <!-- Área de Conteúdo Editável -->
+                <div class="editor-content topic-editor" contenteditable="true" placeholder="Comece a escrever o conteúdo deste tópico aqui...">
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Templates para os tipos de questões -->
+<template id="multiple-choice-template">
+    <div class="question-item" data-type="multiple-choice">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Múltipla Escolha</h4>
+            </div>
+            <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card" aria-label="Remover questão">
+                <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pergunta</label>
+                <input type="text" placeholder="Digite a pergunta..." class="w-full p-3 border border-gray-300 rounded-lg form-control question-input">
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Opções de Resposta</label>
+                <div class="space-y-2 options-container">
+                        <div class="option-item">
+                            <input type="radio" name="correct-answer" class="text-blue-600 correct-option-radio">
+                            <input type="text" placeholder="Opção 1" class="flex-1 p-2 border border-gray-300 rounded option-input">
+                            <button type="button" class="remove-option text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover opção">×</button>
+                        </div>
+                    </div>
+                <div class="validation-error options-error"></div>
+                <button type="button" class="mt-2 text-blue-600 text-sm font-medium interactive-card flex items-center gap-1 add-option-btn">
+                    <img src="{% static 'imagem/add_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Adicionar Opção
+                </button>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="5" max="50" value="10" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="code-template">
+    <div class="question-item" data-type="code">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Exercício de Programação</h4>
+            </div>
+            <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card" aria-label="Remover questão">
+                <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Instrução do Exercício -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Instrução do Exercício
+                    <span class="text-gray-500 text-xs font-normal">(o que o aluno deve fazer)</span>
+                </label>
+                <textarea placeholder="Ex: Escreva um programa que imprima 'Hello World'" rows="3" class="w-full p-3 border border-gray-300 rounded-lg question-input"></textarea>
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <!-- Código Inicial (Opcional) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Código Inicial
+                    <span class="text-gray-500 text-xs font-normal">(opcional - aparece para o aluno)</span>
+                </label>
+                <textarea placeholder="# Código que o aluno vai ver inicialmente&#10;# Exemplo:&#10;print(&quot;Hello&quot;)" rows="4" class="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm starter-code"></textarea>
+            </div>
+            
+            <!-- Saída Esperada -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Saída Esperada
+                    <span class="text-gray-500 text-xs font-normal">(o que deve aparecer quando o código rodar)</span>
+                </label>
+                <textarea placeholder="Ex: Hello World" rows="3" class="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm expected-output"></textarea>
+                <div class="validation-error output-error"></div>
+            </div>
+            
+            <!-- Preview Simples -->
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h5 class="font-medium text-blue-800 mb-3">Como o aluno verá:</h5>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                    <div class="mb-3">
+                        <strong class="text-gray-700">Exercício:</strong>
+                        <p class="text-gray-600 mt-1 instruction-preview">Escreva um programa que imprima 'Hello World'</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong class="text-gray-700">Seu código:</strong>
+                        <div class="bg-gray-100 p-3 rounded font-mono text-sm mt-1 code-preview">
+                            print("Hello")
+                        </div>
+                        <button class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-green-700 transition run-button">
+                        ▶ Executar Código
+                    </button>
+                    </div>
+                    
+                    <div class="output-preview mt-3 p-3 bg-gray-900 text-green-400 font-mono text-sm rounded hidden">
+                        <div class="output-content">Hello</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="10" max="100" value="30" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="fill-blank-template">
+    <div class="question-item" data-type="fill-blank">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Completar Lacunas</h4>
+            </div>
+            <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card" aria-label="Remover questão">
+                <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Texto com Lacunas -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Texto com Lacunas
+                    </label>
+                    <button type="button" onclick="addBlankToText(this)" class="text-blue-600 text-sm font-medium interactive-card flex items-center gap-1">
+                        <img src="{% static 'imagem/add_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                        Adicionar Lacuna
+                    </button>
+                </div>
+                <textarea placeholder="Digite o texto aqui. Use o botão 'Adicionar Lacuna' para criar as lacunas." rows="4" class="w-full p-3 border border-gray-300 rounded-lg question-input fill-blank-textarea"></textarea>
+                <div class="text-xs text-gray-500 mt-1">
+                    💡 Clique em "Adicionar Lacuna" para inserir uma lacuna onde estiver o cursor
+                </div>
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <!-- Respostas Corretas -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Respostas Corretas
+                    <span class="text-gray-500 text-xs font-normal">(uma para cada lacuna, na ordem)</span>
+                </label>
+                <div class="space-y-2 answers-container">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600 w-6">1.</span>
+                        <input type="text" placeholder="Resposta para a primeira lacuna" class="flex-1 p-2 border border-gray-300 rounded answer-input">
+                        <button type="button" onclick="removeAnswer(this)" class="text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover resposta">×</button>
+                    </div>
+                </div>
+                <div class="validation-error answers-error"></div>
+            </div>
+            
+            <!-- Preview - Como o aluno verá -->
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h5 class="font-medium text-blue-800 mb-3">Como o aluno verá:</h5>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                    <div class="text-preview mb-4 text-gray-700 leading-relaxed">
+                        Para imprimir algo em Python, usamos a função <span class="blank-preview">_____</span>("texto")
+                    </div>
+                    <div class="word-bank grid grid-cols-3 gap-2 mb-3">
+                        <!-- As opções serão geradas automaticamente -->
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="5" max="30" value="15" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Estado global da aplicação
+    let currentStep = 1;
+    let questions = [];
+    let autoSaveEnabled = true;
+    let autoSaveInterval;
+    let selectedChapterId = '';
+    let selectedChapterName = '';
+    
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        updateProgressBar();
+        setupAutoSave();
+        setupDragAndDrop();
+        
+        // Configurar seletor de capítulo
+        const chapterSelect = document.getElementById('chapter-select');
+        chapterSelect.addEventListener('change', function() {
+            if (this.value === 'new') {
+                openChapterModal();
+            } else {
+                selectedChapterId = this.value;
+                selectedChapterName = this.options[this.selectedIndex].text;
+                updateModuleSelect(this.value);
+            }
+        });
+        
+        // Configurar formulário de novo capítulo
+        document.getElementById('new-chapter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            createNewChapter();
+        });
+        
+        // Configurar seletor de módulo
+        const moduleSelect = document.getElementById('module-select');
+        moduleSelect.addEventListener('change', function() {
+            if (this.value === 'new') {
+                openModuleModal();
+            }
+        });
+        
+        // Configurar formulário de novo módulo
+        document.getElementById('new-module-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            createNewModule();
+        });
+        
+        // Configurar auto-save
+        const autoSaveToggle = document.getElementById('auto-save');
+        autoSaveToggle.addEventListener('change', function() {
+            autoSaveEnabled = this.checked;
+            if (autoSaveEnabled) {
+                setupAutoSave();
+            } else {
+                clearInterval(autoSaveInterval);
+            }
+        });
+
+        // Inicializar selects com estado correto
+        initializeSelects();
+
+        // Inicializar o editor
+        initializeEditor();
+    });
+
+    function initializeEditor() {
+        const editor = document.getElementById('theory-content');
+        const toolbar = document.getElementById('editor-toolbar');
+        
+        // Configurar atalhos de teclado
+        editor.addEventListener('keydown', function(e) {
+            // Ctrl+B para negrito
+            if (e.ctrlKey && e.key === 'b') {
+                e.preventDefault();
+                document.execCommand('bold');
+                updateToolbarState();
+            }
+            
+            // Ctrl+I para itálico
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                document.execCommand('italic');
+                updateToolbarState();
+            }
+            
+            // Ctrl+U para sublinhado
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                document.execCommand('underline');
+                updateToolbarState();
+            }
+        });
+        
+        // Atualizar contador de palavras
+        editor.addEventListener('input', updateWordCount);
+        
+        // Configurar botões da barra de ferramentas
+        toolbar.addEventListener('click', function(e) {
+            const button = e.target.closest('.toolbar-button');
+            if (button) {
+                e.preventDefault();
+                const command = button.dataset.command;
+                
+                if (command) {
+                    document.execCommand(command, false, null);
+                    updateToolbarState();
+                }
+            }
+        });
+        
+        // Configurar seletores
+        document.getElementById('format-block').addEventListener('change', function() {
+            document.execCommand('formatBlock', false, this.value);
+        });
+        
+        document.getElementById('font-family').addEventListener('change', function() {
+            document.execCommand('fontName', false, this.value);
+        });
+        
+        document.getElementById('font-size').addEventListener('change', function() {
+            document.execCommand('fontSize', false, this.value);
+        });
+        
+        // Configurar seletores de cor
+        setupColorPicker('text-color-button', 'text-color-options', 'foreColor');
+        setupColorPicker('highlight-color-button', 'highlight-color-options', 'hiliteColor');
+        
+        // Configurar botões de inserção
+        document.getElementById('insert-link').addEventListener('click', insertLink);
+        document.getElementById('insert-image').addEventListener('click', insertImage);
+        document.getElementById('insert-table').addEventListener('click', insertTable);
+        document.getElementById('insert-code').addEventListener('click', insertCodeBlock);
+        
+        // Atualizar estado da barra de ferramentas quando o editor ganha foco
+        editor.addEventListener('focus', updateToolbarState);
+        editor.addEventListener('mouseup', updateToolbarState);
+        editor.addEventListener('keyup', updateToolbarState);
+        
+        // Inicializar contador de palavras
+        updateWordCount();
+    }
+    
+    function setupColorPicker(buttonId, optionsId, command) {
+        const button = document.getElementById(buttonId);
+        const options = document.getElementById(optionsId);
+        
+        button.addEventListener('click', function() {
+            options.style.display = options.style.display === 'grid' ? 'none' : 'grid';
+        });
+        
+        options.addEventListener('click', function(e) {
+            const colorOption = e.target.closest('.color-option');
+            if (colorOption) {
+                const color = colorOption.dataset.color;
+                document.execCommand(command, false, color);
+                options.style.display = 'none';
+                
+                // Atualizar ícone do botão
+                if (command === 'foreColor') {
+                    button.innerHTML = `<span style="color: ${color};">A</span>`;
+                } else {
+                    button.innerHTML = `<span style="background-color: ${color}; padding: 2px 4px; border-radius: 2px;">A</span>`;
+                }
+            }
+        });
+        
+        // Fechar se clicar fora
+        document.addEventListener('click', function(e) {
+            if (!button.contains(e.target) && !options.contains(e.target)) {
+                options.style.display = 'none';
+            }
+        });
+    }
+    
+    function updateToolbarState() {
+        // Atualizar estado dos botões de estilo
+        const commands = ['bold', 'italic', 'underline', 'strikeThrough'];
+        commands.forEach(command => {
+            const button = document.querySelector(`[data-command="${command}"]`);
+            if (button) {
+                if (document.queryCommandState(command)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            }
+        });
+        
+        // Atualizar estado dos botões de alinhamento
+        const alignCommands = ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'];
+        alignCommands.forEach(command => {
+            const button = document.querySelector(`[data-command="${command}"]`);
+            if (button) {
+                if (document.queryCommandState(command)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            }
+        });
+    }
+    
+    function updateWordCount() {
+        const editor = document.getElementById('theory-content');
+        const text = editor.innerText || '';
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        document.getElementById('word-count').textContent = `${words} palavras`;
+    }
+    
+    function insertLink() {
+        const url = prompt('URL do link:');
+        if (url) {
+            const text = prompt('Texto do link:', url);
+            document.execCommand('createLink', false, url);
+            
+            // Aplicar estilo aos links
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const link = range.startContainer.parentElement.closest('a');
+                if (link) {
+                    link.style.color = '#1a73e8';
+                    link.style.textDecoration = 'underline';
+                }
+            }
+        }
+    }
+    
+    function insertImage() {
+        const url = prompt('URL da imagem:');
+        if (url) {
+            document.execCommand('insertImage', false, url);
+            
+            // Aplicar estilo às imagens
+            const images = document.getElementById('theory-content').getElementsByTagName('img');
+            const lastImage = images[images.length - 1];
+            if (lastImage) {
+                lastImage.style.maxWidth = '100%';
+                lastImage.style.height = 'auto';
+                lastImage.style.borderRadius = '4px';
+                lastImage.style.margin = '8px 0';
+            }
+        }
+    }
+    
+    function insertTable() {
+        const rows = parseInt(prompt('Número de linhas:', '3')) || 3;
+        const cols = parseInt(prompt('Número de colunas:', '3')) || 3;
+        
+        let tableHTML = '<table>';
+        
+        // Cabeçalho
+        tableHTML += '<thead><tr>';
+        for (let i = 0; i < cols; i++) {
+            tableHTML += `<th>Coluna ${i + 1}</th>`;
+        }
+        tableHTML += '</tr></thead>';
+        
+        // Corpo
+        tableHTML += '<tbody>';
+        for (let i = 0; i < rows - 1; i++) {
+            tableHTML += '<tr>';
+            for (let j = 0; j < cols; j++) {
+                tableHTML += `<td>Conteúdo ${i + 1}.${j + 1}</td>`;
+            }
+            tableHTML += '</tr>';
+        }
+        tableHTML += '</tbody></table>';
+        
+        document.execCommand('insertHTML', false, tableHTML);
+    }
+    
+    function insertCodeBlock() {
+        const language = prompt('Linguagem de programação (opcional):', 'python');
+        const code = prompt('Código:');
+        
+        if (code) {
+            const codeBlock = `<pre><code class="language-${language || 'text'}">${code}</code></pre>`;
+            document.execCommand('insertHTML', false, codeBlock);
+        }
+    }
+    
+    // Função para obter o conteúdo HTML do editor
+    function getEditorContent() {
+        return document.getElementById('theory-content').innerHTML;
+    }
+    
+    // Função para definir o conteúdo HTML do editor
+    function setEditorContent(html) {
+        document.getElementById('theory-content').innerHTML = html;
+        updateWordCount();
+    }
+    
+    function validateStep2() {
+    let isValid = true;
+    
+    // Limpar erros anteriores
+    document.getElementById('lesson-title-error').textContent = '';
+    document.getElementById('theory-content-error').textContent = '';
+    document.getElementById('time-error').textContent = '';
+    
+    // Validar título da aula
+    const lessonTitle = document.getElementById('lesson-title').value.trim();
+    if (!lessonTitle) {
+        document.getElementById('lesson-title-error').textContent = 'Por favor, insira um título para a aula teórica.';
+        document.getElementById('lesson-title').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('lesson-title').classList.remove('error');
+    }
+    
+    // Validar que pelo menos um tópico tem conteúdo
+    const topics = document.querySelectorAll('.topic-item');
+    let hasContent = false;
+    let hasValidTitles = true;
+    
+    topics.forEach((topic, index) => {
+        const editor = topic.querySelector('.topic-editor');
+        const titleInput = topic.querySelector('.topic-title');
+        const title = titleInput.value.trim();
+        
+        // Validar nome do tópico
+        if (!title) {
+            titleInput.style.border = '2px solid #ef4444';
+            titleInput.placeholder = 'Nome do tópico é obrigatório';
+            hasValidTitles = false;
+            isValid = false;
+        } else {
+            titleInput.style.border = '';
+        }
+        
+        // Validar conteúdo do tópico
+        if (editor) {
+            const content = editor.innerText.trim();
+            const htmlContent = editor.innerHTML.trim();
+            
+            // Considerar que tem conteúdo se não estiver vazio ou com apenas placeholder
+            if (content && content !== 'Comece a escrever o conteúdo deste tópico aqui...' && htmlContent !== '<br>') {
+                hasContent = true;
+            }
+        }
+    });
+    
+    if (!hasContent) {
+        document.getElementById('theory-content-error').textContent = 'Por favor, adicione conteúdo em pelo menos um tópico.';
+        isValid = false;
+    }
+    
+    if (!hasValidTitles) {
+        document.getElementById('theory-content-error').textContent = 'Por favor, preencha o nome de todos os tópicos.';
+        isValid = false;
+    }
+    
+    // Validar tempo estimado
+    const estimatedTime = document.getElementById('estimated-time').value;
+    if (!estimatedTime || estimatedTime < 1 || estimatedTime > 120) {
+        document.getElementById('time-error').textContent = 'Por favor, insira um tempo estimado válido (1-120 minutos).';
+        document.getElementById('estimated-time').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('estimated-time').classList.remove('error');
+    }
+    
+    if (isValid) {
+        // Se tudo estiver válido, ir para o próximo passo
+        goToStep(3);
+    } else {
+        // Scroll para o primeiro erro
+        const firstError = document.querySelector('.error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+    
+    return isValid;
+}
+
+
+    // Inicializar selects com opção "Selecionar" destacada
+    function initializeSelects() {
+        const chapterSelect = document.getElementById('chapter-select');
+        const moduleSelect = document.getElementById('module-select');
+        
+        // Garantir que a primeira opção (Selecionar) esteja selecionada e desabilitada
+        if (chapterSelect.options[0]) {
+            chapterSelect.options[0].selected = true;
+            chapterSelect.options[0].disabled = true;
+        }
+        
+        if (moduleSelect.options[0]) {
+            moduleSelect.options[0].selected = true;
+            moduleSelect.options[0].disabled = true;
+        }
+    }
+
+    // Funções do Modal de Capítulo
+    function openChapterModal() {
+        const modal = document.getElementById('chapter-modal');
+        modal.classList.add('active');
+        document.getElementById('new-chapter-title').focus();
+    }
+
+    function closeChapterModal() {
+        const modal = document.getElementById('chapter-modal');
+        modal.classList.remove('active');
+        
+        // Resetar formulário
+        document.getElementById('new-chapter-form').reset();
+        document.getElementById('new-chapter-title-error').textContent = '';
+        document.getElementById('new-chapter-title').classList.remove('error');
+        
+        // Não resetar o select aqui - manter a seleção atual
+    }
+
+    function createNewChapter() {
+        const title = document.getElementById('new-chapter-title').value.trim();
+        const description = document.getElementById('new-chapter-description').value.trim();
+        
+        // Validar
+        if (!title) {
+            document.getElementById('new-chapter-title-error').textContent = 'Digite um título para o capítulo';
+            document.getElementById('new-chapter-title').classList.add('error');
+            return;
+        }
+        
+        // Simular criação do capítulo
+        const newChapterId = 'chapter-' + Date.now();
+        const newChapterName = title;
+        
+        // Adicionar ao select e selecionar automaticamente
+        const chapterSelect = document.getElementById('chapter-select');
+        const newOption = new Option(newChapterName, newChapterId);
+        chapterSelect.add(newOption);
+        
+        // Remover seleção da opção "Selecionar" e selecionar o novo capítulo
+        chapterSelect.querySelector('option[value=""]').selected = false;
+        chapterSelect.value = newChapterId;
+        
+        // Atualizar variáveis do capítulo selecionado
+        selectedChapterId = newChapterId;
+        selectedChapterName = newChapterName;
+        
+        // Fechar modal e atualizar módulos
+        closeChapterModal();
+        updateModuleSelect(newChapterId);
+        
+        // Mostrar mensagem de sucesso
+        showSaveIndicator('Capítulo criado e selecionado com sucesso!');
+    }
+
+    // Funções do Modal de Módulo
+    function openModuleModal() {
+        // Verificar se há um capítulo selecionado
+        if (!selectedChapterId) {
+            alert('Selecione um capítulo primeiro antes de criar um módulo.');
+            document.getElementById('module-select').value = '';
+            return;
+        }
+        
+        const modal = document.getElementById('module-modal');
+        
+        // Atualizar o nome do capítulo no modal
+        document.getElementById('selected-chapter-name').textContent = selectedChapterName;
+        
+        modal.classList.add('active');
+        document.getElementById('new-module-title').focus();
+    }
+
+    function closeModuleModal() {
+        const modal = document.getElementById('module-modal');
+        modal.classList.remove('active');
+        
+        // Resetar formulário
+        document.getElementById('new-module-form').reset();
+        document.getElementById('new-module-title-error').textContent = '';
+        document.getElementById('new-module-title').classList.remove('error');
+        
+        // Não resetar o select aqui - manter a seleção atual
+    }
+
+    function createNewModule() {
+        const title = document.getElementById('new-module-title').value.trim();
+        const description = document.getElementById('new-module-description').value.trim();
+        
+        // Validar
+        if (!title) {
+            document.getElementById('new-module-title-error').textContent = 'Digite um título para o módulo';
+            document.getElementById('new-module-title').classList.add('error');
+            return;
+        }
+        
+        // Simular criação do módulo
+        const newModuleId = 'module-' + Date.now();
+        const newModuleName = title;
+        
+        // Adicionar ao select e selecionar automaticamente
+        const moduleSelect = document.getElementById('module-select');
+        const newOption = new Option(newModuleName, newModuleId);
+        moduleSelect.add(newOption);
+        
+        // Remover seleção da opção "Selecionar" e selecionar o novo módulo
+        if (moduleSelect.querySelector('option[value=""]')) {
+            moduleSelect.querySelector('option[value=""]').selected = false;
+        }
+        moduleSelect.value = newModuleId;
+        
+        // Fechar modal
+        closeModuleModal();
+        
+        // Mostrar mensagem de sucesso
+        showSaveIndicator(`Módulo "${title}" criado e selecionado no capítulo "${selectedChapterName}"!`);
+    }
+
+    // Atualizar seletor de módulos
+    function updateModuleSelect(chapterId) {
+        const moduleSelect = document.getElementById('module-select');
+        
+        // Limpar módulos existentes (mantendo a opção "Selecionar")
+        const selectOption = moduleSelect.querySelector('option[value=""]');
+        moduleSelect.innerHTML = '';
+        if (selectOption) {
+            moduleSelect.appendChild(selectOption);
+            selectOption.selected = true;
+            selectOption.disabled = true;
+        }
+        
+        // Adicionar opção de criar novo módulo
+        const newModuleOption = new Option('+ Criar Novo Módulo', 'new');
+        moduleSelect.add(newModuleOption);
+        
+        // Simular carregamento de módulos específicos do capítulo
+        if (chapterId) {
+            moduleSelect.disabled = false;
+            
+            // Adicionar módulos de exemplo baseados no capítulo selecionado
+            const sampleModules = getSampleModulesForChapter(chapterId);
+            sampleModules.forEach(module => {
+                const option = new Option(module.name, module.id);
+                moduleSelect.add(option);
+            });
+        } else {
+            moduleSelect.disabled = true;
+            moduleSelect.innerHTML = '<option value="" selected disabled>Selecione um capítulo primeiro</option>';
+        }
+    }
+
+    // Função auxiliar para obter módulos de exemplo baseados no capítulo
+    function getSampleModulesForChapter(chapterId) {
+        // Se o capítulo for novo (começa com 'chapter-' seguido de timestamp), não retorna módulos
+        if (chapterId.startsWith('chapter-') && /^chapter-\d+$/.test(chapterId)) {
+            return []; // Retorna array vazio para capítulos novos
+        }
+        
+        // Simula módulos diferentes para capítulos existentes
+        const modulesByChapter = {
+            'chapter-1': [
+                { id: 'module-1-1', name: 'Introdução ao Python' },
+                { id: 'module-1-2', name: 'Configuração do Ambiente' }
+            ],
+            'chapter-2': [
+                { id: 'module-2-1', name: 'Variáveis e Tipos de Dados' },
+                { id: 'module-2-2', name: 'Operadores' }
+            ],
+            'chapter-3': [
+                { id: 'module-3-1', name: 'Estruturas Condicionais' },
+                { id: 'module-3-2', name: 'Estruturas de Repetição' }
+            ]
+        };
+        
+        return modulesByChapter[chapterId] || [];
+    }
+
+    function showSaveIndicator(message) {
+        const saveIndicator = document.getElementById('save-indicator');
+        saveIndicator.innerHTML = `
+            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Salvo" class="w-5 h-5">
+            <span>${message}</span>
+        `;
+        saveIndicator.style.display = 'flex';
+        
+        setTimeout(function() {
+            saveIndicator.style.display = 'none';
+        }, 3000);
+    }
+    // Navegação entre passos
+    function goToStep(step) {
+    console.log('Indo para o passo:', step); // Para debug
+    
+    // Esconder todos os passos
+    document.querySelectorAll('[id^="step-"]').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // Atualizar indicadores de passo
+    document.querySelectorAll('.step').forEach(el => {
+        el.classList.remove('active', 'completed');
+    });
+    
+    // Mostrar passo atual
+    const currentStepEl = document.getElementById(`step-${step}`);
+    if (currentStepEl) {
+        currentStepEl.classList.remove('hidden');
+    }
+    
+    // Atualizar indicadores visuais
+    for (let i = 1; i <= 4; i++) {
+        const stepElement = document.querySelector(`.step[data-step="${i}"]`);
+        if (stepElement) {
+            if (i === step) {
+                stepElement.classList.add('active');
+            } else if (i < step) {
+                stepElement.classList.add('completed');
+            }
+        }
+    }
+    
+    currentStep = step;
+    updateProgressBar();
+    
+    // Scroll para o topo do passo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+    
+    function nextStep() {
+        if (currentStep < 4) {
+            goToStep(currentStep + 1);
+        }
+    }
+    
+    function prevStep(fromStep) {
+        if (currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    }
+    
+    // Validação de passos
+    function validateStep1() {
+        let isValid = true;
+        
+        // Validar capítulo
+        const chapterSelect = document.getElementById('chapter-select');
+        if (!chapterSelect.value) {
+            document.getElementById('chapter-error').textContent = 'Selecione um capítulo';
+            chapterSelect.classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('chapter-error').textContent = '';
+            chapterSelect.classList.remove('error');
+        }
+        
+        // Validar módulo
+        const moduleSelect = document.getElementById('module-select');
+        if (!moduleSelect.value) {
+            document.getElementById('module-error').textContent = 'Selecione um módulo';
+            moduleSelect.classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('module-error').textContent = '';
+            moduleSelect.classList.remove('error');
+        }
+        
+        if (isValid) {
+            nextStep();
+        }
+    }
+    
+    function validateStep2() {
+    let isValid = true;
+    
+    // Limpar erros anteriores
+    document.getElementById('lesson-title-error').textContent = '';
+    document.getElementById('theory-content-error').textContent = '';
+    document.getElementById('time-error').textContent = '';
+    
+    // Validar título da aula
+    const lessonTitle = document.getElementById('lesson-title').value.trim();
+    if (!lessonTitle) {
+        document.getElementById('lesson-title-error').textContent = 'Por favor, insira um título para a aula teórica.';
+        document.getElementById('lesson-title').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('lesson-title').classList.remove('error');
+    }
+    
+    // Validar que pelo menos um tópico tem conteúdo
+    const topics = document.querySelectorAll('.topic-item');
+    let hasContent = false;
+    let hasValidTitles = true;
+    
+    topics.forEach((topic, index) => {
+        const editor = topic.querySelector('.topic-editor');
+        const titleInput = topic.querySelector('.topic-title');
+        const title = titleInput.value.trim();
+        
+        // Validar nome do tópico
+        if (!title) {
+            titleInput.style.border = '2px solid #ef4444';
+            titleInput.placeholder = 'Nome do tópico é obrigatório';
+            hasValidTitles = false;
+            isValid = false;
+        } else {
+            titleInput.style.border = '';
+        }
+        
+        // Validar conteúdo do tópico
+        if (editor) {
+            const content = editor.innerText.trim();
+            const htmlContent = editor.innerHTML.trim();
+            
+            // Considerar que tem conteúdo se não estiver vazio ou com apenas placeholder
+            if (content && content !== 'Comece a escrever o conteúdo deste tópico aqui...' && htmlContent !== '<br>') {
+                hasContent = true;
+            }
+        }
+    });
+    
+    if (!hasContent) {
+        document.getElementById('theory-content-error').textContent = 'Por favor, adicione conteúdo em pelo menos um tópico.';
+        isValid = false;
+    }
+    
+    if (!hasValidTitles) {
+        document.getElementById('theory-content-error').textContent = 'Por favor, preencha o nome de todos os tópicos.';
+        isValid = false;
+    }
+    
+    // Validar tempo estimado
+    const estimatedTime = document.getElementById('estimated-time').value;
+    if (!estimatedTime || estimatedTime < 1 || estimatedTime > 120) {
+        document.getElementById('time-error').textContent = 'Por favor, insira um tempo estimado válido (1-120 minutos).';
+        document.getElementById('estimated-time').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('estimated-time').classList.remove('error');
+    }
+    
+    if (isValid) {
+        // Se tudo estiver válido, ir para o próximo passo
+        goToStep(3);
+    } else {
+        // Scroll para o primeiro erro
+        const firstError = document.querySelector('.error') || document.querySelector('[style*="border: 2px solid #ef4444"]');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+    
+    return isValid;
+}
+    
+    function validateStep3() {
+    // Verificar se há pelo menos uma questão (usando a contagem correta)
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    const hasQuestions = questionItems.length > 0;
+    
+    if (!hasQuestions) {
+        alert('Adicione pelo menos um exercício prático antes de continuar.');
+        return false;
+    }
+    
+    // Validar cada questão individualmente
+    let allValid = true;
+    let firstInvalidQuestion = null;
+    
+    questionItems.forEach((questionEl, index) => {
+        const type = questionEl.dataset.type;
+        let isValid = true;
+        
+        // Limpar erros anteriores
+        const errorElements = questionEl.querySelectorAll('.validation-error');
+        errorElements.forEach(el => el.textContent = '');
+        
+        const inputElements = questionEl.querySelectorAll('.form-control, .question-input, .option-input');
+        inputElements.forEach(el => el.classList.remove('error'));
+        
+        if (type === 'multiple-choice') {
+            const questionInput = questionEl.querySelector('.question-input');
+            const options = questionEl.querySelectorAll('.option-input');
+            const hasCorrectOption = questionEl.querySelector('.correct-option-radio:checked');
+            
+            // Validar pergunta
+            if (!questionInput || !questionInput.value.trim()) {
+                const errorEl = questionEl.querySelector('.question-error');
+                if (errorEl) errorEl.textContent = 'Digite a pergunta';
+                if (questionInput) questionInput.classList.add('error');
+                isValid = false;
+            }
+            
+            // Validar opções (pelo menos 2)
+            if (options.length < 2) {
+                const errorEl = questionEl.querySelector('.options-error');
+                if (errorEl) errorEl.textContent = 'Adicione pelo menos 2 opções';
+                isValid = false;
+            } else {
+                // Validar que cada opção tem conteúdo
+                let emptyOptions = false;
+                options.forEach(option => {
+                    if (!option.value.trim()) {
+                        emptyOptions = true;
+                        option.classList.add('error');
+                    }
+                });
+                
+                if (emptyOptions) {
+                    const errorEl = questionEl.querySelector('.options-error');
+                    if (errorEl) errorEl.textContent = 'Preencha todas as opções';
+                    isValid = false;
+                }
+            }
+            
+            // Validar opção correta selecionada
+            if (!hasCorrectOption) {
+                const errorEl = questionEl.querySelector('.options-error');
+                if (errorEl) errorEl.textContent = 'Selecione a opção correta';
+                isValid = false;
+            }
+        }
+        else if (type === 'code') {
+            const questionInput = questionEl.querySelector('.question-input');
+            const expectedOutput = questionEl.querySelector('.expected-output');
+            
+            // Validar instrução
+            if (!questionInput || !questionInput.value.trim()) {
+                const errorEl = questionEl.querySelector('.question-error');
+                if (errorEl) errorEl.textContent = 'Digite as instruções do exercício';
+                if (questionInput) questionInput.classList.add('error');
+                isValid = false;
+            }
+            
+            // Validar saída esperada
+            if (!expectedOutput || !expectedOutput.value.trim()) {
+                const errorEl = questionEl.querySelector('.output-error');
+                if (errorEl) errorEl.textContent = 'Digite a saída esperada';
+                if (expectedOutput) expectedOutput.classList.add('error');
+                isValid = false;
+            }
+        }
+        else if (type === 'fill-blank') {
+            const questionInput = questionEl.querySelector('.question-input');
+            const answerInputs = questionEl.querySelectorAll('.answer-input');
+            
+            // Validar texto com lacunas
+            if (!questionInput || !questionInput.value.trim()) {
+                const errorEl = questionEl.querySelector('.question-error');
+                if (errorEl) errorEl.textContent = 'Digite o texto com lacunas';
+                if (questionInput) questionInput.classList.add('error');
+                isValid = false;
+            } else {
+                // Validar que há lacunas no texto
+                const blankCount = (questionInput.value.match(/\[_____\]/g) || []).length;
+                if (blankCount === 0) {
+                    const errorEl = questionEl.querySelector('.question-error');
+                    if (errorEl) errorEl.textContent = 'Adicione pelo menos uma lacuna usando o botão "Adicionar Lacuna"';
+                    isValid = false;
+                }
+            }
+            
+            // Validar respostas
+            let emptyAnswers = false;
+            answerInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    emptyAnswers = true;
+                    input.classList.add('error');
+                }
+            });
+            
+            if (emptyAnswers) {
+                const errorEl = questionEl.querySelector('.answers-error');
+                if (errorEl) errorEl.textContent = 'Preencha todas as respostas';
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            allValid = false;
+            if (!firstInvalidQuestion) {
+                firstInvalidQuestion = questionEl;
+            }
+        }
+    });
+    
+    if (!allValid) {
+        // Scroll para a primeira questão com erro
+        if (firstInvalidQuestion) {
+            firstInvalidQuestion.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Adicionar destaque visual
+            firstInvalidQuestion.style.border = '2px solid #ef4444';
+            firstInvalidQuestion.style.borderRadius = '8px';
+            setTimeout(() => {
+                firstInvalidQuestion.style.border = '';
+            }, 3000);
+        }
+        
+        alert('Corrija os erros nas questões antes de continuar.');
+        return false;
+    }
+    
+    // Se tudo estiver válido, ir para o próximo passo
+    goToStep(4);
+    updatePreview();
+    return true;
+}
+
+// Função corrigida para adicionar opção
+function addOption(button) {
+    const questionEl = button.closest('.question-item');
+    const optionsContainer = questionEl.querySelector('.options-container');
+    
+    if (!optionsContainer) {
+        console.error('Container de opções não encontrado');
+        return;
+    }
+    
+    const questionId = questionEl.id || 'question-' + Date.now();
+    const optionCount = optionsContainer.children.length + 1;
+    
+    const optionEl = document.createElement('div');
+    optionEl.className = 'option-item';
+    optionEl.innerHTML = `
+        <input type="radio" name="correct-answer-${questionId}" class="text-blue-600 correct-option-radio">
+        <input type="text" placeholder="Opção ${optionCount}" class="flex-1 p-2 border border-gray-300 rounded option-input">
+        <button type="button" class="remove-option text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover opção">×</button>
+    `;
+    
+    optionsContainer.appendChild(optionEl);
+    
+    // Configurar eventos para a nova opção
+    const radioInput = optionEl.querySelector('.correct-option-radio');
+    const textInput = optionEl.querySelector('.option-input');
+    const removeBtn = optionEl.querySelector('.remove-option');
+    
+    // Evento para destacar opção correta quando selecionada
+    radioInput.addEventListener('change', function() {
+        highlightCorrectOption(this);
+    });
+    
+    // Evento para remover opção
+    removeBtn.addEventListener('click', function() {
+        removeOption(this);
+    });
+    
+    // Evento para validação em tempo real
+    textInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        const errorEl = questionEl.querySelector('.options-error');
+        if (errorEl) errorEl.textContent = '';
+    });
+    
+    // Focar no novo input
+    textInput.focus();
+}
+
+// Função para remover opção
+function removeOption(button) {
+    const optionEl = button.closest('.option-item');
+    const questionEl = button.closest('.question-item');
+    const optionsContainer = questionEl.querySelector('.options-container');
+    
+    if (!optionEl || !optionsContainer) return;
+    
+    // Não permitir remover se só tiver uma opção
+    if (optionsContainer.children.length <= 1) {
+        alert('É necessário ter pelo menos uma opção.');
+        return;
+    }
+    
+    optionEl.remove();
+}
+
+// Função para destacar opção correta
+function highlightCorrectOption(radioInput) {
+    const optionEl = radioInput.closest('.option-item');
+    const questionEl = radioInput.closest('.question-item');
+    
+    if (!optionEl || !questionEl) return;
+    
+    // Remover destaque de todas as opções
+    const allOptions = questionEl.querySelectorAll('.option-item');
+    allOptions.forEach(option => {
+        option.classList.remove('correct-option');
+    });
+    
+    // Destacar opção selecionada
+    if (radioInput.checked) {
+        optionEl.classList.add('correct-option');
+    }
+}
+
+// Configurar event delegation para todos os botões de adicionar opção
+document.addEventListener('click', function(e) {
+    // Verificar se o clique foi em um botão de adicionar opção
+    if (e.target.closest('.add-option-btn')) {
+        e.preventDefault();
+        const button = e.target.closest('.add-option-btn');
+        addOption(button);
+    }
+    
+    // Verificar se o clique foi em um botão de remover opção
+    if (e.target.closest('.remove-option')) {
+        e.preventDefault();
+        const button = e.target.closest('.remove-option');
+        removeOption(button);
+    }
+    
+    // Verificar se o clique foi em um radio button de opção correta
+    if (e.target.closest('.correct-option-radio')) {
+        const radio = e.target.closest('.correct-option-radio');
+        highlightCorrectOption(radio);
+    }
+});
+
+// Função corrigida para inicializar questões de múltipla escolha
+function initializeMultipleChoiceQuestion(questionEl) {
+    // Garantir que a questão tenha um ID único
+    if (!questionEl.id) {
+        questionEl.id = 'question-' + Date.now();
+    }
+    
+    // Configurar radio buttons existentes
+    const radioInputs = questionEl.querySelectorAll('.correct-option-radio');
+    radioInputs.forEach(radio => {
+        radio.name = `correct-answer-${questionEl.id}`;
+        
+        // Aplicar destaque inicial se já estiver selecionado
+        if (radio.checked) {
+            highlightCorrectOption(radio);
+        }
+    });
+    
+    // Remover qualquer event listener antigo do botão de adicionar
+    const addOptionBtn = questionEl.querySelector('.add-option-btn');
+    if (addOptionBtn) {
+        // Substituir o botão para remover event listeners antigos
+        const newBtn = addOptionBtn.cloneNode(true);
+        addOptionBtn.parentNode.replaceChild(newBtn, addOptionBtn);
+    }
+}
+
+// Atualizar a função addQuestion para garantir inicialização correta
+function addQuestion(type) {
+    const template = document.getElementById(`${type}-template`);
+    if (!template) {
+        console.error(`Template não encontrado: ${type}-template`);
+        return;
+    }
+    
+    const questionsList = document.getElementById('questions-list');
+    
+    // Remover estado vazio se existir
+    const emptyState = questionsList.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    // Clonar o template
+    const questionEl = template.content.cloneNode(true);
+    
+    // Adicionar à lista
+    questionsList.appendChild(questionEl);
+    
+    // Inicializar os eventos para a nova questão
+    const newQuestion = questionsList.lastElementChild;
+    
+    // ✅ ADICIONAR ESTAS LINHAS - Inicialização específica por tipo
+    if (type === 'multiple-choice') {
+        initializeMultipleChoiceQuestion(newQuestion);
+    } else if (type === 'code') {
+        initializeCodeQuestion(newQuestion); // ← ESTA LINHA É NOVA
+    } else if (type === 'fill-blank') {
+        initializeFillBlankQuestion(newQuestion);
+    }
+    
+    updateQuestionCount();
+    
+    // Mostrar feedback
+    showSaveIndicator(`Questão de ${getQuestionTypeName(type)} adicionada`);
+}
+    const questionId = 'question-' + Date.now();
+    const addOptionBtn = questionEl.querySelector('button[onclick*="addOption"]');
+    const removeOptionBtns = questionEl.querySelectorAll('button[onclick*="removeOption"]');
+    
+    // Atualizar o name dos radio buttons existentes
+    const radioInputs = questionEl.querySelectorAll('.correct-option-radio');
+    radioInputs.forEach(radio => {
+        radio.name = `correct-answer-${questionId}`;
+        radio.addEventListener('change', function() {
+            highlightCorrectOption(this);
+        });
+    });
+    
+    if (addOptionBtn) {
+        addOptionBtn.onclick = function() { 
+            addOption(this, questionId); 
+        };
+    }
+    
+    removeOptionBtns.forEach(btn => {
+        btn.onclick = function() { removeOption(this); };
+    });
+
+
+// Função corrigida para inicializar questão de código
+function initializeCodeQuestion(questionEl) {
+    // Atualizar preview quando os campos mudarem
+    const instructionInput = questionEl.querySelector('.question-input');
+    const starterCodeInput = questionEl.querySelector('.starter-code');
+    const expectedOutputInput = questionEl.querySelector('.expected-output');
+    
+    // Função para atualizar todo o preview
+    function updateCodePreview() {
+        const instructionPreview = questionEl.querySelector('.instruction-preview');
+        const codePreview = questionEl.querySelector('.code-preview');
+        
+        if (instructionPreview) {
+            instructionPreview.textContent = instructionInput.value || 'Escreva um programa que imprima "Hello World"';
+        }
+        
+        if (codePreview) {
+            codePreview.textContent = starterCodeInput.value || '# Seu código aqui Exemplo:\nprint("Hello World")';
+        }
+    }
+    
+    // Configurar eventos de input
+    instructionInput.addEventListener('input', updateCodePreview);
+    starterCodeInput.addEventListener('input', updateCodePreview);
+    expectedOutputInput.addEventListener('input', updateCodePreview);
+    
+    // Configurar botão de executar no preview
+    const runButton = questionEl.querySelector('.run-button');
+    const outputPreview = questionEl.querySelector('.output-preview');
+    const outputContent = questionEl.querySelector('.output-content');
+    
+    if (runButton && outputPreview && outputContent) {
+        runButton.addEventListener('click', function() {
+            // Simular execução do código
+            runButton.textContent = 'Executando...';
+            runButton.disabled = true;
+            
+            setTimeout(() => {
+                runButton.textContent = '▶ Executar Código';
+                runButton.disabled = false;
+                outputPreview.classList.remove('hidden');
+                
+                // Mostrar resultado baseado no código inicial e saída esperada
+                const code = starterCodeInput.value;
+                const expectedOutput = expectedOutputInput.value;
+                
+                if (code.includes('print(')) {
+                    // Extrair texto do print (simulação básica)
+                    const match = code.match(/print\(["']([^"']+)["']\)/);
+                    if (match) {
+                        outputContent.textContent = match[1];
+                    } else {
+                        outputContent.textContent = 'Hello World';
+                    }
+                } else if (expectedOutput) {
+                    outputContent.textContent = expectedOutput;
+                } else {
+                    outputContent.textContent = 'Código executado com sucesso!';
+                }
+            }, 1000);
+        });
+    }
+    
+    // Inicializar preview imediatamente
+    updateCodePreview();
+}
+
+// Atualizar preview do editor
+function updateCodePreview(questionEl) {
+    const language = questionEl.querySelector('.code-language').value;
+    const starterCode = questionEl.querySelector('.starter-code').value;
+    const preview = questionEl.querySelector('.code-content');
+    
+    if (!preview) return;
+    
+    let highlightedCode = highlightSyntax(starterCode || 'print("Digite seu código aqui")', language);
+    preview.innerHTML = highlightedCode;
+    
+    // Atualizar números de linha
+    updateLineNumbers(questionEl);
+}
+
+function removeQuestion(button) {
+    const questionEl = button.closest('.question-item');
+    const questionsList = document.getElementById('questions-list');
+    
+    if (!questionEl || !questionsList) {
+        console.error('Elemento da questão não encontrado');
+        return;
+    }
+    
+    // Remover a questão
+    questionEl.remove();
+    
+    // Atualizar contador
+    updateQuestionCount();
+    
+    // Mostrar estado vazio se não houver mais questões
+    const remainingQuestions = questionsList.querySelectorAll('.question-item');
+    if (remainingQuestions.length === 0) {
+        showEmptyState();
+    }
+    
+    showSaveIndicator('Questão removida');
+}
+
+
+// Realce de sintaxe básico
+function highlightSyntax(code, language) {
+    let highlighted = code;
+    
+    if (language === 'python') {
+        // Palavras-chave do Python
+        const pythonKeywords = ['def', 'class', 'if', 'else', 'elif', 'for', 'while', 'return', 'import', 'from', 'as', 'try', 'except', 'finally', 'with', 'lambda', 'print', 'input'];
+        pythonKeywords.forEach(keyword => {
+            const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+            highlighted = highlighted.replace(regex, `<span class="keyword">${keyword}</span>`);
+        });
+        
+        // Strings
+        highlighted = highlighted.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
+        
+        // Comentários
+        highlighted = highlighted.replace(/#.*$/gm, '<span class="comment">$&</span>');
+        
+        // Números
+        highlighted = highlighted.replace(/\b\d+\b/g, '<span class="number">$&</span>');
+    }
+    
+    // Converter quebras de linha em divs
+    const lines = highlighted.split('\n');
+    const formattedLines = lines.map(line => {
+        if (line.trim() === '') {
+            return '<div class="code-line">&nbsp;</div>';
+        }
+        return `<div class="code-line">${line}</div>`;
+    });
+    
+    return formattedLines.join('');
+}
+
+// Atualizar números de linha
+function updateLineNumbers(questionEl) {
+    const codeContent = questionEl.querySelector('.code-content');
+    const lineNumbers = questionEl.querySelector('.line-numbers');
+    
+    if (!codeContent || !lineNumbers) return;
+    
+    const lineCount = codeContent.querySelectorAll('.code-line').length;
+    let numbersHTML = '';
+    
+    for (let i = 1; i <= Math.max(lineCount, 10); i++) {
+        numbersHTML += `${i}<br>`;
+    }
+    
+    lineNumbers.innerHTML = numbersHTML;
+}
+
+// Executar código no preview (simulado)
+function runCodePreview(questionEl) {
+    const runButton = questionEl.querySelector('.run-button');
+    const outputArea = questionEl.querySelector('.output-area');
+    const outputContent = questionEl.querySelector('.output-content');
+    const starterCode = questionEl.querySelector('.starter-code').value;
+    
+    if (!outputArea || !outputContent) return;
+    
+    // Mostrar que está executando
+    runButton.classList.add('running');
+    runButton.textContent = 'Executando...';
+    outputArea.classList.remove('hidden');
+    outputContent.innerHTML = '<div class="output-warning">Executando código...</div>';
+    
+    // Simular execução (em um ambiente real, isso seria uma chamada API)
+    setTimeout(() => {
+        runButton.classList.remove('running');
+        runButton.textContent = '▶ Executar';
+        
+        // Simular diferentes saídas baseadas no código
+        if (starterCode.includes('print(') && starterCode.includes('"')) {
+            const match = starterCode.match(/print\(["']([^"']+)["']\)/);
+            if (match) {
+                outputContent.innerHTML = `<div class="output-success">${match[1]}</div>`;
+            } else {
+                outputContent.innerHTML = '<div class="output-success">Hello World</div>';
+            }
+        } else if (starterCode.includes('error') || starterCode.includes('Error')) {
+            outputContent.innerHTML = '<div class="output-error">Erro: Código contém erro</div>';
+        } else {
+            outputContent.innerHTML = '<div class="output-success">Código executado com sucesso!</div>';
+        }
+    }, 1500);
+}
+
+// Ações da toolbar
+function handleToolbarAction(questionEl, action) {
+    const textarea = questionEl.querySelector('.starter-code');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    switch(action) {
+        case 'indent':
+            const indentedText = selectedText.split('\n').map(line => '    ' + line).join('\n');
+            textarea.value = textarea.value.substring(0, start) + indentedText + textarea.value.substring(end);
+            break;
+            
+        case 'comment':
+            const commentedText = selectedText.split('\n').map(line => '# ' + line).join('\n');
+            textarea.value = textarea.value.substring(0, start) + commentedText + textarea.value.substring(end);
+            break;
+    }
+    
+    textarea.focus();
+    updateCodePreview(questionEl);
+}
+
+// Atualizar tema
+function updateCodeTheme(questionEl) {
+    const theme = questionEl.querySelector('.code-theme').value;
+    const codeArea = questionEl.querySelector('.code-area');
+    const editorHeader = questionEl.querySelector('.editor-header');
+    
+    if (!codeArea) return;
+    
+    // Remover classes de tema anteriores
+    codeArea.classList.remove('theme-dark', 'theme-light', 'theme-monokai');
+    editorHeader.classList.remove('theme-dark', 'theme-light', 'theme-monokai');
+    
+    // Aplicar novo tema
+    codeArea.classList.add(`theme-${theme}`);
+    editorHeader.classList.add(`theme-${theme}`);
+}
+
+// Funções para casos de teste
+function addTestCase(button) {
+    const testCasesContainer = button.previousElementSibling;
+    const testCaseCount = testCasesContainer.children.length + 1;
+    
+    const testCaseEl = document.createElement('div');
+    testCaseEl.className = 'test-case-item bg-gray-50 p-3 rounded border border-gray-200';
+    testCaseEl.innerHTML = `
+        <div class="flex items-center gap-3 mb-2">
+            <input type="checkbox" class="test-case-active" checked>
+            <span class="font-medium text-sm">Caso de Teste ${testCaseCount}</span>
+            <button type="button" onclick="removeTestCase(this)" class="text-red-500 hover:text-red-700 ml-auto">×</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs text-gray-600">Entrada</label>
+                <textarea class="test-input w-full h-20 font-mono text-xs p-2 border border-gray-300 rounded" placeholder="Entrada para o programa"></textarea>
+            </div>
+            <div>
+                <label class="text-xs text-gray-600">Saída Esperada</label>
+                <textarea class="test-expected w-full h-20 font-mono text-xs p-2 border border-gray-300 rounded" placeholder="Saída esperada"></textarea>
+            </div>
+        </div>
+    `;
+    
+    testCasesContainer.appendChild(testCaseEl);
+    
+    // Configurar evento para o novo botão de remover
+    const removeBtn = testCaseEl.querySelector('button[onclick*="removeTestCase"]');
+    removeBtn.onclick = function() { removeTestCase(this); };
+}
+
+function removeTestCase(button) {
+    const testCaseEl = button.closest('.test-case-item');
+    const testCasesContainer = testCaseEl.parentNode;
+    
+    if (testCasesContainer.children.length > 1) {
+        testCaseEl.remove();
+    }
+}
+
+// Atualizar preview do código inicial em tempo real
+function updateStarterCodePreview(questionEl) {
+    // Pequeno delay para performance
+    clearTimeout(questionEl._updateTimeout);
+    questionEl._updateTimeout = setTimeout(() => {
+        updateCodePreview(questionEl);
+    }, 300);
+}
+
+// Adicionar estilos para temas
+const themeStyles = `
+.theme-dark .code-area { background: #1a202c; color: #e2e8f0; }
+.theme-dark .line-numbers { background: #2d3748; color: #718096; }
+.theme-dark .editor-header { background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); }
+
+.theme-light .code-area { background: #f7fafc; color: #2d3748; }
+.theme-light .line-numbers { background: #edf2f7; color: #a0aec0; }
+.theme-light .editor-header { background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%); color: #2d3748; }
+
+.theme-monokai .code-area { background: #272822; color: #f8f8f2; }
+.theme-monokai .line-numbers { background: #373832; color: #90908a; }
+.theme-monokai .editor-header { background: linear-gradient(135deg, #373832 0%, #474842 100%); }
+`;
+
+// Adicionar estilos de tema ao documento
+const styleElement = document.createElement('style');
+styleElement.textContent = themeStyles;
+document.head.appendChild(styleElement);
+
+// Função unificada para inicializar questão de completar lacunas
+function initializeFillBlankQuestion(questionEl) {
+    const questionInput = questionEl.querySelector('.question-input');
+    const addBlankBtn = questionEl.querySelector('button[onclick*="addBlankToText"]');
+    
+    // Configurar botão de adicionar lacuna
+    if (addBlankBtn) {
+        addBlankBtn.onclick = function() { addBlankToText(this); };
+    }
+    
+    // Atualizar preview quando o texto mudar
+    questionInput.addEventListener('input', function() {
+        updateFillBlankPreview(questionEl);
+        updateAnswerInputs(questionEl);
+    });
+    
+    // Inicializar preview
+    updateFillBlankPreview(questionEl);
+}
+
+// Função unificada para adicionar lacuna
+function addBlankToText(button) {
+    const questionEl = button.closest('.question-item');
+    const textarea = questionEl.querySelector('.question-input');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    // Inserir a lacuna no cursor - usar [_____] como padrão
+    const blank = '[_____]';
+    textarea.value = textarea.value.substring(0, start) + blank + textarea.value.substring(end);
+    
+    // Colocar o cursor após a lacuna
+    const newPosition = start + blank.length;
+    textarea.focus();
+    textarea.setSelectionRange(newPosition, newPosition);
+    
+    // Atualizar preview
+    updateFillBlankPreview(questionEl);
+    updateAnswerInputs(questionEl);
+}
+
+// Função unificada para atualizar preview
+function updateFillBlankPreview(questionEl) {
+    const questionInput = questionEl.querySelector('.question-input');
+    const textPreview = questionEl.querySelector('.text-preview');
+    const wordBank = questionEl.querySelector('.word-bank');
+    
+    if (!textPreview || !wordBank) return;
+    
+    let text = questionInput.value || 'Digite o texto e use o botão para adicionar lacunas';
+    
+    // Contar quantas lacunas existem
+    const blankCount = (text.match(/\[_____\]/g) || []).length;
+    
+    // ✅ PRESERVAR QUEBRAS DE LINHA - substituir \n por <br>
+    const formattedText = text
+        .replace(/\n/g, '<br>')  // Manter quebras de linha
+        .replace(/\[_____\]/g, '<span class="blank-preview" data-blank="true">_____</span>');
+    
+    textPreview.innerHTML = formattedText;
+    
+    // ✅ REMOVER o banco de palavras (quadros azuis)
+    wordBank.innerHTML = '';
+    wordBank.style.display = 'none'; // Esconder completamente
+    
+    // Configurar arrastar e soltar (se ainda quiser funcionalidade de drag)
+    setupBlankDragAndDrop(questionEl);
+}
+
+// Função unificada para atualizar banco de palavras
+function updateWordBank(questionEl, blankCount) {
+    const wordBank = questionEl.querySelector('.word-bank');
+    const answersContainer = questionEl.querySelector('.answers-container');
+    
+    if (!wordBank) return;
+    
+    // Limpar banco de palavras
+    wordBank.innerHTML = '';
+    
+    // Obter respostas corretas
+    const correctAnswers = [];
+    const answerInputs = answersContainer.querySelectorAll('.answer-input');
+    answerInputs.forEach(input => {
+        if (input.value.trim()) {
+            correctAnswers.push(input.value.trim());
+        }
+    });
+    
+    // Adicionar respostas corretas ao banco
+    correctAnswers.forEach((answer, index) => {
+        if (index < blankCount) {
+            const wordOption = document.createElement('div');
+            wordOption.className = 'word-option';
+            wordOption.textContent = answer;
+            wordOption.draggable = true;
+            wordOption.dataset.answer = answer;
+            wordOption.dataset.index = index;
+            wordBank.appendChild(wordOption);
+        }
+    });
+    
+    // Adicionar distrações se necessário
+    addDistractionWords(wordBank, correctAnswers, blankCount);
+}
+
+
+// Função unificada para arrastar e soltar
+function setupBlankDragAndDrop(questionEl) {
+    const wordOptions = questionEl.querySelectorAll('.word-option');
+    const blanks = questionEl.querySelectorAll('.blank-preview');
+    
+    wordOptions.forEach(option => {
+        option.addEventListener('dragstart', handleDragStart);
+        option.addEventListener('dragend', handleDragEnd);
+    });
+    
+    blanks.forEach(blank => {
+        blank.addEventListener('dragover', handleDragOver);
+        blank.addEventListener('dragleave', handleDragLeave);
+        blank.addEventListener('drop', handleDrop);
+    });
+}
+
+// Handlers de drag and drop
+function handleDragStart(e) {
+    e.dataTransfer.setData('text/plain', this.textContent);
+    this.style.opacity = '0.4';
+}
+
+function handleDragEnd() {
+    this.style.opacity = '1';
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    this.style.background = '#fef3c7';
+    this.style.border = '2px solid #3b82f6';
+}
+
+function handleDragLeave() {
+    this.style.background = '#fef3c7';
+    this.style.border = '2px dashed #f59e0b';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const word = e.dataTransfer.getData('text/plain');
+    this.textContent = word;
+    this.classList.remove('blank-preview');
+    this.classList.add('blank-filled');
+    this.dataset.filled = 'true';
+    this.dataset.answer = word;
+    
+    // Verificar automaticamente se está correto
+    setTimeout(() => checkSingleBlank(this.closest('.question-item'), this), 500);
+}
+
+// Função unificada para atualizar inputs de resposta
+function updateAnswerInputs(questionEl) {
+    const questionInput = questionEl.querySelector('.question-input');
+    const answersContainer = questionEl.querySelector('.answers-container');
+    
+    if (!questionInput || !answersContainer) return;
+    
+    const text = questionInput.value;
+    const blankCount = (text.match(/\[_____\]/g) || []).length;
+    const currentAnswerCount = answersContainer.children.length;
+    
+    // Adicionar ou remover inputs conforme necessário
+    if (blankCount > currentAnswerCount) {
+        for (let i = currentAnswerCount; i < blankCount; i++) {
+            addAnswerInput(questionEl);
+        }
+    } else if (blankCount < currentAnswerCount) {
+        for (let i = currentAnswerCount; i > blankCount; i--) {
+            const lastAnswer = answersContainer.lastElementChild;
+            if (lastAnswer) lastAnswer.remove();
+        }
+    }
+    
+    // Atualizar números dos labels
+    updateAnswerLabels(answersContainer);
+}
+
+// Função unificada para adicionar input de resposta
+function addAnswerInput(questionEl) {
+    const answersContainer = questionEl.querySelector('.answers-container');
+    const answerCount = answersContainer.children.length + 1;
+    
+    const answerEl = document.createElement('div');
+    answerEl.className = 'flex items-center gap-2';
+    answerEl.innerHTML = `
+        <span class="text-sm font-medium text-gray-600 w-6">${answerCount}.</span>
+        <input type="text" placeholder="Resposta para a lacuna ${answerCount}" class="flex-1 p-2 border border-gray-300 rounded answer-input">
+        <button type="button" class="remove-answer text-red-500 hover:text-red-700 interactive-card p-1">×</button>
+    `;
+    
+    answersContainer.appendChild(answerEl);
+    
+    // Configurar eventos
+    const newInput = answerEl.querySelector('.answer-input');
+    const removeBtn = answerEl.querySelector('.remove-answer');
+    
+    newInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        updateFillBlankPreview(questionEl);
+    });
+    
+    removeBtn.addEventListener('click', function() {
+        removeAnswerInput(this);
+    });
+}
+
+// Função unificada para remover input de resposta
+function removeAnswerInput(button) {
+    const answerEl = button.closest('.flex.items-center');
+    const answersContainer = answerEl.parentNode;
+    const questionEl = button.closest('.question-item');
+    
+    if (answersContainer.children.length > 1) {
+        answerEl.remove();
+        updateAnswerLabels(answersContainer);
+        updateFillBlankPreview(questionEl);
+    }
+}
+
+// Função auxiliar para atualizar labels
+function updateAnswerLabels(answersContainer) {
+    const answerLabels = answersContainer.querySelectorAll('span');
+    answerLabels.forEach((label, index) => {
+        label.textContent = `${index + 1}.`;
+    });
+}
+
+// Função para verificar lacuna individual
+function checkSingleBlank(questionEl, blank) {
+    const answersContainer = questionEl.querySelector('.answers-container');
+    const answerInputs = answersContainer.querySelectorAll('.answer-input');
+    const blanks = questionEl.querySelectorAll('[data-blank="true"]');
+    
+    const blankIndex = Array.from(blanks).indexOf(blank);
+    const correctAnswer = answerInputs[blankIndex] ? answerInputs[blankIndex].value.trim() : '';
+    const userAnswer = blank.dataset.answer;
+    
+    if (userAnswer === correctAnswer) {
+        // Resposta correta
+        blank.style.background = '#d1fae5';
+        blank.style.borderColor = '#10b981';
+        blank.style.color = '#065f46';
+    } else {
+        // Resposta incorreta - resetar após 2 segundos
+        blank.style.background = '#fee2e2';
+        blank.style.borderColor = '#ef4444';
+        blank.style.color = '#991b1b';
+        
+        setTimeout(() => {
+            resetBlank(blank);
+        }, 2000);
+    }
+}
+
+// Função para resetar lacuna
+function resetBlank(blank) {
+    blank.textContent = '_____';
+    blank.classList.remove('blank-filled');
+    blank.classList.add('blank-preview');
+    blank.removeAttribute('data-filled');
+    blank.removeAttribute('data-answer');
+    blank.removeAttribute('style');
+}
+    
+    // Formatação de texto
+    function formatText(type) {
+        const textarea = document.getElementById('theory-content');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        
+        let formattedText = '';
+        switch(type) {
+            case 'bold':
+                formattedText = `**${selectedText}**`;
+                break;
+            case 'italic':
+                formattedText = `_${selectedText}_`;
+                break;
+            case 'code':
+                formattedText = `\`${selectedText}\``;
+                break;
+        }
+        
+        textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+        textarea.focus();
+        textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+    }
+    
+    function insertImage() {
+        const url = prompt('URL da imagem:');
+        if (url) {
+            const textarea = document.getElementById('theory-content');
+            const start = textarea.selectionStart;
+            const markdown = `![Imagem](${url})`;
+            
+            textarea.value = textarea.value.substring(0, start) + markdown + textarea.value.substring(start);
+            textarea.focus();
+        }
+    }
+    
+    function insertLink() {
+        const url = prompt('URL do link:');
+        const text = prompt('Texto do link:', 'link');
+        if (url && text) {
+            const textarea = document.getElementById('theory-content');
+            const start = textarea.selectionStart;
+            const markdown = `[${text}](${url})`;
+            
+            textarea.value = textarea.value.substring(0, start) + markdown + textarea.value.substring(start);
+            textarea.focus();
+        }
+    }
+    
+    // Drag and Drop
+    function setupDragAndDrop() {
+        const questionsList = document.getElementById('questions-list');
+        
+        questionsList.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(questionsList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (draggable) {
+                if (afterElement == null) {
+                    questionsList.appendChild(draggable);
+                } else {
+                    questionsList.insertBefore(draggable, afterElement);
+                }
+            }
+        });
+    }
+    
+    function setupQuestionDrag(questionEl) {
+        const dragHandle = questionEl.querySelector('.drag-handle');
+        
+        dragHandle.setAttribute('draggable', true);
+        
+        dragHandle.addEventListener('dragstart', function() {
+            questionEl.classList.add('dragging');
+        });
+        
+        dragHandle.addEventListener('dragend', function() {
+            questionEl.classList.remove('dragging');
+        });
+    }
+    
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.question-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    
+    // Atualizar preview
+    function updatePreview() {
+        const previewArea = document.getElementById('content-preview-area');
+        const lessonTitle = document.getElementById('lesson-title').value;
+        const theoryContent = document.getElementById('theory-content').value;
+        
+        let previewHTML = `
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-blue-700">${lessonTitle || 'Título da Aula'}</h3>
+                <div class="prose max-w-none">
+                    ${theoryContent ? theoryContent.replace(/\n/g, '<br>') : '<p class="text-gray-500">Conteúdo teórico da aula</p>'}
+                </div>
+        `;
+        
+        // Adicionar preview das questões
+        const questions = document.querySelectorAll('.question-item');
+        if (questions.length > 0) {
+            previewHTML += `<div class="mt-6 pt-4 border-t border-gray-200">
+                <h4 class="text-lg font-semibold mb-4">Exercícios Práticos</h4>
+                <div class="space-y-4">`;
+            
+            questions.forEach((question, index) => {
+                const type = question.dataset.type;
+                previewHTML += `<div class="question-preview">
+                    <h5 class="font-medium mb-2">Questão ${index + 1}: ${getQuestionTypeName(type)}</h5>`;
+                
+                if (type === 'multiple-choice') {
+                    const questionText = question.querySelector('.question-input').value;
+                    previewHTML += `<p class="mb-3">${questionText || 'Pergunta de múltipla escolha'}</p>
+                    <div class="space-y-2">`;
+                    
+                    const options = question.querySelectorAll('.option-input');
+                    options.forEach(option => {
+                        previewHTML += `<div class="flex items-center gap-2">
+                            <input type="radio" disabled>
+                            <span>${option.value || 'Opção'}</span>
+                        </div>`;
+                    });
+                    
+                    previewHTML += `</div>`;
+                } else if (type === 'code') {
+                    const instructions = question.querySelector('.question-input').value;
+                    previewHTML += `<p class="mb-3">${instructions || 'Instruções para escrever código'}</p>
+                    <div class="bg-gray-100 p-3 rounded font-mono text-sm">
+                        // Área para escrever código
+                    </div>`;
+                } else if (type === 'fill-blank') {
+                    const text = question.querySelector('.question-input').value;
+                    previewHTML += `<p class="mb-3">${text ? text.replace(/\[lacuna\]/g, '______') : 'Texto com lacunas para completar'}</p>`;
+                }
+                
+                previewHTML += `</div>`;
+            });
+            
+            previewHTML += `</div></div>`;
+        }
+        
+        previewHTML += `</div>`;
+        previewArea.innerHTML = previewHTML;
+    }
+    
+    function getQuestionTypeName(type) {
+        const names = {
+            'multiple-choice': 'Múltipla Escolha',
+            'code': 'Escrever Código',
+            'fill-blank': 'Completar Lacunas'
+        };
+        return names[type] || 'Exercício';
+    }
+    
+    
+    
+    // Atualizar barra de progresso
+    function updateProgressBar() {
+        const progressFill = document.getElementById('progress-fill');
+        const width = (currentStep / 4) * 100;
+        progressFill.style.width = `${width}%`;
+    }
+    
+    // Auto-save
+    function setupAutoSave() {
+        if (autoSaveInterval) {
+            clearInterval(autoSaveInterval);
+        }
+        
+        if (autoSaveEnabled) {
+            autoSaveInterval = setInterval(function() {
+                // Simular salvamento
+                const saveIndicator = document.getElementById('save-indicator');
+                saveIndicator.style.display = 'flex';
+                
+                setTimeout(function() {
+                    saveIndicator.style.display = 'none';
+                }, 2000);
+            }, 30000); // Salvar a cada 30 segundos
+        }
+    }
+    
+    // Envio do formulário
+    document.getElementById('content-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validar todos os passos
+        if (!validateFinalForm()) {
+            alert('Por favor, corrija os erros antes de publicar.');
+            return;
+        }
+        
+        // Simular envio
+        alert('Conteúdo publicado com sucesso!');
+        // Aqui você adicionaria o código para enviar o formulário
+    });
+    
+    function validateFinalForm() {
+        // Validar todos os campos necessários
+        let isValid = true;
+        
+        // Validar estrutura
+        if (!document.getElementById('chapter-select').value) {
+            isValid = false;
+        }
+        
+        // Validar conteúdo teórico
+        if (!document.getElementById('lesson-title').value.trim()) {
+            isValid = false;
+        }
+        
+        // Validar exercícios
+        if (document.querySelectorAll('.question-item').length === 0) {
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
+
+    // Funções para gerenciar tópicos
+function addTopic() {
+    const template = document.getElementById('topic-template');
+    const topicEl = template.content.cloneNode(true);
+    const topicsContainer = document.getElementById('topics-container');
+    
+    topicsContainer.appendChild(topicEl);
+    
+    // Inicializar o editor para o novo tópico
+    const newTopic = topicsContainer.lastElementChild;
+    initializeTopicEditor(newTopic);
+    
+    // Configurar eventos para o novo tópico
+    setupTopicEvents(newTopic);
+    
+    // Focar no título do novo tópico
+    const titleInput = newTopic.querySelector('.topic-title');
+    titleInput.focus();
+    
+    showSaveIndicator('Novo tópico adicionado');
+}
+
+function removeTopic(button) {
+    const topicEl = button.closest('.topic-item');
+    const topicsContainer = document.getElementById('topics-container');
+    
+    // Não permitir remover o último tópico
+    if (topicsContainer.children.length <= 1) {
+        alert('É necessário ter pelo menos um tópico.');
+        return;
+    }
+    
+    topicEl.remove();
+    showSaveIndicator('Tópico removido');
+}
+
+function initializeTopicEditor(topicEl) {
+    const editor = topicEl.querySelector('.topic-editor');
+    const toolbar = topicEl.querySelector('.editor-toolbar');
+    
+    // Configurar atalhos de teclado
+    editor.addEventListener('keydown', function(e) {
+        // Ctrl+B para negrito
+        if (e.ctrlKey && e.key === 'b') {
+            e.preventDefault();
+            document.execCommand('bold');
+            updateTopicToolbarState(topicEl);
+        }
+        
+        // Ctrl+I para itálico
+        if (e.ctrlKey && e.key === 'i') {
+            e.preventDefault();
+            document.execCommand('italic');
+            updateTopicToolbarState(topicEl);
+        }
+        
+        // Ctrl+U para sublinhado
+        if (e.ctrlKey && e.key === 'u') {
+            e.preventDefault();
+            document.execCommand('underline');
+            updateTopicToolbarState(topicEl);
+        }
+    });
+    
+    // Atualizar contador de palavras
+    editor.addEventListener('input', function() {
+        updateTopicWordCount(topicEl);
+    });
+    
+    // Configurar botões da barra de ferramentas
+    toolbar.addEventListener('click', function(e) {
+        const button = e.target.closest('.toolbar-button');
+        if (button) {
+            e.preventDefault();
+            const command = button.dataset.command;
+            
+            if (command) {
+                document.execCommand(command, false, null);
+                updateTopicToolbarState(topicEl);
+            }
+        }
+    });
+    
+    // Configurar seletores
+    const formatBlock = topicEl.querySelector('.format-block');
+    if (formatBlock) {
+        formatBlock.addEventListener('change', function() {
+            document.execCommand('formatBlock', false, this.value);
+        });
+    }
+    
+    const fontFamily = topicEl.querySelector('.font-family');
+    if (fontFamily) {
+        fontFamily.addEventListener('change', function() {
+            document.execCommand('fontName', false, this.value);
+        });
+    }
+    
+    const fontSize = topicEl.querySelector('.font-size');
+    if (fontSize) {
+        fontSize.addEventListener('change', function() {
+            document.execCommand('fontSize', false, this.value);
+        });
+    }
+    
+    // Configurar seletores de cor
+    setupTopicColorPicker(topicEl, 'text-color-button', 'text-color-options', 'foreColor');
+    setupTopicColorPicker(topicEl, 'highlight-color-button', 'highlight-color-options', 'hiliteColor');
+    
+    // Configurar botões de inserção
+    const insertLink = topicEl.querySelector('.insert-link');
+    if (insertLink) {
+        insertLink.addEventListener('click', function() {
+            insertTopicLink(topicEl);
+        });
+    }
+    
+    const insertImage = topicEl.querySelector('.insert-image');
+    if (insertImage) {
+        insertImage.addEventListener('click', function() {
+            insertTopicImage(topicEl);
+        });
+    }
+    
+    const insertTable = topicEl.querySelector('.insert-table');
+    if (insertTable) {
+        insertTable.addEventListener('click', function() {
+            insertTopicTable(topicEl);
+        });
+    }
+    
+    const insertCode = topicEl.querySelector('.insert-code');
+    if (insertCode) {
+        insertCode.addEventListener('click', function() {
+            insertTopicCodeBlock(topicEl);
+        });
+    }
+    
+    // Atualizar estado da barra de ferramentas quando o editor ganha foco
+    editor.addEventListener('focus', function() {
+        updateTopicToolbarState(topicEl);
+    });
+    editor.addEventListener('mouseup', function() {
+        updateTopicToolbarState(topicEl);
+    });
+    editor.addEventListener('keyup', function() {
+        updateTopicToolbarState(topicEl);
+    });
+    
+    // Inicializar contador de palavras
+    updateTopicWordCount(topicEl);
+}
+
+function setupTopicEvents(topicEl) {
+    // Configurar botão de remover tópico
+    const removeBtn = topicEl.querySelector('.remove-topic');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            removeTopic(this);
+        });
+    }
+    
+    // Configurar drag handle
+    const dragHandle = topicEl.querySelector('.drag-handle');
+    if (dragHandle) {
+        setupTopicDrag(topicEl);
+    }
+}
+
+function setupTopicColorPicker(topicEl, buttonId, optionsId, command) {
+    const button = topicEl.querySelector(`.${buttonId}`);
+    const options = topicEl.querySelector(`.${optionsId}`);
+    
+    if (!button || !options) return;
+    
+    button.addEventListener('click', function() {
+        options.style.display = options.style.display === 'grid' ? 'none' : 'grid';
+    });
+    
+    options.addEventListener('click', function(e) {
+        const colorOption = e.target.closest('.color-option');
+        if (colorOption) {
+            const color = colorOption.dataset.color;
+            document.execCommand(command, false, color);
+            options.style.display = 'none';
+            
+            // Atualizar ícone do botão
+            if (command === 'foreColor') {
+                button.innerHTML = `<span style="color: ${color};">A</span>`;
+            } else {
+                button.innerHTML = `<span style="background-color: ${color}; padding: 2px 4px; border-radius: 2px;">A</span>`;
+            }
+        }
+    });
+    
+    // Fechar se clicar fora
+    document.addEventListener('click', function(e) {
+        if (!button.contains(e.target) && !options.contains(e.target)) {
+            options.style.display = 'none';
+        }
+    });
+}
+
+function updateTopicToolbarState(topicEl) {
+    const toolbar = topicEl.querySelector('.editor-toolbar');
+    if (!toolbar) return;
+    
+    // Atualizar estado dos botões de estilo
+    const commands = ['bold', 'italic', 'underline', 'strikeThrough'];
+    commands.forEach(command => {
+        const button = toolbar.querySelector(`[data-command="${command}"]`);
+        if (button) {
+            if (document.queryCommandState(command)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
+    
+    // Atualizar estado dos botões de alinhamento
+    const alignCommands = ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'];
+    alignCommands.forEach(command => {
+        const button = toolbar.querySelector(`[data-command="${command}"]`);
+        if (button) {
+            if (document.queryCommandState(command)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
+}
+
+function updateTopicWordCount(topicEl) {
+    const editor = topicEl.querySelector('.topic-editor');
+    const wordCountDisplay = topicEl.querySelector('.word-count-display');
+    
+    if (!editor || !wordCountDisplay) return;
+    
+    const text = editor.innerText || '';
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    wordCountDisplay.textContent = `${words} palavras`;
+}
+
+function insertTopicLink(topicEl) {
+    const url = prompt('Digite a URL do link:');
+    if (url) {
+        const text = prompt('Digite o texto do link (opcional):', url);
+        document.execCommand('createLink', false, url);
+    }
+}
+
+function insertTopicImage(topicEl) {
+    const url = prompt('Digite a URL da imagem:');
+    if (url) {
+        document.execCommand('insertImage', false, url);
+    }
+}
+
+function insertTopicTable(topicEl) {
+    const rows = parseInt(prompt('Número de linhas:', '3'));
+    const cols = parseInt(prompt('Número de colunas:', '3'));
+    
+    if (rows > 0 && cols > 0) {
+        const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.width = '100%';
+        
+        for (let i = 0; i < rows; i++) {
+            const tr = document.createElement('tr');
+            for (let j = 0; j < cols; j++) {
+                const td = document.createElement('td');
+                td.style.border = '1px solid #ccc';
+                td.style.padding = '8px';
+                td.innerHTML = '&nbsp;';
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        }
+        
+        document.execCommand('insertHTML', false, table.outerHTML);
+    }
+}
+
+function insertTopicCodeBlock(topicEl) {
+    const code = prompt('Cole seu código aqui:');
+    if (code) {
+        const pre = document.createElement('pre');
+        pre.style.backgroundColor = '#f5f5f5';
+        pre.style.padding = '10px';
+        pre.style.borderRadius = '4px';
+        pre.style.overflow = 'auto';
+        pre.textContent = code;
+        
+        document.execCommand('insertHTML', false, pre.outerHTML);
+    }
+}
+
+function setupTopicDrag(topicEl) {
+    // Implementação básica de drag & drop para reordenar tópicos
+    const dragHandle = topicEl.querySelector('.drag-handle');
+    let isDragging = false;
+    let dragStartY = 0;
+    let originalY = 0;
+    
+    dragHandle.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        dragStartY = e.clientY;
+        originalY = topicEl.offsetTop;
+        topicEl.style.opacity = '0.7';
+        topicEl.style.zIndex = '1000';
+        document.body.style.cursor = 'grabbing';
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const deltaY = e.clientY - dragStartY;
+        topicEl.style.position = 'relative';
+        topicEl.style.top = `${deltaY}px`;
+        
+        // Implementar lógica de reordenação aqui
+        // (seria necessário calcular a posição relativa aos outros tópicos)
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        topicEl.style.opacity = '';
+        topicEl.style.zIndex = '';
+        topicEl.style.position = '';
+        topicEl.style.top = '';
+        document.body.style.cursor = '';
+        
+        showSaveIndicator('Tópico reorganizado');
+    });
+}
+
+// Inicializar todos os tópicos existentes
+function initializeAllTopics() {
+    const topics = document.querySelectorAll('.topic-item');
+    topics.forEach(topic => {
+        initializeTopicEditor(topic);
+        setupTopicEvents(topic);
+    });
+}
+
+// Event listener para adicionar tópicos
+document.addEventListener('DOMContentLoaded', function() {
+    const addTopicBtn = document.getElementById('add-topic-btn');
+    if (addTopicBtn) {
+        addTopicBtn.addEventListener('click', addTopic);
+    }
+    
+    // Inicializar tópicos existentes
+    initializeAllTopics();
+
+
+// Também adicionar event delegation para os campos de código
+document.addEventListener('input', function(e) {
+    // Se for um campo de questão de código, atualizar o preview
+    if (e.target.classList.contains('question-input') || 
+        e.target.classList.contains('starter-code') || 
+        e.target.classList.contains('expected-output')) {
+        
+        const questionEl = e.target.closest('.question-item');
+        if (questionEl && questionEl.dataset.type === 'code') {
+            // Encontrar e atualizar os elementos de preview
+            const instructionPreview = questionEl.querySelector('.instruction-preview');
+            const codePreview = questionEl.querySelector('.code-preview');
+            
+            if (e.target.classList.contains('question-input') && instructionPreview) {
+                instructionPreview.textContent = e.target.value || 'Escreva um programa que imprima "Hello World"';
+            }
+            
+            if (e.target.classList.contains('starter-code') && codePreview) {
+                codePreview.textContent = e.target.value || '# Seu código aqui\nprint("Hello World")';
+            }
+        }
+    }
+});
+
+});
+</script>
 {% endblock %}

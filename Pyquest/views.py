@@ -12,7 +12,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.http import JsonResponse
 import json
-
+from .forms import *
 
 
 # ---------- AUTENTICAÇÃO ----------
@@ -438,11 +438,79 @@ def reply_comment(request, post_id, parent_id):
 def is_professor(user):
     return user.groups.filter(name='professores').exists() or user.is_staff
 
-@login_required
 @user_passes_test(is_professor)
 def criar_conteudo(request):
-    # Sua lógica para criar conteúdo
-    return render(request, 'Pyquest/criar_conteudo.html')
+    # Inicializar forms
+    chapter_form = ChapterForm(request.POST or None, prefix='chapter')
+    module_form = ModuleForm(request.POST or None, prefix='module')
+    task_form = TaskForm(request.POST or None, prefix='task')
+    theory_form = TheoryContentForm(request.POST or None, prefix='theory')
+    publish_form = PublishSettingsForm(request.POST or None, prefix='publish')
+    
+    # Forms para questões (serão dinâmicos)
+    question_forms = []
+    
+    if request.method == 'POST':
+        # Verificar qual passo está sendo enviado
+        current_step = request.POST.get('current_step', '1')
+        
+        if current_step == '1' and chapter_form.is_valid() and module_form.is_valid() and task_form.is_valid():
+            # Processar estrutura
+            return render(request, 'Pyquest/criar_conteudo.html', {
+                'chapter_form': chapter_form,
+                'module_form': module_form,
+                'task_form': task_form,
+                'theory_form': theory_form,
+                'publish_form': publish_form,
+                'current_step': '2',
+                'structure_data': {
+                    'chapter': chapter_form.cleaned_data,
+                    'module': module_form.cleaned_data,
+                    'task': task_form.cleaned_data,
+                }
+            })
+            
+        elif current_step == '2' and theory_form.is_valid():
+            # Processar conteúdo teórico
+            return render(request, 'Pyquest/criar_conteudo.html', {
+                'chapter_form': chapter_form,
+                'module_form': module_form,
+                'task_form': task_form,
+                'theory_form': theory_form,
+                'publish_form': publish_form,
+                'current_step': '3',
+                'structure_data': request.session.get('structure_data', {}),
+                'theory_data': theory_form.cleaned_data
+            })
+            
+        elif current_step == '3':
+            # Processar questões (lógica mais complexa)
+            # Aqui você processaria as questões dinâmicas
+            return render(request, 'Pyquest/criar_conteudo.html', {
+                'chapter_form': chapter_form,
+                'module_form': module_form,
+                'task_form': task_form,
+                'theory_form': theory_form,
+                'publish_form': publish_form,
+                'current_step': '4',
+                'structure_data': request.session.get('structure_data', {}),
+                'theory_data': request.session.get('theory_data', {}),
+                'questions_data': request.session.get('questions_data', [])
+            })
+            
+        elif current_step == '4' and publish_form.is_valid():
+            # Salvar tudo no banco de dados
+            # Aqui você implementaria a lógica de salvamento
+            return redirect('conteudo')  # Redirecionar para página de conteúdo
+    
+    return render(request, 'Pyquest/criar_conteudo.html', {
+        'chapter_form': chapter_form,
+        'module_form': module_form,
+        'task_form': task_form,
+        'theory_form': theory_form,
+        'publish_form': publish_form,
+        'current_step': '1',
+    })
 
 @login_required
 @user_passes_test(is_professor)

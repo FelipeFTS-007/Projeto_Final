@@ -7,7 +7,8 @@
 <div class="p-0 w-full">
 
   <!-- Barra superior melhorada -->
-  <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 shadow-lg flex justify-between items-center w-full rounded-t-2xl relative overflow-hidden">
+  <div
+    class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 shadow-lg flex justify-between items-center w-full rounded-t-2xl relative overflow-hidden">
     <div class="relative z-10">
       <h2 class="text-lg font-bold opacity-90">Sua Posição no Ranking</h2>
       <p class="text-3xl font-extrabold mt-1">
@@ -25,72 +26,108 @@
 
   <!-- Caixa branca com sombra mais suave -->
   <div class="bg-white rounded-b-2xl p-6 shadow-xl relative -mt-2 z-0">
-    
+
     <!-- TOP 3 com design aprimorado -->
-    <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white text-xl font-bold py-4 px-8 shadow-lg -mx-6 -mt-6 mb-8 text-center flex items-center justify-center relative overflow-hidden">
+    <div
+      class="bg-gradient-to-r from-blue-700 to-blue-800 text-white text-xl font-bold py-4 px-8 shadow-lg -mx-6 -mt-6 mb-8 text-center flex items-center justify-center relative overflow-hidden">
       <!-- Efeito de brilho -->
-      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shine"></div>
-      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" class="w-8 h-8 mx-2 filter drop-shadow-md"/>
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shine">
+      </div>
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}"
+        class="w-8 h-8 mx-2 filter drop-shadow-md" />
       TOP 3 GLOBAL
-      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" class="w-8 h-8 mx-2 filter drop-shadow-md"/>
+      <img src="{% static 'imagem/trophy_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}"
+        class="w-8 h-8 mx-2 filter drop-shadow-md" />
     </div>
     <p class="text-blue-600 text-center -mt-6 mb-8 font-medium">Os melhores programadores Python da plataforma</p>
 
     <!-- Container do Top 3 com layout melhorado -->
     <div class="flex justify-center items-end gap-4 mt-10 relative" style="min-height: 280px;">
       {% for perfil in perfis|slice:":3" %}
-        <div class="flex flex-col items-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 z-10
-        {% if forloop.counter == 1 %} order-2 mb-0 transform scale-110
-        {% elif forloop.counter == 2 %} order-1 mb-8
-        {% else %} order-3 mb-12
-        {% endif %}">
-          
-          <!-- Coroa com efeito melhorado -->
-          {% if forloop.counter == 1 %}
-            <div class="crown-animation mb-3">
-              <img src="{% static 'imagem/crown_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}" class="w-10 h-10 filter drop-shadow-lg"/>
-            </div>
-          {% endif %}
+      <div class="flex flex-col items-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 z-10
+          {% if forloop.counter == 1 %} 
+            order-2 mb-0 transform scale-110
+          {% elif forloop.counter == 2 %} 
+            order-1 mb-8
+          {% else %} 
+            order-3 mb-12
+          {% endif %}">
 
-          <!-- Degrau com sombra e borda -->
-          <div class="w-32 h-{% if forloop.counter == 1 %}28{% elif forloop.counter == 2 %}20{% else %}16{% endif %}
-                      {% if forloop.counter == 1 %} bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 shadow-lg
-                      {% elif forloop.counter == 2 %} bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 shadow-md
-                      {% else %} bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 shadow-md{% endif %}
-                      rounded-t-xl flex items-center justify-center text-white font-bold text-xl relative overflow-hidden">
-            <!-- Efeito de brilho no degrau -->
-            <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
-            #{{ forloop.counter }}
+        <!-- Coroa para o 1º lugar -->
+        {% if forloop.counter == 1 %}
+        <div class="crown-animation mb-3">
+          <img src="{% static 'imagem/crown_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}"
+            class="w-10 h-10 filter drop-shadow-lg" />
+        </div>
+        {% endif %}
+
+        <!-- Degrau do pódio -->
+        <div class="w-32 
+            {% if forloop.counter == 1 %}
+              h-28 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 shadow-lg
+            {% elif forloop.counter == 2 %}
+              h-20 bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 shadow-md
+            {% else %}
+              h-16 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 shadow-md
+            {% endif %}
+            rounded-t-xl flex items-center justify-center text-white font-bold text-xl relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+          #{{ forloop.counter }}
+        </div>
+
+        <!-- Avatar -->
+        <div class="relative -mt-4">
+          <div class="absolute -inset-1 
+              {% if forloop.counter == 1 %}
+                bg-gradient-to-r from-yellow-400 to-yellow-600
+              {% elif forloop.counter == 2 %}
+                bg-gradient-to-r from-gray-400 to-gray-600
+              {% else %}
+                bg-gradient-to-r from-amber-600 to-amber-800
+              {% endif %}
+              rounded-full blur opacity-30">
           </div>
+          <img src="{{ perfil.avatar.url }}" alt="{{ perfil.user.username }}" class="{% if forloop.counter == 1 %}w-24 h-24 border-yellow-400 bg-yellow-100{% else %}w-20 h-20{% endif %}
+                        {% if forloop.counter == 2 %}border-gray-300 bg-gray-100{% elif forloop.counter == 3 %}border-amber-700 bg-amber-100{% endif %}
+                        rounded-full border-4 relative z-10 shadow-xl cursor-pointer" onclick="openProfile(this)"
+            data-name="{{ perfil.user.username }}" data-xp="{{ perfil.xp }}" data-level="{{ perfil.nivel }}"
+            data-bio="{{ perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
+            data-avatar="{{ perfil.avatar.url }}" data-github="{{ perfil.github|default:'' }}"
+            data-linkedin="{{ perfil.linkedin|default:'' }}"
+            data-conquistas='[{% for c in perfil.user.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %},{% endif %}{% endfor %}]' />
+        </div>
 
-          <!-- Avatar com efeito de destaque -->
-          <div class="relative -mt-4">
-            <div class="absolute -inset-1 bg-gradient-to-r 
-                        {% if forloop.counter == 1 %}from-yellow-400 to-yellow-600
-                        {% elif forloop.counter == 2 %}from-gray-400 to-gray-600
-                        {% else %}from-amber-600 to-amber-800{% endif %} 
-                        rounded-full blur opacity-30"></div>
-            <img src="{{ perfil.avatar.url }}" alt="{{ perfil.user.username }}"
-                 class="w-{% if forloop.counter == 1 %}24{% else %}20{% endif %} h-{% if forloop.counter == 1 %}24{% else %}20{% endif %} 
-                 rounded-full border-4 relative z-10 shadow-xl
-                 {% if forloop.counter == 1 %}border-yellow-400 bg-yellow-100
-                 {% elif forloop.counter == 2 %}border-gray-300 bg-gray-100
-                 {% else %}border-amber-700 bg-amber-100{% endif %}"/>
-          </div>
+        <!-- Informações do usuário -->
+        <div class="text-center mt-3 bg-white p-3 rounded-xl shadow-sm w-full max-w-xs">
+          <p
+            class="font-bold {% if forloop.counter == 1 %}text-xl text-gray-800{% else %}text-lg text-gray-700{% endif %} truncate">
+            {{ perfil.user.username }}
+          </p>
+          <p
+            class="font-extrabold text-[#2682EA] {% if forloop.counter == 1 %}text-xl{% else %}text-lg{% endif %} mt-1">
+            {{ perfil.xp }} XP
+          </p>
 
-          <!-- Informações do usuário -->
-          <div class="text-center mt-3 bg-white p-3 rounded-xl shadow-sm w-full max-w-xs">
-            <p class="font-bold {% if forloop.counter == 1 %}text-xl text-gray-800{% else %}text-lg text-gray-700{% endif %} truncate">{{ perfil.user.username }}</p>
-            <p class="font-extrabold text-[#2682EA] {% if forloop.counter == 1 %}text-xl{% else %}text-lg{% endif %} mt-1">{{ perfil.xp }} XP</p>
-            
-            <div class="mt-2 bg-{% if forloop.counter == 1 %}yellow-100 text-yellow-800 border border-yellow-200
-                                {% elif forloop.counter == 2 %}gray-100 text-gray-700 border border-gray-200
-                                {% else %}amber-100 text-amber-800 border border-amber-200{% endif %}
-                                px-3 py-1 rounded-full text-xs font-bold inline-block">
-              {% if forloop.counter == 1 %}🥇 1º Lugar{% elif forloop.counter == 2 %}🥈 2º Lugar{% else %}🥉 3º Lugar{% endif %}
-            </div>
+          <div class="mt-2 
+              {% if forloop.counter == 1 %}
+                bg-yellow-100 text-yellow-800 border border-yellow-200
+              {% elif forloop.counter == 2 %}
+                bg-gray-100 text-gray-700 border border-gray-200
+              {% else %}
+                bg-amber-100 text-amber-800 border border-amber-200
+              {% endif %}
+              px-3 py-1 rounded-full text-xs font-bold inline-block">
+            {% if forloop.counter == 1 %}
+            🥇 1º Lugar
+            {% elif forloop.counter == 2 %}
+            🥈 2º Lugar
+            {% else %}
+            🥉 3º Lugar
+            {% endif %}
           </div>
         </div>
+      </div>
       {% endfor %}
     </div>
   </div>
@@ -105,52 +142,53 @@
 
     <div class="bg-white p-6">
       <div class="divide-y divide-gray-100">
-        {% for perfil in perfis %}
-          <div class="flex justify-between items-center py-4 ranking-item hover:bg-blue-50 rounded-xl px-4 transition-all duration-300 hover:shadow-md group">
-            <div class="flex items-center gap-4">
+        {% for perfil in page_obj %}
+        <div
+          class="flex justify-between items-center py-4 ranking-item hover:bg-blue-50 rounded-xl px-4 transition-all duration-300 hover:shadow-md group">
+          <div class="flex items-center gap-4">
+            <div class="relative">
+              <!-- Efeito sutil de brilho ao redor do avatar -->
+              <div
+                class="absolute -inset-1 bg-blue-200 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm">
+              </div>
+
+              <!-- Container do avatar com posicionamento relativo para o badge -->
               <div class="relative">
-                <!-- Efeito sutil de brilho ao redor do avatar -->
-                <div class="absolute -inset-1 bg-blue-200 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm"></div>
-                
-                <!-- Container do avatar com posicionamento relativo para o badge -->
-                <div class="relative">
-                  <img src="{{ perfil.avatar.url }}" 
-                  alt="{{ perfil.user.username }}" 
+                <img src="{{ perfil.avatar.url }}" alt="{{ perfil.user.username }}"
                   class="w-16 h-16 rounded-full border-4 border-white cursor-pointer shadow-md transition-transform duration-300 group-hover:scale-110"
-                  onclick="openProfile(this)"
-                  data-name="{{ perfil.user.username }}"
-                  data-xp="{{ perfil.xp }}"
+                  onclick="openProfile(this)" data-name="{{ perfil.user.username }}" data-xp="{{ perfil.xp }}"
                   data-level="{{ perfil.nivel }}"
                   data-bio="{{ perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
-                  data-avatar="{{ perfil.avatar.url }}"
-                  data-github="{{ perfil.github|default:'' }}"
+                  data-avatar="{{ perfil.avatar.url }}" data-github="{{ perfil.github|default:'' }}"
                   data-linkedin="{{ perfil.linkedin|default:'' }}"
-                  data-conquistas='[{% for c in perfil.user.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %}, {% endif %}{% endfor %}]'
-                  />
+                  data-conquistas='[{% for c in perfil.user.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %},{% endif %}{% endfor %}]' />
 
-                  <!-- Badge de posição reposicionado para não sobrepor a imagem -->
-                  <div class="absolute -top-2 -right-2 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold border-2 border-white shadow-md z-20">
-                    {{ forloop.counter }}
-                  </div>
+                <!-- Badge de posição reposicionado para não sobrepor a imagem -->
+                <div
+                  class="absolute -top-2 -right-2 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold border-2 border-white shadow-md z-20">
+                  {{ page_obj.start_index|add:forloop.counter0 }}
                 </div>
               </div>
-              <div>
-                <p class="font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">{{ perfil.user.username }}</p>
-                <span class="text-sm text-gray-500">Nível {{ perfil.nivel }}</span>
-              </div>
             </div>
-            <div class="text-right">
-              <p class="font-bold text-[#2682EA] text-lg">{{ perfil.xp }} XP</p>
-              <span class="text-xs text-gray-400">Pontuação</span>
+            <div>
+              <p class="font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
+                {{ perfil.user.username|default:"Usuário" }}
+              </p>
+              <span class="text-sm text-gray-500">Nível {{ perfil.nivel }}</span>
             </div>
           </div>
+          <div class="text-right">
+            <p class="font-bold text-[#2682EA] text-lg">{{ perfil.xp }} XP</p>
+            <span class="text-xs text-gray-400">Pontuação</span>
+          </div>
+        </div>
         {% empty %}
-          <div class="text-center py-8">
-            <div class="inline-block p-4 bg-blue-50 rounded-full mb-3">
-              <span class="text-3xl">🏆</span>
-            </div>
-            <p class="text-gray-500">Nenhum jogador encontrado no ranking.</p>
+        <div class="text-center py-8">
+          <div class="inline-block p-4 bg-blue-50 rounded-full mb-3">
+            <span class="text-3xl">🏆</span>
           </div>
+          <p class="text-gray-500">Nenhum jogador encontrado no ranking.</p>
+        </div>
         {% endfor %}
       </div>
     </div>
@@ -159,21 +197,25 @@
 
 <!-- Modal de Perfil com design aprimorado -->
 <div id="profileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl w-[500px] max-w-[90vw] shadow-2xl overflow-hidden modal-enter animate-fadeInUp transform transition-all duration-300 scale-95">
+  <div
+    class="bg-white rounded-2xl w-[500px] max-w-[90vw] shadow-2xl overflow-hidden modal-enter animate-fadeInUp transform transition-all duration-300 scale-95">
     <!-- Cabeçalho com gradiente melhorado -->
     <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 flex items-center gap-4 relative">
       <div class="relative">
         <div class="absolute -inset-1 bg-white/20 rounded-full blur-sm"></div>
         <img id="modal-avatar" src="" alt="avatar"
-             class="w-16 h-16 rounded-full border-2 border-white shadow-md relative z-10">
+          class="w-16 h-16 rounded-full border-2 border-white shadow-md relative z-10">
       </div>
       <div>
         <h2 id="modal-name" class="text-lg font-semibold text-white"></h2>
         <p id="modal-details" class="text-sm text-blue-100"></p>
       </div>
-      <button onclick="closeProfile()" class="absolute right-4 top-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors shadow-sm">
+      <button onclick="closeProfile()"
+        class="absolute right-4 top-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <path fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
         </svg>
       </button>
     </div>
@@ -181,17 +223,20 @@
     <!-- Conteúdo do modal -->
     <div class="max-h-[70vh] overflow-y-auto">
       <!-- Bio -->
-      <div id="modal-bio" class="bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-700 p-4 m-6 rounded-xl shadow-inner text-sm italic border border-blue-100">
+      <div id="modal-bio"
+        class="bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-700 p-4 m-6 rounded-xl shadow-inner text-sm italic border border-blue-100">
         Bio do usuário aparecerá aqui.
       </div>
 
       <!-- Stats com design de cartão melhorado -->
       <div class="grid grid-cols-2 gap-4 px-6 pb-6">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
           <p id="modal-xp" class="text-blue-700 font-bold text-xl">0 XP</p>
           <p class="text-sm text-blue-600 mt-1">XP Total</p>
         </div>
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
           <p id="modal-level" class="text-blue-700 font-bold text-xl">Nível 0</p>
           <p class="text-sm text-blue-600 mt-1">Progresso</p>
         </div>
@@ -201,7 +246,9 @@
       <div class="px-6 pb-6">
         <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd" />
           </svg>
           Conquistas
         </h3>
@@ -214,23 +261,28 @@
       <div class="px-6 py-4 bg-gray-50">
         <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+            <path
+              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
           </svg>
           Redes Sociais
         </h3>
-        
+
         <!-- GitHub -->
         <div class="mb-3">
-          <button id="modal-github-btn" class="w-full text-center bg-gray-800 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-gray-900 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button id="modal-github-btn"
+            class="w-full text-center bg-gray-800 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-gray-900 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
             </svg>
             GitHub
           </button>
           <div id="github-message" class="hidden mt-1">
             <p class="text-xs text-gray-500 italic flex items-center gap-1">
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
               </svg>
               Este usuário não cadastrou um perfil do GitHub
             </p>
@@ -239,16 +291,20 @@
 
         <!-- LinkedIn -->
         <div>
-          <button id="modal-linkedin-btn" class="w-full text-center bg-blue-600 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button id="modal-linkedin-btn"
+            class="w-full text-center bg-blue-600 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              <path
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
             LinkedIn
           </button>
           <div id="linkedin-message" class="hidden mt-1">
             <p class="text-xs text-gray-500 italic flex items-center gap-1">
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
               </svg>
               Este usuário não cadastrou um perfil do LinkedIn
             </p>
@@ -260,150 +316,214 @@
 </div>
 
 <!-- Toast de notificação -->
-<div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 z-50">
+<div id="toast"
+  class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 z-50">
   <div class="flex items-center gap-2">
     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+      <path fill-rule="evenodd"
+        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+        clip-rule="evenodd" />
     </svg>
     <span id="toast-message"></span>
   </div>
 </div>
+
+<!-- PAGINAÇÃO - ESTILO TAREFAS -->
+{% if is_paginated %}
+<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
+    <div class="text-sm text-blue-600">
+        
+    </div>
+    
+    <div class="flex items-center gap-4">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+                ← 
+            </a>
+        {% endif %}
+        
+        <span class="text-blue-600 font-medium">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+                 →
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function openProfile(el) {
-  document.getElementById("modal-avatar").src = el.dataset.avatar;
-  document.getElementById("modal-name").textContent = el.dataset.name;
-  document.getElementById("modal-details").textContent = `Nível ${el.dataset.level}`;
-  document.getElementById("modal-bio").textContent = el.dataset.bio;
-  document.getElementById("modal-xp").textContent = el.dataset.xp + " XP";
-  document.getElementById("modal-level").textContent = "Nível " + el.dataset.level;
+  function openProfile(el) {
+    document.getElementById("modal-avatar").src = el.dataset.avatar;
+    document.getElementById("modal-name").textContent = el.dataset.name;
+    document.getElementById("modal-details").textContent = `Nível ${el.dataset.level}`;
+    document.getElementById("modal-bio").textContent = el.dataset.bio;
+    document.getElementById("modal-xp").textContent = el.dataset.xp + " XP";
+    document.getElementById("modal-level").textContent = "Nível " + el.dataset.level;
 
-  // Configurar os botões de redes sociais
-  const githubBtn = document.getElementById("modal-github-btn");
-  const linkedinBtn = document.getElementById("modal-linkedin-btn");
-  const githubMessage = document.getElementById("github-message");
-  const linkedinMessage = document.getElementById("linkedin-message");
-  
-  const githubUrl = el.dataset.github || "";
-  const linkedinUrl = el.dataset.linkedin || "";
+    // Configurar os botões de redes sociais
+    const githubBtn = document.getElementById("modal-github-btn");
+    const linkedinBtn = document.getElementById("modal-linkedin-btn");
+    const githubMessage = document.getElementById("github-message");
+    const linkedinMessage = document.getElementById("linkedin-message");
 
-  // GitHub
-  if (githubUrl && githubUrl !== "#") {
-    githubBtn.disabled = false;
-    githubBtn.classList.remove("opacity-50", "cursor-not-allowed");
-    githubMessage.classList.add("hidden");
-    githubBtn.onclick = function() {
-      window.open(githubUrl, '_blank');
-    };
-  } else {
-    githubBtn.disabled = true;
-    githubBtn.classList.add("opacity-50", "cursor-not-allowed");
-    githubMessage.classList.remove("hidden");
-    githubBtn.onclick = function() {
-      showToast("Este usuário não cadastrou um perfil do GitHub");
-    };
-  }
+    const githubUrl = el.dataset.github || "";
+    const linkedinUrl = el.dataset.linkedin || "";
 
-  // LinkedIn
-  if (linkedinUrl && linkedinUrl !== "#") {
-    linkedinBtn.disabled = false;
-    linkedinBtn.classList.remove("opacity-50", "cursor-not-allowed");
-    linkedinMessage.classList.add("hidden");
-    linkedinBtn.onclick = function() {
-      window.open(linkedinUrl, '_blank');
-    };
-  } else {
-    linkedinBtn.disabled = true;
-    linkedinBtn.classList.add("opacity-50", "cursor-not-allowed");
-    linkedinMessage.classList.remove("hidden");
-    linkedinBtn.onclick = function() {
-      showToast("Este usuário não cadastrou um perfil do LinkedIn");
-    };
-  }
+    // GitHub
+    if (githubUrl && githubUrl !== "#") {
+      githubBtn.disabled = false;
+      githubBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      githubMessage.classList.add("hidden");
+      githubBtn.onclick = function () {
+        window.open(githubUrl, '_blank');
+      };
+    } else {
+      githubBtn.disabled = true;
+      githubBtn.classList.add("opacity-50", "cursor-not-allowed");
+      githubMessage.classList.remove("hidden");
+      githubBtn.onclick = function () {
+        showToast("Este usuário não cadastrou um perfil do GitHub");
+      };
+    }
 
-  // conquistas
-  const conquistas = JSON.parse(el.dataset.conquistas || "[]");
-  const conquistasDiv = document.getElementById("modal-conquistas");
-  conquistasDiv.innerHTML = "";
-  if (conquistas.length === 0) {
-    conquistasDiv.innerHTML = `<p class="text-gray-400 text-sm italic">Nenhuma conquista desbloqueada.</p>`;
-  } else {
-    conquistas.forEach(c => {
-      conquistasDiv.innerHTML += `
+    // LinkedIn
+    if (linkedinUrl && linkedinUrl !== "#") {
+      linkedinBtn.disabled = false;
+      linkedinBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      linkedinMessage.classList.add("hidden");
+      linkedinBtn.onclick = function () {
+        window.open(linkedinUrl, '_blank');
+      };
+    } else {
+      linkedinBtn.disabled = true;
+      linkedinBtn.classList.add("opacity-50", "cursor-not-allowed");
+      linkedinMessage.classList.remove("hidden");
+      linkedinBtn.onclick = function () {
+        showToast("Este usuário não cadastrou um perfil do LinkedIn");
+      };
+    }
+
+    // conquistas
+    const conquistas = JSON.parse(el.dataset.conquistas || "[]");
+    const conquistasDiv = document.getElementById("modal-conquistas");
+    conquistasDiv.innerHTML = "";
+    if (conquistas.length === 0) {
+      conquistasDiv.innerHTML = `<p class="text-gray-400 text-sm italic">Nenhuma conquista desbloqueada.</p>`;
+    } else {
+      conquistas.forEach(c => {
+        conquistasDiv.innerHTML += `
         <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 rounded-lg text-xs shadow-sm hover:shadow-md transition-all duration-300 border border-blue-100">
           ${c.icone ? `<img src="${c.icone}" class="w-4 h-4"/>` : "🏆"} 
           <span class="font-medium">${c.titulo}</span>
         </div>`;
-    });
+      });
+    }
+
+    document.getElementById("profileModal").classList.remove("hidden");
+
+    // Pequeno atraso para a animação de entrada
+    setTimeout(() => {
+      document.querySelector('.modal-enter').classList.remove('scale-95');
+      document.querySelector('.modal-enter').classList.add('scale-100');
+    }, 10);
   }
 
-  document.getElementById("profileModal").classList.remove("hidden");
-  
-  // Pequeno atraso para a animação de entrada
-  setTimeout(() => {
-    document.querySelector('.modal-enter').classList.remove('scale-95');
-    document.querySelector('.modal-enter').classList.add('scale-100');
-  }, 10);
-}
+  function closeProfile() {
+    document.querySelector('.modal-enter').classList.remove('scale-100');
+    document.querySelector('.modal-enter').classList.add('scale-95');
 
-function closeProfile() {
-  document.querySelector('.modal-enter').classList.remove('scale-100');
-  document.querySelector('.modal-enter').classList.add('scale-95');
-  
-  setTimeout(() => {
-    document.getElementById("profileModal").classList.add("hidden");
-  }, 200);
-}
+    setTimeout(() => {
+      document.getElementById("profileModal").classList.add("hidden");
+    }, 200);
+  }
 
-// Função para mostrar toast de notificação
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  const toastMessage = document.getElementById("toast-message");
-  
-  toastMessage.textContent = message;
-  
-  // Mostrar toast
-  toast.classList.remove("translate-y-16", "opacity-0");
-  toast.classList.add("translate-y-0", "opacity-100");
-  
-  // Esconder toast após 3 segundos
-  setTimeout(() => {
-    toast.classList.remove("translate-y-0", "opacity-100");
-    toast.classList.add("translate-y-16", "opacity-0");
-  }, 3000);
-}
+  // Função para mostrar toast de notificação
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    const toastMessage = document.getElementById("toast-message");
 
-document.getElementById("profileModal").addEventListener("click", function(e) {
-  if (e.target === this) closeProfile();
-});
+    toastMessage.textContent = message;
+
+    // Mostrar toast
+    toast.classList.remove("translate-y-16", "opacity-0");
+    toast.classList.add("translate-y-0", "opacity-100");
+
+    // Esconder toast após 3 segundos
+    setTimeout(() => {
+      toast.classList.remove("translate-y-0", "opacity-100");
+      toast.classList.add("translate-y-16", "opacity-0");
+    }, 3000);
+  }
+
+  document.getElementById("profileModal").addEventListener("click", function (e) {
+    if (e.target === this) closeProfile();
+  });
 </script>
 
 <style>
-  .crown-animation { 
-    animation: bounce 2s infinite; 
+  .crown-animation {
+    animation: bounce 2s infinite;
   }
-  
-  @keyframes bounce { 
-    0%, 100% { transform: translateY(0); } 
-    50% { transform: translateY(-5px); } 
+
+  @keyframes bounce {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
   }
-  
-  .animate-fadeInUp { 
-    animation: fadeInUp 0.4s ease-out; 
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.4s ease-out;
   }
-  
-  @keyframes fadeInUp { 
-    from { opacity: 0; transform: translateY(20px) scale(0.95); } 
-    to { opacity: 1; transform: translateY(0) scale(1); } 
+
+  .btn-secondary {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
   }
-  
+
+  .btn-secondary:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   @keyframes shine {
-    0% { transform: translateX(-100%) skewX(-12deg); }
-    100% { transform: translateX(200%) skewX(-12deg); }
+    0% {
+      transform: translateX(-100%) skewX(-12deg);
+    }
+
+    100% {
+      transform: translateX(200%) skewX(-12deg);
+    }
   }
-  
+
   .animate-shine {
     animation: shine 3s infinite;
   }

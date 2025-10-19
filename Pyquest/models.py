@@ -142,12 +142,14 @@ class Aula(models.Model):
     def __str__(self):
         return self.titulo
 
-    
+
 class Hashtag(models.Model):
     nome = models.CharField(max_length=50, unique=True)
-
+    contador = models.IntegerField(default=0)
+    ultimo_uso = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
-        return self.nome
+        return f"#{self.nome}"
 
 # models.py - ATUALIZAR o modelo Post
 class Post(models.Model):
@@ -155,11 +157,65 @@ class Post(models.Model):
     conteudo = models.TextField()
     imagem = models.ImageField(upload_to="posts/", blank=True, null=True)  # NOVO
     created_at = models.DateTimeField(auto_now_add=True)
-    hashtags = models.ManyToManyField(Hashtag, blank=True, related_name="posts")
     likes = models.ManyToManyField(User, blank=True, related_name="liked_posts")
 
-    def __str__(self):
-        return f"{self.autor.username}: {self.conteudo[:30]}"
+    hashtags = models.ManyToManyField(Hashtag, blank=True)
+    
+    def save(self, *args, **kwargs):
+        # Salva primeiro o post para ter um ID
+        super().save(*args, **kwargs)
+        # Processa as hashtags após salvar
+        self._processar_hashtags()
+    
+    def _processar_hashtags(self):
+        import re
+        from django.utils import timezone
+    
+        print(f"🔍 Processando hashtags para post {self.pk}")
+        print(f"📝 Conteúdo: {self.conteudo}")
+        
+            # Regex para capturar hashtags
+        hashtags_encontradas = re.findall(r'#(\w+)', self.conteudo)
+        print(f"🔍 Hashtags encontradas: {hashtags_encontradas}")
+        
+        if not hashtags_encontradas:
+            print("❌ Nenhuma hashtag encontrada")
+            return
+        
+        # Limpa hashtags antigas
+        self.hashtags.clear()
+        
+        hashtags_adicionadas = []
+        
+        for nome_hashtag in hashtags_encontradas:
+            nome_hashtag = nome_hashtag.lower().strip()
+            
+            if nome_hashtag:
+                try:
+                    # Busca ou cria a hashtag
+                    hashtag, created = Hashtag.objects.get_or_create(
+                        nome=nome_hashtag
+                    )
+                    
+                    # ATUALIZAÇÃO CRÍTICA: Sempre garantir contador >= 1
+                    if created:
+                        hashtag.contador = 1
+                    else:
+                        hashtag.contador += 1
+                    
+                    hashtag.ultimo_uso = timezone.now()
+                    hashtag.save()
+                    
+                    # Adiciona ao post
+                    self.hashtags.add(hashtag)
+                    hashtags_adicionadas.append(nome_hashtag)
+                    
+                    print(f"✅ #{nome_hashtag} - contador: {hashtag.contador} (criada: {created})")
+                    
+                except Exception as e:
+                    print(f"❌ Erro: #{nome_hashtag} - {e}")
+        
+        print(f"🎯 Concluído: {len(hashtags_adicionadas)} hashtags")
     
 
 

@@ -64,6 +64,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'Pyquest.context_processors.perfil_context',
+                'Pyquest.context_processors.custom_messages',
             ],
         },
     },

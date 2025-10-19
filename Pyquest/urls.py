@@ -26,4 +26,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('criar-conteudo/', views.criar_conteudo, name='criar_conteudo'),
     path('gerenciar-conteudo/', views.gerenciar_conteudo, name='gerenciar_conteudo'),
+    # Nova URL para completar lições
+    path('completar-licao/<int:licao_id>/', views.completar_licao, name='completar_licao'),
 ]

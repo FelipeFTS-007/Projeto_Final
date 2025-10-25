@@ -284,31 +284,6 @@
   </div>
 </div>
 
-<!-- Últimas Atividades com visual modernizado -->
-<div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-blue">
-    <div class="flex items-center justify-between mb-6">
-    <h3 class="section-title text-xl font-bold text-gray-800 flex items-center">
-      <img src="{% static 'imagem/history_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Histórico" class="w-6 h-6 mr-2">
-      Últimas Atividades
-    </h3>
-    <span class="text-sm text-blue-500 font-medium bg-blue-100 px-3 py-1 rounded-full">Hoje</span>
-  </div>
-  
-  <ul class="space-y-4">
-  {% for atividade in atividades %}
-    <li class="activity-item bg-white border rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md card-white">
-      <div>
-        <p class="font-medium text-blue-800">{{ atividade.titulo }}</p>
-        <p class="text-sm text-blue-500">{{ atividade.data|date:"d/m H:i" }}</p>
-      </div>
-      <span class="xp-badge text-white font-bold py-1 px-3 rounded-full text-sm">+{{ atividade.xp_ganho }} XP</span>
-    </li>
-  {% empty %}
-    <li class="p-5 text-gray-500 text-center bg-white rounded-2xl">Nenhuma atividade recente.</li>
-  {% endfor %}
-</ul>
-  
-</div>
 
 <!-- Botão Continuar Estudando com destaque -->
 <div class="mt-6 flex justify-center">

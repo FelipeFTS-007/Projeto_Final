@@ -21,11 +21,13 @@ urlpatterns = [
     path("forum/<int:post_id>/delete/", views.delete_post, name="delete_post"),
     path('forum/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('forum/<int:post_id>/like/', views.like_post, name='like_post'),
-    path('forum/<int:post_id>/reply/<int:parent_id>/', views.reply_comment, name='reply_comment'),
     path('forum/comment/<int:comment_id>/like/', views.like_comment, name='like_comment'),
+    path('forum/<int:post_id>/reply/<int:parent_id>/', views.reply_comment, name='reply_comment'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('criar-conteudo/', views.criar_conteudo, name='criar_conteudo'),
     path('gerenciar-conteudo/', views.gerenciar_conteudo, name='gerenciar_conteudo'),
     # Nova URL para completar lições
     path('completar-licao/<int:licao_id>/', views.completar_licao, name='completar_licao'),
+    path("forum/top_hashtags/", views.top_hashtags_json, name="top_hashtags_json"),
+
 ]

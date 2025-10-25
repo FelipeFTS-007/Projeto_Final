@@ -16,7 +16,26 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
 from datetime import timedelta
 from django.utils import timezone
-
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Hashtag
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.db.models import Count, Q
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.utils import timezone
+from .models import Post, Comentario, Hashtag, Perfil
+from django.contrib.auth.models import User
+from datetime import timedelta
 
 # ---------- AUTENTICAÇÃO ----------
 
@@ -255,71 +274,59 @@ def criar_perfil(sender, instance, created, **kwargs):
 
 
 
+# ==========================
+# 🔹 FÓRUM (Página principal)
+# ==========================
 @login_required
 def forum(request):
     try:
-        # Estatísticas
         total_users = User.objects.count()
-        
         hoje = timezone.now().date()
+
         active_today = User.objects.filter(
-            Q(post__created_at__date=hoje) | 
+            Q(post__created_at__date=hoje) |
             Q(comentarios__created_at__date=hoje)
         ).distinct().count()
-        
+
         posts_today = Post.objects.filter(created_at__date=hoje).count()
-        
-     
 
-       
-        
-        # DEBUG: Verificar hashtags
-        print("=== DEBUG HASHTAGS ===")
-        uma_semana_atras = timezone.now() - timedelta(days=7)
-        todas_hashtags = Hashtag.objects.all()
-        print(f"Total de hashtags: {todas_hashtags.count()}")
-        
-        for tag in todas_hashtags:
-            print(f"#{tag.nome} - {tag.contador} usos - {tag.ultimo_uso}")
-        
-        # Tópicos em alta - versão temporária para teste
-        trending_tags = Hashtag.objects.filter(
-        contador__gte=1  # Pelo menos 1 uso
-        ).order_by('-contador', '-ultimo_uso')[:10]
+        # 🔹 Hashtags ordenadas e filtradas
+        trending_tags = (
+            Hashtag.objects
+            .filter(contador__gte=1)
+            .order_by('-contador', '-ultimo_uso')[:10]
+        )
 
-        print(f"DEBUG: {trending_tags.count()} trending tags com contador >= 1")
-        for tag in trending_tags:
-            print(f"DEBUG: #{tag.nome} - contador: {tag.contador}")
-        
-        
-        
-        # Contribuidores destaque (usuários com mais XP)
-        top_users = User.objects.filter(perfil__isnull=False).order_by('-perfil__xp')[:10]
-        
-        # Filtros
+        # 🔹 Usuários com mais XP
+        top_users = (
+            User.objects
+            .filter(perfil__isnull=False)
+            .order_by('-perfil__xp')[:10]
+        )
+
+        # 🔹 Posts e filtros
         current_filter = request.GET.get('filter', 'all')
         search_query = request.GET.get('q', '')
-        
-        posts = Post.objects.all().order_by("-created_at").prefetch_related("comentarios", "hashtags", "autor__perfil")
-        
-        # Aplicar filtro de busca
+
+        posts = (
+            Post.objects
+            .all()
+            .order_by("-created_at")
+            .prefetch_related("comentarios", "hashtags", "autor__perfil")
+        )
+
         if search_query:
             posts = posts.filter(
                 Q(conteudo__icontains=search_query) |
                 Q(hashtags__nome__icontains=search_query) |
                 Q(autor__username__icontains=search_query)
             ).distinct()
-        
-        # Aplicar filtros
+
         if current_filter == 'popular':
             posts = posts.annotate(like_count=Count('likes')).order_by('-like_count', '-created_at')
         elif current_filter == 'recent':
             posts = posts.order_by('-created_at')
-        elif current_filter == 'following':
-            # Implementar lógica de seguir usuários depois
-            posts = posts.order_by('-created_at')
 
-        # Paginação
         paginator = Paginator(posts, 10)
         page_number = request.GET.get('page')
         try:
@@ -343,26 +350,22 @@ def forum(request):
         }
 
         return render(request, "Pyquest/forum.html", context)
-    
+
     except Exception as e:
-        # Fallback em caso de erro
-        print(f"Erro no forum: {e}")
+        print(f"[ERRO] forum: {e}")
         posts = Post.objects.all().order_by("-created_at")
         paginator = Paginator(posts, 10)
-        page_number = request.GET.get('page')
         try:
-            posts = paginator.page(page_number)
-        except PageNotAnInteger:
             posts = paginator.page(1)
-        except EmptyPage:
-            posts = paginator.page(paginator.num_pages)
-            
+        except:
+            posts = []
+
         context = {
             "posts": posts,
             "total_users": User.objects.count(),
             "active_today": 0,
             "posts_today": 0,
-            "trending_tags": Hashtag.objects.order_by('-contador')[:10],
+            "trending_tags": Hashtag.objects.order_by('-contador', '-ultimo_uso')[:10],
             "top_users": User.objects.filter(perfil__isnull=False).order_by('-perfil__xp')[:10],
             "current_filter": "all",
             "search_query": "",
@@ -371,29 +374,38 @@ def forum(request):
         }
         return render(request, "Pyquest/forum.html", context)
 
+
 # views.py - ATUALIZAR create_post e edit_post
+
+
+# ==========================
+# 🔹 CRIAR POST
+# ==========================
 @login_required
 def create_post(request):
     if request.method == "POST":
-        conteudo = request.POST.get("conteudo")
+        conteudo = request.POST.get("conteudo", "").strip()
         hashtags_text = request.POST.get("hashtags", "")
-        imagem = request.FILES.get("imagem")  # NOVO
 
-        if conteudo:
-            post = Post.objects.create(
-                autor=request.user,
-                conteudo=conteudo,
-                imagem=imagem,  # NOVO
-                created_at=timezone.now()
-            )
-            
-            # salvar hashtags
-            hashtags = [tag.strip().lower() for tag in hashtags_text.split(",") if tag.strip()]
-            for nome in hashtags:
-                tag, created = Hashtag.objects.get_or_create(nome=nome)
-                post.hashtags.add(tag)
+        if not conteudo:
+            return redirect("forum")
+
+        post = Post.objects.create(
+            autor=request.user,
+            conteudo=conteudo
+        )
+
+        # 🔹 Processar hashtags
+        hashtags = [tag.strip().lower().lstrip('#') for tag in hashtags_text.split(",") if tag.strip()]
+        for nome in hashtags:
+            tag, created = Hashtag.objects.get_or_create(nome=nome)
+            tag.contador = (tag.contador or 0) + 1
+            tag.ultimo_uso = timezone.now()
+            tag.save()
+            post.hashtags.add(tag)
 
         return redirect("forum")
+
     return redirect("forum")
 
 
@@ -439,48 +451,107 @@ def delete_post(request, post_id):
 
 
 
+
+
+
+# ==========================
+# 🔹 ADICIONAR COMENTÁRIO
+# ==========================
 @login_required
 def add_comment(request, post_id):
     if request.method == "POST":
         post = get_object_or_404(Post, id=post_id)
-        texto = request.POST.get("texto")
-        
-        if texto.strip():
-            comentario = Comentario.objects.create(
-                post=post, 
-                autor=request.user, 
-                texto=texto
-            )
-            
-            # Se for uma requisição AJAX, retorna JSON
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'comment_id': comentario.id,
-                    'author': comentario.autor.username,
-                    'text': comentario.texto,
-                })
-    
-    # Redirecionamento normal para requisições não-AJAX
+        texto = request.POST.get("texto", "").strip()
+
+        if not texto:
+            return JsonResponse({"success": False, "error": "Comentário vazio."})
+
+        comentario = Comentario.objects.create(
+            post=post,
+            autor=request.user,
+            texto=texto
+        )
+
+        # 🔹 Detectar e registrar hashtags usadas em comentários
+        hashtags = [tag.strip('#').lower() for tag in texto.split() if tag.startswith('#')]
+        for nome in hashtags:
+            tag, created = Hashtag.objects.get_or_create(nome=nome)
+            tag.contador = (tag.contador or 0) + 1
+            tag.ultimo_uso = timezone.now()
+            tag.save()
+
+        # 🔹 Retorno AJAX com avatar e conquistas
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            perfil = comentario.autor.perfil
+            conquistas_data = []
+            if hasattr(perfil, "conquistas") and hasattr(perfil.conquistas, "all"):
+                conquistas_data = [
+                    {"titulo": c.titulo, "icone": c.icone.url if c.icone else None}
+                    for c in perfil.conquistas.all()
+                ]
+            return JsonResponse({
+                "success": True,
+                "comment_id": comentario.id,
+                "author": comentario.autor.username,
+                "text": comentario.texto,
+                "avatar_url": perfil.avatar.url if perfil.avatar else "/static/img/default-avatar.png",
+                "bio": perfil.descricao or "",
+                "xp": perfil.xp,
+                "level": perfil.nivel,
+                "github": perfil.github or "#",
+                "linkedin": perfil.linkedin or "#",
+                "conquistas": conquistas_data,
+            })
+
     return redirect("forum")
+
+
+    
+    
+
+from django.http import JsonResponse
 
 @login_required
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+    liked = False
+
     if request.user in post.likes.all():
         post.likes.remove(request.user)
     else:
         post.likes.add(request.user)
+        liked = True
+
+    # Se for uma requisição AJAX, retorna JSON
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "liked": liked,
+            "likes_count": post.likes.count(),
+        })
+
+    # Fallback (caso JS falhe)
     return redirect("forum")
+
 
 @login_required
 def like_comment(request, comment_id):
     comentario = get_object_or_404(Comentario, id=comment_id)
+    liked = False
+
     if request.user in comentario.likes.all():
         comentario.likes.remove(request.user)
     else:
         comentario.likes.add(request.user)
+        liked = True
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "liked": liked,
+            "likes_count": comentario.likes.count(),
+        })
+
     return redirect("forum")
+
 
 
 @login_required
@@ -513,6 +584,17 @@ def reply_comment(request, post_id, parent_id):
                 })
     
     return redirect("forum")
+
+
+
+
+def top_hashtags_json(request):
+    hashtags = Hashtag.objects.order_by('-contador', '-ultimo_uso')[:5]
+    data = [
+        {"nome": h.nome, "contador": h.contador}
+        for h in hashtags
+    ]
+    return JsonResponse({"hashtags": data})
 
 
 def is_professor(user):

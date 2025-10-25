@@ -1,0 +1,4948 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Conteúdo - PyQuest{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* TODO O CSS DO criar_conteudo.html - COPIE EXATAMENTE IGUAL */
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .module-card {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+    }
+    
+    .floating-element {
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .interactive-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .interactive-card:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-section {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .question-item {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .question-item:hover {
+        border-color: #3B82F6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #64748b;
+        transition: color 0.3s ease;
+    }
+    
+    .drag-handle:hover {
+        color: #3B82F6;
+    }
+    
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .option-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .option-input {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        color: #374151;
+        background-color: white;
+    }
+
+    .option-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .correct-option {
+        background-color: #f0f9ff !important;
+        border-left: 4px solid #3b82f6;
+        padding-left: 8px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+    
+    .empty-state img {
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .step.active {
+        color: #3B82F6;
+        font-weight: 600;
+    }
+    
+    .step-number {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .step.active .step-number {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .step-connector {
+        width: 4rem;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 1rem;
+    }
+    
+    .step.active ~ .step-connector {
+        background: #3B82F6;
+    }
+    
+    .content-preview {
+        background: #f8fafc;
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 1.5rem;
+        min-height: 200px;
+    }
+    
+    .question-preview {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #3B82F6;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+    
+    .step.completed {
+        color: #10B981;
+    }
+    
+    .step.completed .step-number {
+        background: #10B981;
+        color: white;
+    }
+    
+    .question-item.dragging {
+        opacity: 0.5;
+        transform: rotate(5deg);
+    }
+    
+    .question-item.drag-over {
+        border: 2px dashed #3B82F6;
+    }
+    
+    .validation-error {
+        color: #EF4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-control.error {
+        border-color: #EF4444;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        background: #E5E7EB;
+        border-radius: 3px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
+        width: 25%;
+        transition: width 0.5s ease;
+    }
+    
+    .save-indicator {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: #10B981;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 1000;
+    }
+    
+    .question-counter {
+        background: #3B82F6;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .auto-save-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #64748B;
+    }
+
+    /* Estilos para o Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 0;
+        width: 90%;
+        max-width: 500px;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* Estilos para o editor estilo Google Docs */
+    .editor-container {
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .editor-toolbar {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dadce0;
+        padding: 8px 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+    }
+    
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        border-right: 1px solid #e0e0e0;
+    }
+    
+    .toolbar-group:last-child {
+        border-right: none;
+    }
+    
+    .toolbar-button {
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5f6368;
+        transition: all 0.2s ease;
+        min-width: 32px;
+        height: 32px;
+    }
+    
+    .toolbar-button:hover {
+        background: #f1f3f4;
+        color: #1a73e8;
+    }
+    
+    .toolbar-button.active {
+        background: #e8f0fe;
+        color: #1a73e8;
+    }
+    
+    .toolbar-select {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 4px 8px;
+        background: white;
+        color: #3c4043;
+        font-size: 13px;
+        cursor: pointer;
+        height: 32px;
+    }
+    
+    .toolbar-select:focus {
+        outline: none;
+        border-color: #1a73e8;
+    }
+    
+    .editor-content {
+        background: white;
+        min-height: 400px;
+        padding: 20px;
+        line-height: 1.6;
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        color: #202124;
+        outline: none;
+        overflow-y: auto;
+        max-height: 600px;
+    }
+    
+    .editor-content:focus {
+        outline: none;
+    }
+    
+    .editor-content h1, .editor-content h2, .editor-content h3 {
+        margin: 12px 0;
+        color: #202124;
+        font-weight: 400;
+    }
+    
+    .editor-content h1 {
+        font-size: 24px;
+    }
+    
+    .editor-content h2 {
+        font-size: 20px;
+    }
+    
+    .editor-content h3 {
+        font-size: 16px;
+    }
+    
+    .editor-content p {
+        margin: 8px 0;
+    }
+    
+    .editor-content ul, .editor-content ol {
+        margin: 8px 0;
+        padding-left: 24px;
+    }
+    
+    .editor-content blockquote {
+        border-left: 4px solid #dadce0;
+        margin: 12px 0;
+        padding-left: 16px;
+        color: #5f6368;
+        font-style: italic;
+    }
+    
+    .editor-content code {
+        background: #f1f3f4;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    
+    .editor-content pre {
+        background: #f8f9fa;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 12px;
+        margin: 12px 0;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .color-picker {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .color-options {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        display: none;
+    }
+    
+    .color-option {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .color-option:hover {
+        transform: scale(1.1);
+    }
+    
+    .toolbar-divider {
+        width: 1px;
+        height: 20px;
+        background: #e0e0e0;
+        margin: 0 8px;
+    }
+    
+    .word-count {
+        color: #5f6368;
+        font-size: 12px;
+        margin-left: auto;
+        padding: 0 8px;
+    }
+    
+    /* Estilo para texto selecionado */
+    .editor-content ::selection {
+        background: #c2e7ff;
+    }
+    
+    /* Estilos para imagens no editor */
+    .editor-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        margin: 8px 0;
+    }
+    
+    /* Estilo para links */
+    .editor-content a {
+        color: #1a73e8;
+        text-decoration: underline;
+    }
+    
+    /* Estilo para tabelas */
+    .editor-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0;
+    }
+    
+    .editor-content table, .editor-content th, .editor-content td {
+        border: 1px solid #dadce0;
+    }
+    
+    .editor-content th, .editor-content td {
+        padding: 8px 12px;
+        text-align: left;
+    }
+    
+    .editor-content th {
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+
+    /* Estilos para Completar Lacunas */
+    .blank-preview {
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+        font-weight: 500;
+        background: #fef3c7;
+        border: 2px dashed #f59e0b;
+        border-radius: 6px;
+        padding: 2px 8px;
+        margin: 0 2px;
+        transition: all 0.2s ease;
+    }
+
+    .blank-filled {
+        background: #d1fae5;
+        border: 2px solid #10b981;
+        color: #065f46;
+        font-weight: 600;
+    }
+
+    .word-bank {
+        min-height: 60px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+        margin: 12px 0;
+    }
+
+    .word-option {
+        background: #dbeafe;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        padding: 8px 12px;
+        text-align: center;
+        cursor: grab;
+        transition: all 0.2s ease;
+        user-select: none;
+        font-weight: 500;
+    }
+
+    .word-option:hover {
+        background: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .word-option:active {
+        cursor: grabbing;
+        transform: scale(0.95);
+    }
+
+    .fill-blank-textarea {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        min-height: 120px;
+    }
+
+    /* Estilos corrigidos para dicas */
+.hints-container {
+    transition: all 0.3s ease;
+    border: 1px solid #dbeafe;
+}
+
+.hints-container.expanded {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.add-hint-btn {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.add-hint-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+.hint-counter {
+    font-size: 0.7rem;
+    min-width: 20px;
+    height: 20px;
+}
+
+.hint-item {
+    background: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hint-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.hint-item input {
+    border: none;
+    background: transparent;
+    flex: 1;
+    padding: 4px 0;
+    color: #374151;
+}
+
+.hint-item input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.remove-hint {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.remove-hint:hover {
+    opacity: 1;
+}
+
+    /* Estilos para código */
+    .text-preview {
+        white-space: pre-wrap;
+        font-family: 'Courier New', monospace;
+        line-height: 1.5;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+
+    .code-preview, .output-content {
+        white-space: pre-wrap;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+        color: #374151;
+    }
+
+    .output-preview {
+        background: #1a1a1a !important;
+        border: 1px solid #333 !important;
+        border-radius: 6px;
+        padding: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        color: #10b981 !important;
+    }
+
+    .instruction-preview {
+        line-height: 1.6;
+        color: #4b5563;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .starter-code, .expected-output {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .run-button {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        transition: all 0.3s ease;
+    }
+
+    .run-button:hover:not(:disabled) {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+    }
+
+    .run-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+/* Adicione isto ao seu CSS existente */
+.topic-item {
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.topic-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.topic-title {
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 200px;
+}
+
+.topic-title:focus {
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-container {
+    border: 1px solid #cbd5e1;
+    border-radius: 0 0 8px 8px;
+}
+
+.editor-toolbar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.editor-content {
+    min-height: 200px;
+    max-height: 500px;
+}
+
+/* Estilo para o placeholder do editor */
+.editor-content:empty:before {
+    content: attr(placeholder);
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.editor-content:focus:empty:before {
+    content: attr(placeholder);
+    color: #cbd5e1;
+}
+
+
+/* Estilos para o preview de lacunas sem opções automáticas */
+.word-bank-container {
+    margin: 12px 0;
+}
+
+.word-bank-placeholder {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
+}
+
+/* Remover completamente qualquer estilo de opção de palavra */
+.word-option {
+    display: none !important;
+}
+
+/* Adicione ao seu CSS existente */
+.tab-space {
+    display: inline-block;
+    width: 40px; /* 4 espaços */
+    height: 1px;
+    background: transparent;
+}
+
+.editor-content pre,
+.editor-content code {
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+/* Estilos para o Tab no editor teórico */
+.editor-content {
+    tab-size: 4;
+    -moz-tab-size: 4;
+    white-space: pre-wrap;
+}
+
+/* Garantir que o Tab funcione em elementos contenteditable */
+[contenteditable="true"] {
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+
+/* Container para o editor de código com numeração de linhas */
+.code-editor-container {
+    position: relative;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.code-editor-wrapper {
+    display: flex;
+    width: 100%;
+    background: #f8f9fa;
+}
+
+.line-numbers {
+    background: #f1f3f4;
+    border-right: 1px solid #e2e8f0;
+    padding: 12px 8px;
+    text-align: right;
+    color: #64748b;
+    font-size: 13px;
+    user-select: none;
+    min-height: 120px;
+    line-height: 1.5;
+}
+
+.code-textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: white;
+    resize: vertical;
+    min-height: 120px;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+}
+
+/* Estilo para o preview com numeração */
+.code-preview-container {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.code-preview-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.preview-line-numbers {
+    background: #f1f3f4;
+    border-right: 1px solid #e2e8f0;
+    padding: 12px 8px;
+    text-align: right;
+    color: #64748b;
+    font-size: 13px;
+    user-select: none;
+    min-height: 60px;
+    line-height: 1.5;
+}
+
+.code-preview-content {
+    flex: 1;
+    padding: 12px;
+    background: white;
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 60px;
+}
+
+/* Estilo para lacunas maiores */
+.large-textarea {
+    min-height: 200px;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.large-preview {
+    min-height: 200px;
+    font-size: 16px;
+    line-height: 1.8;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho ATUALIZADO para Edição -->
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Editar Conteúdo</h1>
+            <p class="text-blue-100 text-lg">Editando: {{ aula.titulo_aula }}</p>
+        </div>
+        <img src="{% static 'imagem/edit_note_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Editar Conteúdo" class="w-16 h-16 floating-element">
+    </div>
+    
+    <!-- Barra de Progresso -->
+    <div class="mt-4">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="flex justify-between text-blue-200 text-sm">
+            <span>Estrutura</span>
+            <span>Conteúdo Teórico</span>
+            <span>Exercícios Práticos</span>
+            <span>Revisão</span>
+        </div>
+    </div>
+</div>
+
+    <!-- Indicador de Passos -->
+    <div class="step-indicator">
+        <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <span>Estrutura</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <span>Conteúdo Teórico</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="3">
+            <div class="step-number">3</div>
+            <span>Exercícios Práticos</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="4">
+            <div class="step-number">4</div>
+            <span>Revisão</span>
+        </div>
+    </div>
+
+    <!-- Form Principal ATUALIZADO para Edição -->
+    <form id="content-form" method="post" action="{% url 'editar_conteudo' aula.id %}" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Campo hidden para dados das questões -->
+        <!-- No seu template principal, verifique esta linha: -->
+        <input type="hidden" name="questoes_json" id="questoes-json" value='{{ questoes_json|safe }}'>
+
+        <!-- Campo hidden para dados dos tópicos -->
+        <input type="hidden" name="topicos_json" id="topicos-json" value='{{ topicos_json|safe }}'>
+
+        <!-- NOVO: Campo hidden para XP teórico -->
+        <input type="hidden" name="theory_xp" id="theory-xp-hidden" value="{% if aula.xp_teorico %}{{ aula.xp_teorico }}{% else %}30{% endif %}">
+
+        <!-- Campos hidden para tempos -->
+        <input type="hidden" name="tempo_teoria" id="tempo-teoria-hidden" value="{{ aula.tempo_teoria|default:'30' }}">
+        <input type="hidden" name="tempo_pratica" id="tempo-pratica-hidden" value="{{ aula.tempo_pratica|default:'15' }}">
+
+        <!-- PASSO 1: ESTRUTURA DO CONTEÚDO -->
+<div id="step-1" class="form-section">
+    <div class="form-section-header">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">📚 Estrutura do Conteúdo</h2>
+        </div>
+        <span class="text-blue-200">Passo 1 de 4</span>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Capítulo -->
+        <div>
+            <label for="chapter-select" class="block text-sm font-medium text-gray-700 mb-2">Capítulo</label>
+            <select id="chapter-select" name="capitulo_id" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                <option value="" disabled selected>Selecionar Capítulo</option>
+                {% for capitulo in capitulos %}
+                <option value="{{ capitulo.id }}" {% if capitulo.id == aula.modulo.capitulo.id %}selected{% endif %}>
+                    {{ capitulo.titulo }}
+                </option>
+                {% endfor %}
+                <option value="new">+ Criar Novo Capítulo</option>
+            </select>
+            <div class="validation-error" id="chapter-error"></div>
+        </div>
+        
+        <!-- Módulo -->
+        <div>
+            <label for="module-select" class="block text-sm font-medium text-gray-700 mb-2">Módulo</label>
+            <select id="module-select" name="modulo_id" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                <option value="" disabled selected>Selecione um módulo</option>
+                {% for modulo in modulos %}
+                <option value="{{ modulo.id }}" {% if modulo.id == aula.modulo.id %}selected{% endif %}>
+                    {{ modulo.titulo }}
+                </option>
+                {% endfor %}
+                <option value="new">+ Criar Novo Módulo</option>
+            </select>
+            <div class="validation-error" id="module-error"></div>
+        </div>
+        
+        <!-- Título da Aula -->
+        <div>
+            <label for="lesson-title" class="block text-sm font-medium text-gray-700 mb-2">Título da Aula *</label>
+            <input type="text" id="lesson-title" name="titulo_aula" value="{{ aula.titulo_aula }}" placeholder="Coloque o novo nome da Aula" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control" required>
+            <div class="validation-error" id="lesson-title-error"></div>
+        </div>
+    </div>
+    
+    <div class="mt-6 flex justify-between">
+        <a href="{% url 'gerenciar_conteudo' %}" 
+            class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition interactive-card flex items-center gap-2">
+            <img src="{% static 'imagem/folder_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Gerenciar" class="w-4 h-4">
+            Voltar para Gerenciar
+        </a>
+        <button type="button" onclick="validateStep1()" 
+            class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+            Próximo → Conteúdo Teórico
+        </button>
+    </div>
+</div>
+
+        <!-- PASSO 2: CONTEÚDO TEÓRICO -->
+<div id="step-2" class="form-section hidden">
+    <div class="form-section-header">
+        <h2 class="text-xl font-bold">📖 Conteúdo Teórico</h2>
+        <span class="text-blue-200">Passo 2 de 4</span>
+    </div>
+    
+    <div class="space-y-4">
+        <!-- Título do Conteúdo Teórico -->
+        <div>
+            <label for="titulo-teoria" class="block text-sm font-medium text-gray-700 mb-2">Título do Conteúdo Teórico</label>
+            <input type="text" id="titulo-teoria" name="titulo_teoria" value="{{ aula.titulo_teoria|default:'Conteúdo Teórico' }}" placeholder="Ex: Conceitos Fundamentais" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+        </div>
+        
+        <!-- Descrição Breve -->
+        <div>
+            <label for="descricao-breve" class="block text-sm font-medium text-gray-700 mb-2">Descrição Breve</label>
+            <textarea id="descricao-breve" name="descricao_breve" rows="3" placeholder="Descreva brevemente o conteúdo desta aula..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">{{ aula.descricao_breve|default:'' }}</textarea>
+        </div>
+        
+        <!-- Conteúdo Teórico com Tópicos -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <label class="block text-sm font-medium text-gray-700">Conteúdo Teórico por Tópicos</label>
+                <button type="button" id="add-topic-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition interactive-card flex items-center gap-2"> 
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Adicionar Tópico
+                </button>
+            </div>
+            
+            <!-- Container de Tópicos -->
+            <div id="topics-container" class="space-y-4">
+                <!-- Tópicos serão carregados aqui via JavaScript -->
+            </div>
+            
+            <div class="validation-error" id="theory-content-error"></div>
+        </div>
+        
+        <!-- Tempo Teórico e XP -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="estimated-time-theory" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tempo Estimado para Teoria (minutos) *
+                    <span class="text-gray-500 text-xs font-normal">(tempo para estudar a parte teórica)</span>
+                </label>
+                <input type="number" id="estimated-time-theory" name="tempo_estimado_teoria" 
+                       value="{{ aula.tempo_teoria|default:'30' }}" min="1" max="120" placeholder="Ex: 30" 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control" 
+                       required oninput="updateTotalTime()">
+                <div class="validation-error" id="time-theory-error"></div>
+            </div>
+            
+            <!-- XP do Conteúdo Teórico -->
+            <div>
+                <label for="theory-xp" class="block text-sm font-medium text-gray-700 mb-2">
+                    XP por Completar o Conteúdo Teórico
+                    <span class="text-gray-500 text-xs font-normal">(recomendado: 20-50 XP)</span>
+                </label>
+                <input type="number" id="theory-xp" name="theory_xp" min="10" max="100" 
+                       value="{{ aula.xp_teoria|default:'30' }}" 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                <div class="text-xs text-gray-500 mt-1">
+                    💡 XP que o aluno ganha ao completar toda a parte teórica
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 flex justify-between">
+        <button type="button" onclick="prevStep(2)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+            ← Voltar
+        </button>
+        <button type="button" onclick="validateStep2()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+            Próximo → Exercícios Práticos
+        </button>
+    </div>
+</div>
+
+        <!-- PASSO 3: EXERCÍCIOS PRÁTICOS -->
+        <div id="step-3" class="form-section hidden">
+            <div class="form-section-header">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold">💻 Exercícios Práticos</h2>
+                    <span class="question-counter" id="question-count">0</span>
+                </div>
+                <span class="text-blue-200">Passo 3 de 4</span>
+            </div>
+
+            <!-- Cabeçalho da Lista de Exercícios -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-4">📝 Configuração da Lista de Exercícios</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="titulo-pratica" class="block text-sm font-medium text-gray-700 mb-2">
+                            Título da Lista de Exercícios *
+                        </label>
+                        <input type="text" id="titulo-pratica" name="titulo_pratica" 
+                            value="{{ aula.titulo_pratica|default:'Exercícios Práticos' }}"
+                            placeholder="Ex: Exercícios de Fixação" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">
+                        <div class="validation-error" id="practice-title-error"></div>
+                    </div>
+                    
+                    <div>
+                        <label for="conteudo-pratico" class="block text-sm font-medium text-gray-700 mb-2">
+                            Descrição da Lista
+                        </label>
+                        <textarea id="conteudo-pratico" name="conteudo_pratico" rows="3"
+                                placeholder="Descreva o objetivo desta lista de exercícios..."
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control">{{ aula.conteudo_pratico|default:'' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Tempo Prático -->
+                <div class="mt-4">
+                    <label for="estimated-time-practice" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tempo Estimado para Prática (minutos) *
+                        <span class="text-gray-500 text-xs font-normal">(tempo para resolver os exercícios)</span>
+                    </label>
+                    <input type="number" id="estimated-time-practice" name="tempo_estimado_pratica" 
+                        value="{{ aula.tempo_pratica|default:'15' }}" min="1" max="120" placeholder="Ex: 25" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control" 
+                        required oninput="updateTotalTime()">
+                    <div class="validation-error" id="time-practice-error"></div>
+                </div>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Seletor de Tipo de Exercício -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Adicionar Novo Exercício</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button type="button" onclick="addQuestion('multiple-choice')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/quiz_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Múltipla Escolha" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Múltipla Escolha</span>
+                        </button>
+                        
+                        <button type="button" onclick="addQuestion('code')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/code_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Escrever Código" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Escrever Código</span>
+                        </button>
+                        
+                        <button type="button" onclick="addQuestion('fill-blank')" class="p-4 bg-white border-2 border-blue-200 rounded-lg text-center hover:border-blue-400 transition interactive-card">
+                            <img src="{% static 'imagem/edit_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Completar Lacunas" class="w-8 h-8 mx-auto mb-2">
+                            <span class="font-semibold text-blue-700">Completar Lacunas</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de Exercícios -->
+                <div id="questions-list" class="space-y-4">
+                    <div class="empty-state">
+                        <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem exercícios" class="w-16 h-16 mx-auto">
+                        <p class="text-gray-500">Nenhum exercício adicionado ainda</p>
+                        <p class="text-sm text-gray-400">Clique em um dos tipos acima para começar</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button type="button" onclick="prevStep(3)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+                    ← Voltar
+                </button>
+                <button type="button" onclick="validateStep3()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card">
+                    Próximo → Revisão
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 4: REVISÃO E PUBLICAÇÃO - VERSÃO CORRIGIDA -->
+<div id="step-4" class="form-section hidden">
+    <div class="form-section-header">
+        <h2 class="text-xl font-bold">👁️ Revisão Final</h2>
+        <span class="text-blue-200">Passo 4 de 4</span>
+    </div>
+    
+    <div class="space-y-8">
+        <!-- Resumo do Conteúdo -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Resumo do Conteúdo</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Capítulo:</span>
+                        <span class="font-medium" id="review-chapter">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Módulo:</span>
+                        <span class="font-medium" id="review-module">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Título da Aula:</span>
+                        <span class="font-medium" id="review-lesson-title">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Título Teórico:</span>
+                        <span class="font-medium" id="review-theory-title">-</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <!-- Tempos -->
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Tempo Teórico:</span>
+                        <span class="font-medium" id="review-time-theory">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">Tempo Prático:</span>
+                        <span class="font-medium" id="review-time-practice">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600 font-semibold">Tempo Total:</span>
+                        <span class="font-bold text-blue-600" id="review-total-time">-</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">XP Teórico:</span>
+                        <span class="font-medium" id="review-theory-xp">0 XP</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600">XP Prático:</span>
+                        <span class="font-medium" id="review-practice-xp">0 XP</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600 font-semibold">Total de XP:</span>
+                        <span class="font-bold text-green-600" id="review-total-xp">0 XP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estrutura dos Tópicos -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">📚 Estrutura dos Tópicos</h3>
+            <div id="review-topics" class="space-y-3">
+                <div class="text-center text-gray-500 py-4">
+                    <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem tópicos" class="w-12 h-12 mx-auto mb-2 opacity-50">
+                    <p>Nenhum tópico adicionado</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview das Questões -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">💻 Exercícios Práticos</h3>
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium" id="review-questions-badge">
+                    0 questões
+                </span>
+            </div>
+            <div id="review-questions" class="space-y-4">
+                <div class="text-center text-gray-500 py-4">
+                    <img src="{% static 'imagem/quiz_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem questões" class="w-12 h-12 mx-auto mb-2 opacity-50">
+                    <p>Nenhum exercício adicionado</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checklist de Validação ATUALIZADO -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-4">✅ Checklist de Validação</h3>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <div id="check-title" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">Título da aula preenchido</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="check-topics" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">Pelo menos um tópico com conteúdo</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="check-questions" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">Pelo menos um exercício prático</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="check-time-theory" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">Tempo teórico definido</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="check-time-practice" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">Tempo prático definido</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="check-hints" class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    <span class="text-yellow-700">3 dicas preenchidas em cada questão</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Finais -->
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-green-800 mb-3">💾 Salvar Alterações</h3>
+            <p class="text-green-700 mb-4">Revise todo o conteúdo cuidadosamente. As alterações serão salvas na aula existente.</p>
+            
+            <div class="flex items-center gap-4 mb-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="confirm-review" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    <span class="text-green-800 font-medium">Confirmo que revisei todas as alterações</span>
+                </label>
+            </div>
+
+            <div class="flex items-center gap-2 text-sm text-green-600">
+                <img src="{% static 'imagem/info_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Info" class="w-4 h-4">
+                <span>As alterações serão salvas imediatamente após a confirmação</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 flex justify-between">
+        <button type="button" onclick="prevStep(4)" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card">
+            ← Voltar para Exercícios
+        </button>
+        <button type="button" id="save-button" onclick="saveChanges()" 
+        class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition interactive-card flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <img src="{% static 'imagem/save_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Salvar" class="w-5 h-5">
+            Salvar Alterações
+        </button>
+
+    </div>
+</div>
+
+<!-- MODAIS (copie exatamente igual do criar_conteudo.html) -->
+<div class="modal-overlay" id="chapter-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Criar Novo Capítulo</h3>
+            <button type="button" class="modal-close" onclick="closeChapterModal()">×</button>
+        </div>
+        
+        <form id="new-chapter-form">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label for="new-chapter-title" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título do Capítulo *
+                    </label>
+                    <input type="text" id="new-chapter-title" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                           placeholder="Ex: Introdução ao Python"
+                           required>
+                    <div class="validation-error" id="new-chapter-title-error"></div>
+                </div>
+                
+                <div>
+                    <label for="new-chapter-description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descrição do Capítulo
+                    </label>
+                    <textarea id="new-chapter-description" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                              placeholder="Descreva o objetivo e conteúdo deste capítulo..."></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeChapterModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition interactive-card">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Criar Capítulo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="module-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Criar Novo Módulo</h3>
+            <button type="button" class="modal-close" onclick="closeModuleModal()">×</button>
+        </div>
+        
+        <form id="new-module-form">
+            <div class="modal-body space-y-4">
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-blue-700">
+                        <img src="{% static 'imagem/folder_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Capítulo" class="w-4 h-4">
+                        <span class="text-sm font-medium">Capítulo:</span>
+                        <span id="selected-chapter-name" class="text-sm">-</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="new-module-title" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título do Módulo *
+                    </label>
+                    <input type="text" id="new-module-title" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                           placeholder="Ex: Variáveis e Tipos de Dados"
+                           required>
+                    <div class="validation-error" id="new-module-title-error"></div>
+                </div>
+                
+                <div>
+                    <label for="new-module-description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descrição do Módulo
+                    </label>
+                    <textarea id="new-module-description" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                              placeholder="Descreva o objetivo e conteúdo deste módulo..."></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeModuleModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition interactive-card">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Criar Módulo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Template para novos tópicos - VERSÃO ATUALIZADA -->
+<template id="topic-template">
+    <div class="topic-item border border-gray-300 rounded-lg overflow-hidden">
+        <div class="topic-header bg-gray-50 p-4 border-b border-gray-300 flex justify-between items-center">
+            <div class="flex items-center gap-3 flex-1">
+                <div class="drag-handle cursor-move">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <input type="text" class="topic-title bg-transparent border-none text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1" 
+                       placeholder="Nome do tópico">
+            </div>
+            <button type="button" class="remove-topic text-red-500 hover:text-red-700 interactive-card" aria-label="Remover tópico">
+                <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+            </button>
+        </div>
+        <div class="topic-content p-4">
+            <!-- Editor SIMPLIFICADO estilo Google Docs -->
+            <div class="editor-container">
+                <!-- Barra de Ferramentas SIMPLIFICADA -->
+                <div class="editor-toolbar">
+                    <!-- Grupo de Formatação Básica -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button" data-command="bold" title="Negrito">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="italic" title="Itálico">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="underline" title="Sublinhado">
+                            <u>U</u>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Listas - AGORA FUNCIONAIS -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button" data-command="insertUnorderedList" title="Lista com marcadores">
+                            <img src="{% static 'imagem/format_list_bulleted_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista" class="w-4 h-4">
+                        </button>
+                        <button type="button" class="toolbar-button" data-command="insertOrderedList" title="Lista numerada">
+                            <img src="{% static 'imagem/format_list_numbered_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Lista numerada" class="w-4 h-4">
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Grupo de Cores SIMPLIFICADO -->
+                    <div class="toolbar-group">
+                        <div class="color-picker">
+                            <button type="button" class="toolbar-button text-color-button" title="Cor do texto">
+                                <span style="color: #202124;">A</span>
+                            </button>
+                            <div class="color-options text-color-options">
+                                <div class="color-option" style="background-color: #202124;" data-color="#202124"></div>
+                                <div class="color-option" style="background-color: #ea4335;" data-color="#ea4335"></div>
+                                <div class="color-option" style="background-color: #34a853;" data-color="#34a853"></div>
+                                <div class="color-option" style="background-color: #4285f4;" data-color="#4285f4"></div>
+                                <div class="color-option" style="background-color: #8e24aa;" data-color="#8e24aa"></div>
+                                <div class="color-option" style="background-color: #000000;" data-color="#000000"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <!-- Botão Inserir Código -->
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-button insert-code" title="Inserir bloco de código">
+                            <img src="{% static 'imagem/code_35dp_5f6368_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Código" class="w-4 h-4">
+                        </button>
+                    </div>
+
+                    <!-- Contador de palavras -->
+                    <div class="word-count">
+                        <span class="word-count-display">0 palavras</span>
+                    </div>
+                </div>
+                
+                <!-- Área de Conteúdo Editável -->
+                <div class="editor-content topic-editor" contenteditable="true" placeholder="Comece a escrever o conteúdo deste tópico aqui..."></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template para Múltipla Escolha - ATUALIZADO -->
+<template id="multiple-choice-template">
+    <div class="question-item" data-type="multiple-choice">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Múltipla Escolha</h4>
+            </div>
+            
+            <!-- Botões de ação - Dicas agora posicionadas aqui -->
+            <div class="flex items-center gap-2">
+                <!-- Botão de Dicas -->
+                <div class="hints-section">
+                    <button type="button" class="add-hint-btn bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition interactive-card flex items-center gap-2 text-sm">
+                        <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                        Dicas
+                        <span class="hint-counter bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+                
+                <!-- Botão de Remover -->
+                <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card p-2 rounded-lg hover:bg-red-50 transition" aria-label="Remover questão">
+                    <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+                </button>
+            </div>
+        </div>
+        
+        <!-- Container de Dicas (agora posicionado abaixo do cabeçalho) -->
+        <div class="hints-container bg-blue-50 p-4 rounded-lg mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <label class="font-medium text-blue-800 flex items-center gap-2">
+                    <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                    Dicas para o aluno (máx. 3)
+                </label>
+                <button type="button" class="add-hint bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition flex items-center gap-1">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-3 h-3">
+                    Adicionar
+                </button>
+            </div>
+            <div class="hints-list space-y-2"></div>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pergunta</label>
+                <input type="text" placeholder="Digite a pergunta..." class="w-full p-3 border border-gray-300 rounded-lg form-control question-input">
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Opções de Resposta</label>
+                <div class="space-y-2 options-container">
+                        <div class="option-item">
+                            <input type="radio" name="correct-answer" class="text-blue-600 correct-option-radio">
+                            <input type="text" placeholder="Opção 1" class="flex-1 p-2 border border-gray-300 rounded option-input">
+                            <button type="button" class="remove-option text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover opção">×</button>
+                        </div>
+                    </div>
+                <div class="validation-error options-error"></div>
+                <button type="button" class="mt-2 text-blue-600 text-sm font-medium interactive-card flex items-center gap-1 add-option-btn">
+                    <img src="{% static 'imagem/add_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                    Adicionar Opção
+                </button>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="5" max="50" value="10" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="code-template">
+    <div class="question-item" data-type="code">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Exercício de Programação</h4>
+            </div>
+
+            <!-- Botões de ação - Dicas agora posicionadas aqui -->
+            <div class="flex items-center gap-2">
+                <!-- Botão de Dicas -->
+                <div class="hints-section">
+                    <button type="button" class="add-hint-btn bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition interactive-card flex items-center gap-2 text-sm">
+                        <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                        Dicas
+                        <span class="hint-counter bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+                
+                <!-- Botão de Remover -->
+                <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card p-2 rounded-lg hover:bg-red-50 transition" aria-label="Remover questão">
+                    <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+                </button>
+            </div>
+        </div>
+        
+        <!-- Container de Dicas (agora posicionado abaixo do cabeçalho) -->
+        <div class="hints-container bg-blue-50 p-4 rounded-lg mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <label class="font-medium text-blue-800 flex items-center gap-2">
+                    <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                    Dicas para o aluno (máx. 3)
+                </label>
+                <button type="button" class="add-hint bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition flex items-center gap-1">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-3 h-3">
+                    Adicionar
+                </button>
+            </div>
+            <div class="hints-list space-y-2"></div>
+        </div>
+        
+        
+        <div class="space-y-4">
+            <!-- Instrução do Exercício -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Instrução do Exercício
+                    <span class="text-gray-500 text-xs font-normal">(o que o aluno deve fazer)</span>
+                </label>
+                <textarea placeholder="Ex: Escreva um programa que imprima 'Hello World'" rows="3" class="w-full p-3 border border-gray-300 rounded-lg question-input"></textarea>
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <!-- Código Inicial (Opcional) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Código Inicial
+                    <span class="text-gray-500 text-xs font-normal">(opcional - aparece para o aluno)</span>
+                </label>
+                <textarea placeholder="# Código que o aluno vai ver inicialmente&#10;# Exemplo:&#10;print(&quot;Hello&quot;)" rows="4" class="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm starter-code"></textarea>
+            </div>
+            
+            <!-- Saída Esperada -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Saída Esperada
+                    <span class="text-gray-500 text-xs font-normal">(o que deve aparecer quando o código rodar)</span>
+                </label>
+                <textarea placeholder="Ex: Hello World" rows="3" class="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm expected-output"></textarea>
+                <div class="validation-error output-error"></div>
+            </div>
+            
+            <!-- Preview Simples -->
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h5 class="font-medium text-blue-800 mb-3">Como o aluno verá:</h5>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                    <div class="mb-3">
+                        <strong class="text-gray-700">Exercício:</strong>
+                        <p class="text-gray-600 mt-1 instruction-preview">Escreva um programa que imprima 'Hello World'</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong class="text-gray-700">Seu código:</strong>
+                        <div class="bg-gray-100 p-3 rounded font-mono text-sm mt-1 code-preview">
+                            print("Hello")
+                        </div>
+                    <button class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-green-700 transition run-button" 
+                            onclick="simulateCodeExecution(this)">
+                        ▶ Executar Código
+                    </button>
+                    </div>
+                    
+                    <div class="output-preview mt-3 p-3 bg-gray-900 text-green-400 font-mono text-sm rounded hidden">
+                        <div class="output-content">Hello</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="10" max="100" value="30" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="fill-blank-template">
+    <div class="question-item" data-type="fill-blank">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="drag-handle">
+                    <img src="{% static 'imagem/drag_handle_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Arrastar" class="w-5 h-5">
+                </div>
+                <h4 class="font-semibold text-blue-700">Completar Lacunas</h4>
+            </div>
+
+            <!-- Botões de ação - Dicas agora posicionadas aqui -->
+            <div class="flex items-center gap-2">
+                <!-- Botão de Dicas -->
+                <div class="hints-section">
+                    <button type="button" class="add-hint-btn bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition interactive-card flex items-center gap-2 text-sm">
+                        <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                        Dicas
+                        <span class="hint-counter bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+                
+                <!-- Botão de Remover -->
+                <button type="button" onclick="removeQuestion(this)" class="text-red-500 hover:text-red-700 interactive-card p-2 rounded-lg hover:bg-red-50 transition" aria-label="Remover questão">
+                    <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-5 h-5">
+                </button>
+            </div>
+        </div>
+        
+        <!-- Container de Dicas (agora posicionado abaixo do cabeçalho) -->
+        <div class="hints-container bg-blue-50 p-4 rounded-lg mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <label class="font-medium text-blue-800 flex items-center gap-2">
+                    <img src="{% static 'imagem/lightbulb_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
+                    Dicas para o aluno (máx. 3)
+                </label>
+                <button type="button" class="add-hint bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition flex items-center gap-1">
+                    <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-3 h-3">
+                    Adicionar
+                </button>
+            </div>
+            <div class="hints-list space-y-2"></div>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Texto com Lacunas - AGORA COM NUMERAÇÃO DE LINHAS -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Texto com Lacunas
+                    </label>
+                    <button type="button" onclick="addBlankToText(this)" class="text-blue-600 text-sm font-medium interactive-card flex items-center gap-1">
+                        <img src="{% static 'imagem/add_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Adicionar" class="w-4 h-4">
+                        Adicionar Lacuna
+                    </button>
+                </div>
+                
+                <!-- Container do editor com numeração de linhas -->
+                <div class="code-editor-container">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="line-numbers-1"></div>
+                        <textarea 
+                            placeholder="Digite o texto aqui. Use o botão 'Adicionar Lacuna' para criar as lacunas.&#10;&#10;Exemplo para código:&#10;if idade >= 18:&#10;    print(&quot;Maior de idade&quot;)&#10;else:&#10;    print(&quot;Menor de idade&quot;)" 
+                            rows="8" 
+                            class="code-textarea question-input fill-blank-textarea large-textarea"
+                            oninput="updateLineNumbers(this)"
+                            onscroll="syncScroll(this)"
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="text-xs text-gray-500 mt-1">
+                    💡 Clique em "Adicionar Lacuna" para inserir uma lacuna onde estiver o cursor
+                </div>
+                <div class="validation-error question-error"></div>
+            </div>
+            
+            <!-- Respostas Corretas -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Respostas Corretas
+                    <span class="text-gray-500 text-xs font-normal">(uma para cada lacuna, na ordem)</span>
+                </label>
+                <div class="space-y-2 answers-container">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600 w-6">1.</span>
+                        <input type="text" placeholder="Resposta para a primeira lacuna" class="flex-1 p-2 border border-gray-300 rounded answer-input">
+                        <button type="button" onclick="removeAnswer(this)" class="text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover resposta">×</button>
+                    </div>
+                </div>
+                <div class="validation-error answers-error"></div>
+            </div>
+            
+            <!-- Preview - Como o aluno verá - AGORA COM NUMERAÇÃO -->
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h5 class="font-medium text-blue-800 mb-3">Como o aluno verá:</h5>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                    <div class="code-preview-container">
+                        <div class="code-preview-wrapper">
+                            <div class="preview-line-numbers" id="preview-line-numbers-1"></div>
+                            <div class="code-preview-content text-preview large-preview">
+                                Para imprimir algo em Python, usamos a função <span class="blank-preview">_____</span>("texto")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="word-bank-container mt-3">
+                        <!-- Banco de palavras será gerado aqui -->
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">XP da Questão</label>
+                <input type="number" min="5" max="30" value="15" class="w-24 p-2 border border-gray-300 rounded xp-input">
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Indicador de salvamento -->
+<div class="save-indicator" id="save-indicator">
+    <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Salvo" class="w-5 h-5">
+    <span>Alterações salvas</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ========== CONFIGURAÇÕES DJANGO PARA EDIÇÃO ==========
+const DJANGO_URLS = {
+    getModulos: "{% url 'get_modulos_ajax' 0 %}".replace('/0/', '/'),
+    criarCapitulo: "{% url 'criar_capitulo_ajax' %}",
+    criarModulo: "{% url 'criar_modulo_ajax' %}",
+    editarConteudo: "{% url 'editar_conteudo' aula.id %}"
+};
+
+// ========== ESTADO GLOBAL ==========
+let currentStep = 1;
+let selectedChapterId = '{{ aula.modulo.capitulo.id }}';
+let selectedChapterName = '{{ aula.modulo.capitulo.titulo|escapejs }}';
+
+// ========== INICIALIZAÇÃO PRINCIPAL ==========
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== INICIANDO EDIÇÃO DE CONTEÚDO ===');
+    console.log('Aula:', {
+        id: '{{ aula.id }}',
+        titulo: '{{ aula.titulo_aula|escapejs }}',
+        modulo: '{{ aula.modulo.titulo|escapejs }}',
+        capitulo: '{{ aula.modulo.capitulo.titulo|escapejs }}'
+    });
+    
+    // Inicializar dados básicos primeiro
+    initializeBasicData();
+    initializeChapterAndModule();
+    
+    // Configurar event listeners
+    setupEventListeners();
+    
+    // CORREÇÃO: Carregar tópicos primeiro, depois questões
+    setTimeout(() => {
+        console.log('=== CARREGANDO TÓPICOS ===');
+        loadExistingTopics();
+        
+        // Carregar questões após os tópicos
+        setTimeout(() => {
+            console.log('=== CARREGANDO QUESTÕES ===');
+            loadExistingQuestions();
+        }, 500);
+    }, 300);
+    
+    updateProgressBar();
+});
+
+// ========== INICIALIZAR DADOS EXISTENTES ==========
+function initializeBasicData() {
+    console.log('Preenchendo dados básicos...');
+    
+    // Título da aula
+    const lessonTitle = document.getElementById('lesson-title');
+    if (lessonTitle) {
+        lessonTitle.value = '{{ aula.titulo_aula|escapejs }}';
+        console.log('Título preenchido:', lessonTitle.value);
+    }
+    
+    // Tempos estimados
+    const timeTheory = document.getElementById('estimated-time-theory');
+    if (timeTheory) {
+        timeTheory.value = '{{ aula.tempo_teoria|default:"30" }}';
+        console.log('Tempo teoria preenchido:', timeTheory.value);
+    }
+    
+    const timePractice = document.getElementById('estimated-time-practice');
+    if (timePractice) {
+        timePractice.value = '{{ aula.tempo_pratica|default:"15" }}';
+        console.log('Tempo prática preenchido:', timePractice.value);
+    }
+    
+    // XP teórico
+    const theoryXp = document.getElementById('theory-xp');
+    if (theoryXp) {
+        theoryXp.value = '{{ aula.xp_teoria|default:"30" }}';
+        console.log('XP teórico preenchido:', theoryXp.value);
+    }
+    
+    // Títulos de teoria e prática
+    const tituloTeoria = document.getElementById('titulo-teoria');
+    if (tituloTeoria) {
+        tituloTeoria.value = '{{ aula.titulo_teoria|default:"Conteúdo Teórico"|escapejs }}';
+    }
+    
+    const tituloPratica = document.getElementById('titulo-pratica');
+    if (tituloPratica) {
+        tituloPratica.value = '{{ aula.titulo_pratica|default:"Exercícios Práticos"|escapejs }}';
+    }
+    
+    const conteudoPratico = document.getElementById('conteudo-pratico');
+    if (conteudoPratico && '{{ aula.conteudo_pratico|escapejs }}') {
+        conteudoPratico.value = '{{ aula.conteudo_pratico|escapejs }}';
+    }
+}
+
+function initializeChapterAndModule() {
+    const chapterSelect = document.getElementById('chapter-select');
+    const moduleSelect = document.getElementById('module-select');
+    
+    if (chapterSelect) {
+        // Definir capítulo atual
+        chapterSelect.value = '{{ aula.modulo.capitulo.id }}';
+        console.log('Capítulo selecionado:', chapterSelect.value);
+        
+        // Carregar módulos deste capítulo
+        loadModulesForChapter('{{ aula.modulo.capitulo.id }}', '{{ aula.modulo.id }}');
+    }
+}
+
+async function loadModulesForChapter(chapterId, moduleId) {
+    const moduleSelect = document.getElementById('module-select');
+    if (!moduleSelect) return;
+
+    try {
+        const response = await fetch(DJANGO_URLS.getModulos + chapterId + '/');
+        const modulos = await response.json();
+        
+        moduleSelect.innerHTML = '<option value="" disabled>Selecione um módulo</option>';
+        
+        modulos.forEach(modulo => {
+            const option = new Option(modulo.titulo, modulo.id);
+            // Marcar o módulo atual como selecionado
+            if (modulo.id == moduleId) {
+                option.selected = true;
+                console.log('Módulo selecionado:', modulo.titulo);
+            }
+            moduleSelect.add(option);
+        });
+        
+        // Adicionar opção de criar novo módulo
+        const newOption = new Option('+ Criar Novo Módulo', 'new');
+        moduleSelect.add(newOption);
+        
+        moduleSelect.disabled = false;
+        console.log('Módulos carregados com sucesso');
+    } catch (error) {
+        console.error('Erro ao carregar módulos:', error);
+        moduleSelect.innerHTML = '<option value="" selected disabled>Erro ao carregar módulos</option>';
+    }
+}
+
+// ========== CARREGAR TÓPICOS EXISTENTES - VERSÃO CORRIGIDA ==========
+function loadExistingTopics() {
+    console.log('=== CARREGANDO TÓPICOS EXISTENTES ===');
+    
+    try {
+        const topicosJson = document.getElementById('topicos-json').value;
+        console.log('Tópicos JSON encontrado:', topicosJson ? 'Sim' : 'Não');
+        console.log('Conteúdo do JSON:', topicosJson);
+        
+        // CORREÇÃO: Verificação mais robusta do JSON
+        if (topicosJson && topicosJson !== '[]' && topicosJson !== '' && topicosJson !== 'null' && topicosJson !== 'undefined') {
+            const topicos = JSON.parse(topicosJson);
+            console.log(`Encontrados ${topicos.length} tópicos para carregar:`, topicos);
+            
+            const topicsContainer = document.getElementById('topics-container');
+            if (!topicsContainer) {
+                console.error('Container de tópicos não encontrado!');
+                return;
+            }
+            
+            // CORREÇÃO: Sempre limpar o container antes de adicionar
+            topicsContainer.innerHTML = '';
+            
+            // Adicionar cada tópico existente
+            topicos.forEach((topico, index) => {
+                console.log(`Carregando tópico ${index + 1}:`, topico);
+                addTopicFromData(topico, index);
+            });
+            
+            console.log('Tópicos carregados com sucesso!');
+        } else {
+            console.log('Nenhum tópico encontrado para carregar - usando conteúdo padrão');
+            // CORREÇÃO: Não carregar conteúdo padrão, manter o template inicial
+            initializeDefaultEditor();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar tópicos existentes:', error);
+        console.error('JSON problemático:', document.getElementById('topicos-json').value);
+        // CORREÇÃO: Manter o template inicial em caso de erro
+        initializeDefaultEditor();
+    }
+}
+
+function addTopicFromData(topicoData, index) {
+    console.log(`Adicionando tópico ${index + 1} a partir dos dados:`, topicoData);
+    
+    const template = document.getElementById('topic-template');
+    const topicsContainer = document.getElementById('topics-container');
+    
+    if (!template || !topicsContainer) {
+        console.error('Template ou container de tópicos não encontrado');
+        return;
+    }
+    
+    const topicEl = template.content.cloneNode(true);
+    topicsContainer.appendChild(topicEl);
+    
+    const newTopic = topicsContainer.lastElementChild;
+    
+    // CORREÇÃO: Preencher dados do tópico com verificações mais robustas
+    const titleInput = newTopic.querySelector('.topic-title');
+    const editor = newTopic.querySelector('.topic-editor');
+    
+    if (titleInput && topicoData.titulo) {
+        titleInput.value = topicoData.titulo;
+        console.log(`Título do tópico ${index + 1} preenchido: "${titleInput.value}"`);
+    } else if (titleInput) {
+        titleInput.value = `Tópico ${index + 1}`;
+    }
+    
+    if (editor && topicoData.conteudo) {
+        editor.innerHTML = topicoData.conteudo;
+        console.log(`Conteúdo do tópico ${index + 1} preenchido: ${topicoData.conteudo.length} caracteres`);
+    }
+    
+    // Configurar eventos de remoção
+    const removeBtn = newTopic.querySelector('.remove-topic');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            removeTopic(this);
+        });
+    }
+    
+    // Inicializar funcionalidades do editor
+    initializeEditor(newTopic);
+    
+    console.log(`Tópico ${index + 1} adicionado com sucesso`);
+}
+
+function initializeDefaultEditor() {
+    const defaultTopic = document.querySelector('.topic-item');
+    if (defaultTopic) {
+        initializeEditor(defaultTopic);
+    }
+}
+
+// ========== CARREGAR QUESTÕES EXISTENTES ==========
+function loadExistingQuestions() {
+    console.log('=== CARREGANDO QUESTÕES EXISTENTES ===');
+    
+    try {
+        // Parse do JSON das questões
+        const questoesJson = document.getElementById('questoes-json').value;
+        console.log('Questões JSON:', questoesJson);
+        
+        if (questoesJson && questoesJson !== '[]' && questoesJson !== '') {
+            const questoes = JSON.parse(questoesJson);
+            console.log(`Encontradas ${questoes.length} questões para carregar`, questoes);
+            
+            // Remover estado vazio se existir
+            const emptyState = document.querySelector('#questions-list .empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Limpar questões existentes para evitar duplicação
+            const questionsList = document.getElementById('questions-list');
+            questionsList.innerHTML = '';
+            
+            // Adicionar cada questão
+            questoes.forEach((questao, index) => {
+                console.log(`Carregando questão ${index + 1}:`, questao);
+                addQuestionFromData(questao, index);
+            });
+            
+            updateQuestionCount();
+            console.log('Questões carregadas com sucesso!');
+        } else {
+            console.log('Nenhuma questão encontrada para carregar');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar questões existentes:', error);
+        console.error('JSON problemático:', document.getElementById('questoes-json').value);
+    }
+}
+
+function addQuestionFromData(questaoData, index) {
+    const type = questaoData.type;
+    const template = document.getElementById(`${type}-template`);
+    const questionsList = document.getElementById('questions-list');
+    
+    if (!template || !questionsList) {
+        console.error('Template ou lista de questões não encontrado');
+        return;
+    }
+    
+    // Clonar o template
+    const questionEl = template.content.cloneNode(true);
+    questionsList.appendChild(questionEl);
+    
+    const newQuestion = questionsList.lastElementChild;
+    
+    // Preencher dados básicos
+    const questionInput = newQuestion.querySelector('.question-input');
+    const xpInput = newQuestion.querySelector('.xp-input');
+    
+    if (questionInput) {
+        if (type === 'multiple-choice') {
+            questionInput.value = questaoData.pergunta || '';
+        } else if (type === 'code') {
+            questionInput.value = questaoData.instrucao || '';
+        } else if (type === 'fill-blank') {
+            questionInput.value = questaoData.texto || '';
+        }
+        console.log(`Pergunta preenchida: ${questionInput.value}`);
+    }
+    
+    if (xpInput) {
+        xpInput.value = questaoData.xp || 10;
+        console.log(`XP preenchido: ${xpInput.value}`);
+    }
+    
+    // Preencher dados específicos por tipo
+    if (type === 'multiple-choice') {
+        initializeMultipleChoiceFromData(newQuestion, questaoData);
+    } else if (type === 'code') {
+        initializeCodeFromData(newQuestion, questaoData);
+    } else if (type === 'fill-blank') {
+        initializeFillBlankFromData(newQuestion, questaoData);
+    }
+    
+    // Preencher dicas
+    if (questaoData.dicas && questaoData.dicas.length > 0) {
+        initializeHintsFromData(newQuestion, questaoData.dicas);
+    }
+    
+    // Inicializar funcionalidades da questão
+    initializeQuestionFunctionality(newQuestion, type);
+}
+
+function initializeMultipleChoiceFromData(questionEl, questaoData) {
+    const optionsContainer = questionEl.querySelector('.options-container');
+    if (!optionsContainer || !questaoData.opcoes) return;
+    
+    // Limpar opções padrão
+    optionsContainer.innerHTML = '';
+    
+    console.log('Opções da múltipla escolha:', questaoData.opcoes);
+    
+    // Adicionar opções dos dados
+    questaoData.opcoes.forEach((opcao, index) => {
+        const optionEl = document.createElement('div');
+        optionEl.className = 'option-item';
+        const optionId = `option-${Date.now()}-${index}`;
+        optionEl.innerHTML = `
+            <input type="radio" name="correct-answer-${Date.now()}" class="text-blue-600 correct-option-radio" ${opcao.correta ? 'checked' : ''}>
+            <input type="text" placeholder="Opção ${index + 1}" class="flex-1 p-2 border border-gray-300 rounded option-input" value="${opcao.texto || ''}">
+            <button type="button" class="remove-option text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover opção">×</button>
+        `;
+        optionsContainer.appendChild(optionEl);
+        
+        // Aplicar destaque se for a opção correta
+        if (opcao.correta) {
+            setTimeout(() => {
+                const radio = optionEl.querySelector('.correct-option-radio');
+                if (radio) highlightCorrectOption(radio);
+            }, 100);
+        }
+    });
+}
+
+function initializeCodeFromData(questionEl, questaoData) {
+    const starterCode = questionEl.querySelector('.starter-code');
+    const expectedOutput = questionEl.querySelector('.expected-output');
+    
+    if (starterCode && questaoData.codigo_inicial) {
+        starterCode.value = questaoData.codigo_inicial;
+        console.log('Código inicial preenchido:', starterCode.value);
+    }
+    
+    if (expectedOutput && questaoData.saida_esperada) {
+        expectedOutput.value = questaoData.saida_esperada;
+        console.log('Saída esperada preenchida:', expectedOutput.value);
+    }
+    
+    // Atualizar preview
+    setTimeout(() => {
+        updateCodePreview(questionEl);
+    }, 200);
+}
+
+function initializeFillBlankFromData(questionEl, questaoData) {
+    const answersContainer = questionEl.querySelector('.answers-container');
+    const questionInput = questionEl.querySelector('.question-input');
+    
+    // Preencher o texto com lacunas
+    if (questionInput && questaoData.texto) {
+        questionInput.value = questaoData.texto;
+        console.log('Texto com lacunas preenchido:', questionInput.value);
+        
+        // Atualizar o preview imediatamente
+        updateFillBlankPreview(questionEl);
+    }
+    
+    // Preencher respostas
+    if (answersContainer && questaoData.respostas) {
+        answersContainer.innerHTML = ''; // Limpar respostas padrão
+        
+        console.log('Respostas para completar lacunas:', questaoData.respostas);
+        
+        // Adicionar respostas dos dados
+        questaoData.respostas.forEach((resposta, index) => {
+            const answerEl = document.createElement('div');
+            answerEl.className = 'flex items-center gap-2';
+            answerEl.innerHTML = `
+                <span class="text-sm font-medium text-gray-600 w-6">${index + 1}.</span>
+                <input type="text" placeholder="Resposta para a lacuna ${index + 1}" 
+                       class="flex-1 p-2 border border-gray-300 rounded answer-input" 
+                       value="${resposta || ''}">
+                <button type="button" onclick="removeAnswer(this)" 
+                        class="text-red-500 hover:text-red-700 interactive-card p-1" 
+                        aria-label="Remover resposta">×</button>
+            `;
+            answersContainer.appendChild(answerEl);
+        });
+        
+        // Atualizar o banco de palavras
+        updateWordBank(questionEl);
+    }
+    
+    // Atualizar preview
+    setTimeout(() => {
+        updateFillBlankPreview(questionEl);
+        updateWordBank(questionEl);
+    }, 100);
+}
+
+function initializeHintsFromData(questionEl, dicas) {
+    const hintsList = questionEl.querySelector('.hints-list');
+    if (!hintsList) return;
+    
+    hintsList.innerHTML = '';
+    
+    console.log('Dicas a serem carregadas:', dicas);
+    
+    dicas.forEach((dica, index) => {
+        if (dica && dica.trim()) {
+            const hint = document.createElement('div');
+            hint.className = 'hint-item';
+            hint.innerHTML = `
+                <input type="text" placeholder="Dica ${index + 1}" class="hint-input w-full" value="${dica}">
+                <button type="button" class="remove-hint text-red-500 hover:text-red-700 p-1 rounded transition-colors">
+                    <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-4 h-4">
+                </button>
+            `;
+            hintsList.appendChild(hint);
+            
+            // Configurar eventos para dicas carregadas
+            const hintInput = hint.querySelector('.hint-input');
+            const removeBtn = hint.querySelector('.remove-hint');
+            
+            hintInput.addEventListener('input', function() {
+                validateQuestionHints(questionEl);
+            });
+            
+            removeBtn.addEventListener('click', function() {
+                removeHint(this);
+            });
+        }
+    });
+    
+    updateHintCounter(questionEl);
+    validateQuestionHints(questionEl);
+}
+
+function initializeQuestionFunctionality(questionEl, type) {
+    // Inicializar funcionalidades específicas do tipo
+    if (type === 'multiple-choice') {
+        initializeMultipleChoiceQuestion(questionEl);
+    } else if (type === 'code') {
+        initializeCodeQuestion(questionEl);
+    } else if (type === 'fill-blank') {
+        initializeFillBlankQuestion(questionEl);
+    }
+    
+    // Inicializar sistema de dicas
+    initializeQuestionHints(questionEl);
+    validateQuestionHints(questionEl);
+}
+
+// ========== CONFIGURAÇÃO DE EVENTOS ==========
+function setupEventListeners() {
+    console.log('Configurando event listeners...');
+    
+    // Capítulo
+    const chapterSelect = document.getElementById('chapter-select');
+    if (chapterSelect) {
+        chapterSelect.addEventListener('change', function() {
+            console.log('Capítulo alterado:', this.value);
+            if (this.value === 'new') {
+                openChapterModal();
+            } else {
+                selectedChapterId = this.value;
+                selectedChapterName = this.options[this.selectedIndex].text;
+                updateModuleSelect(this.value);
+            }
+        });
+    }
+
+    // Módulo
+    const moduleSelect = document.getElementById('module-select');
+    if (moduleSelect) {
+        moduleSelect.addEventListener('change', function() {
+            console.log('Módulo alterado:', this.value);
+            if (this.value === 'new') {
+                openModuleModal();
+            }
+        });
+    }
+
+    // Título da aula - validação em tempo real
+    const lessonTitle = document.getElementById('lesson-title');
+    if (lessonTitle) {
+        lessonTitle.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('error');
+                clearError('lesson-title-error');
+            }
+        });
+    }
+
+    // Event delegation para elementos dinâmicos
+    document.addEventListener('click', function(e) {
+        console.log('Clique detectado:', e.target);
+        
+        // Botão principal de dicas (toggle)
+        if (e.target.closest('.add-hint-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const btn = e.target.closest('.add-hint-btn');
+            console.log('Botão de dicas clicado:', btn);
+            toggleHintsContainer(btn);
+        }
+        
+        // Adicionar dica individual
+        if (e.target.closest('.add-hint')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const btn = e.target.closest('.add-hint');
+            addHint(btn);
+        }
+
+        // Remover dica
+        if (e.target.closest('.remove-hint')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const btn = e.target.closest('.remove-hint');
+            removeHint(btn);
+        }
+        
+        // Adicionar opção
+        if (e.target.closest('.add-option-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.add-option-btn');
+            addOption(button);
+        }
+        
+        // Remover opção
+        if (e.target.closest('.remove-option')) {
+            e.preventDefault();
+            const button = e.target.closest('.remove-option');
+            removeOption(button);
+        }
+        
+        // Radio button de opção correta
+        if (e.target.closest('.correct-option-radio')) {
+            const radio = e.target.closest('.correct-option-radio');
+            highlightCorrectOption(radio);
+        }
+        
+        // Botão de adicionar lacuna
+        if (e.target.closest('button')) {
+            const button = e.target.closest('button');
+            const buttonText = button.textContent || '';
+            const hasAddIcon = button.querySelector('img[alt*="Adicionar"]');
+            const isInFillBlank = button.closest('.question-item[data-type="fill-blank"]');
+            
+            if ((buttonText.includes('Adicionar Lacuna') || 
+                 (hasAddIcon && buttonText.includes('Lacuna'))) && 
+                isInFillBlank) {
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!button.dataset.processed) {
+                    button.dataset.processed = 'true';
+                    addBlankToText(button);
+                    setTimeout(() => {
+                        delete button.dataset.processed;
+                    }, 100);
+                }
+            }
+        }
+        
+        // Remover questão
+        if (e.target.closest('button') && e.target.closest('button').querySelector('img[alt="Remover"]')) {
+            const btn = e.target.closest('button');
+            if (btn.closest('.question-item')) {
+                removeQuestion(btn);
+            }
+        }
+    });
+
+    // Formulários de modais
+    const newChapterForm = document.getElementById('new-chapter-form');
+    if (newChapterForm) {
+        newChapterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            createNewChapter();
+        });
+    }
+
+    const newModuleForm = document.getElementById('new-module-form');
+    if (newModuleForm) {
+        newModuleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            createNewModule();
+        });
+    }
+
+    // Botão de adicionar tópico
+    const addTopicBtn = document.getElementById('add-topic-btn');
+    if (addTopicBtn) {
+        addTopicBtn.addEventListener('click', function() {
+            addNewTopic();
+        });
+    }
+
+    // Confirmação de revisão
+    const confirmReview = document.getElementById('confirm-review');
+    if (confirmReview) {
+        confirmReview.addEventListener('change', function() {
+            updateValidationChecklist();
+        });
+    }
+
+    console.log('Event listeners configurados com sucesso');
+}
+
+// ========== FUNÇÕES DE MÓDULOS - CORRIGIDA ==========
+function updateModuleSelect(chapterId) {
+    const moduleSelect = document.getElementById('module-select');
+    if (!moduleSelect) return;
+
+    console.log('Atualizando módulos para o capítulo:', chapterId);
+
+    // Limpar módulos existentes
+    moduleSelect.innerHTML = '<option value="" disabled>Carregando módulos...</option>';
+    moduleSelect.disabled = true;
+
+    // Fazer requisição para obter módulos
+    fetch(DJANGO_URLS.getModulos + chapterId + '/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao carregar módulos');
+            }
+            return response.json();
+        })
+        .then(modulos => {
+            console.log('Módulos recebidos:', modulos);
+            
+            moduleSelect.innerHTML = '<option value="" disabled>Selecione um módulo</option>';
+            
+            modulos.forEach(modulo => {
+                const option = new Option(modulo.titulo, modulo.id);
+                moduleSelect.add(option);
+            });
+            
+            // Adicionar opção de criar novo módulo
+            const newOption = new Option('+ Criar Novo Módulo', 'new');
+            moduleSelect.add(newOption);
+            
+            moduleSelect.disabled = false;
+            console.log('Módulos carregados com sucesso');
+        })
+        .catch(error => {
+            console.error('Erro ao carregar módulos:', error);
+            moduleSelect.innerHTML = '<option value="" selected disabled>Erro ao carregar módulos</option>';
+        });
+}
+
+// ========== FUNÇÃO PARA ADICIONAR NOVO TÓPICO ==========
+function addNewTopic() {
+    const template = document.getElementById('topic-template');
+    const topicsContainer = document.getElementById('topics-container');
+    
+    if (!template || !topicsContainer) return;
+    
+    const topicEl = template.content.cloneNode(true);
+    topicsContainer.appendChild(topicEl);
+    
+    const newTopic = topicsContainer.lastElementChild;
+    
+    // Inicializar o editor do novo tópico
+    initializeEditor(newTopic);
+    
+    // Configurar evento de remoção
+    const removeBtn = newTopic.querySelector('.remove-topic');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            removeTopic(this);
+        });
+    }
+    
+    // Focar no título do novo tópico
+    const titleInput = newTopic.querySelector('.topic-title');
+    if (titleInput) {
+        titleInput.focus();
+    }
+    
+    showSaveIndicator('Tópico adicionado');
+}
+
+function removeTopic(button) {
+    const topicEl = button.closest('.topic-item');
+    const topicsContainer = document.getElementById('topics-container');
+    
+    if (!topicEl || !topicsContainer) return;
+    
+    const topicCount = topicsContainer.querySelectorAll('.topic-item').length;
+    if (topicCount <= 1) {
+        alert('É necessário ter pelo menos um tópico.');
+        return;
+    }
+    
+    topicEl.remove();
+    showSaveIndicator('Tópico removido');
+}
+
+// ========== FUNÇÕES DE DICAS ==========
+function toggleHintsContainer(button) {
+    console.log('Toggle hints container chamado', button);
+    const questionEl = button.closest('.question-item');
+    const hintsContainer = questionEl.querySelector('.hints-container');
+    
+    if (!hintsContainer) {
+        console.error('Container de dicas não encontrado');
+        return;
+    }
+    
+    // Alternar visibilidade
+    hintsContainer.classList.toggle('hidden');
+    
+    // Atualizar aparência do botão
+    if (hintsContainer.classList.contains('hidden')) {
+        button.classList.remove('bg-green-100', 'text-green-700');
+        button.classList.add('bg-blue-100', 'text-blue-700');
+    } else {
+        button.classList.remove('bg-blue-100', 'text-blue-700');
+        button.classList.add('bg-green-100', 'text-green-700');
+    }
+    
+    console.log('Container de dicas alternado:', !hintsContainer.classList.contains('hidden'));
+}
+
+function addHint(button) {
+    console.log('Add hint chamado');
+    const questionEl = button.closest('.question-item');
+    const hintsList = questionEl.querySelector('.hints-list');
+    const count = hintsList.querySelectorAll('.hint-item').length;
+
+    if (count >= 3) {
+        alert('Você só pode adicionar até 3 dicas por questão.');
+        return;
+    }
+
+    const hint = document.createElement('div');
+    hint.className = 'hint-item';
+    hint.innerHTML = `
+        <input type="text" placeholder="Dica ${count + 1}" class="hint-input w-full">
+        <button type="button" class="remove-hint text-red-500 hover:text-red-700 p-1 rounded transition-colors">
+            <img src="{% static 'imagem/delete_35dp_ef4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Remover" class="w-4 h-4">
+        </button>
+    `;
+    hintsList.appendChild(hint);
+    
+    // Configurar eventos
+    const hintInput = hint.querySelector('.hint-input');
+    const removeBtn = hint.querySelector('.remove-hint');
+    
+    hintInput.addEventListener('input', function() {
+        validateQuestionHints(questionEl);
+    });
+    
+    removeBtn.addEventListener('click', function() {
+        removeHint(this);
+    });
+    
+    updateHintCounter(questionEl);
+    validateQuestionHints(questionEl);
+    hintInput.focus();
+    
+    console.log('Dica adicionada');
+}
+
+function removeHint(button) {
+    console.log('Remove hint chamado');
+    const hintItem = button.closest('.hint-item');
+    const questionEl = hintItem.closest('.question-item');
+    
+    if (!hintItem || !questionEl) return;
+    
+    hintItem.remove();
+    updateHintCounter(questionEl);
+    validateQuestionHints(questionEl);
+    
+    console.log('Dica removida');
+}
+
+function updateHintCounter(questionEl) {
+    const hintsList = questionEl.querySelector('.hints-list');
+    const counter = questionEl.querySelector('.hint-counter');
+    const hintItems = hintsList.querySelectorAll('.hint-item');
+    const filledHints = Array.from(hintItems).filter(item => {
+        const input = item.querySelector('.hint-input');
+        return input && input.value.trim() !== '';
+    });
+    const count = filledHints.length;
+    
+    if (counter) {
+        counter.textContent = count;
+        
+        counter.classList.remove('bg-blue-500', 'bg-orange-500', 'bg-green-500');
+        
+        if (count === 0) {
+            counter.classList.add('bg-blue-500');
+        } else if (count < 3) {
+            counter.classList.add('bg-orange-500');
+        } else {
+            counter.classList.add('bg-green-500');
+        }
+    }
+}
+
+function validateQuestionHints(questionEl) {
+    const hintsList = questionEl.querySelector('.hints-list');
+    const hintItems = hintsList.querySelectorAll('.hint-item');
+    const filledHints = Array.from(hintItems).filter(item => {
+        const input = item.querySelector('.hint-input');
+        return input && input.value.trim() !== '';
+    });
+    
+    const isValid = filledHints.length === 3;
+    
+    const hintBtn = questionEl.querySelector('.add-hint-btn');
+    const hintCounter = questionEl.querySelector('.hint-counter');
+    
+    if (hintBtn && hintCounter) {
+        if (isValid) {
+            hintBtn.classList.remove('bg-blue-100', 'text-blue-700');
+            hintBtn.classList.add('bg-green-100', 'text-green-700');
+        } else {
+            hintBtn.classList.remove('bg-green-100', 'text-green-700');
+            hintBtn.classList.add('bg-blue-100', 'text-blue-700');
+        }
+        
+        hintCounter.textContent = filledHints.length;
+    }
+    
+    return isValid;
+}
+
+function initializeQuestionHints(questionEl) {
+    const hintsContainer = questionEl.querySelector('.hints-container');
+    if (hintsContainer) {
+        hintsContainer.classList.add('hidden');
+    }
+    
+    const hintInputs = questionEl.querySelectorAll('.hint-input');
+    hintInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateQuestionHints(questionEl);
+        });
+    });
+    
+    validateQuestionHints(questionEl);
+}
+
+// ========== NAVEGAÇÃO E PASSOS ==========
+// ========== SISTEMA DE NAVEGAÇÃO MELHORADO ==========
+function goToStep(step) {
+    console.log('Navegando para o passo:', step);
+    
+    // Validar se o passo existe
+    if (step < 1 || step > 4) {
+        console.error('Passo inválido:', step);
+        return;
+    }
+    
+    // Esconder todos os passos
+    document.querySelectorAll('[id^="step-"]').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // Remover classes ativas de todos os steps
+    document.querySelectorAll('.step').forEach(el => {
+        el.classList.remove('active', 'completed');
+    });
+    
+    // Mostrar o passo atual
+    const currentStepEl = document.getElementById(`step-${step}`);
+    if (currentStepEl) {
+        currentStepEl.classList.remove('hidden');
+        console.log('Passo', step, 'mostrado com sucesso');
+    } else {
+        console.error('Elemento do passo não encontrado: step-' + step);
+        return;
+    }
+    
+    // Atualizar indicadores de passo
+    for (let i = 1; i <= 4; i++) {
+        const stepElement = document.querySelector(`.step[data-step="${i}"]`);
+        if (stepElement) {
+            if (i === step) {
+                stepElement.classList.add('active');
+                console.log('Step', i, 'marcado como ativo');
+            } else if (i < step) {
+                stepElement.classList.add('completed');
+                console.log('Step', i, 'marcado como completado');
+            }
+        }
+    }
+    
+    currentStep = step;
+    updateProgressBar();
+    
+    // Se for o passo 4, atualizar a revisão
+    if (step === 4) {
+        console.log('Atualizando revisão...');
+        updateReview();
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    console.log('Navegação concluída. Passo atual:', currentStep);
+}
+
+function nextStep() {
+    console.log('Próximo passo solicitado. Passo atual:', currentStep);
+    if (currentStep < 4) {
+        goToStep(currentStep + 1);
+    } else {
+        console.log('Já está no último passo');
+    }
+}
+
+function prevStep(fromStep) {
+    console.log('Voltar solicitado. Do passo:', fromStep);
+    
+    // Validar o parâmetro
+    if (!fromStep || fromStep < 2 || fromStep > 4) {
+        console.warn('Parâmetro fromStep inválido, usando currentStep:', currentStep);
+        fromStep = currentStep;
+    }
+    
+    const targetStep = fromStep - 1;
+    console.log('Indo para o passo:', targetStep);
+    
+    if (targetStep >= 1) {
+        goToStep(targetStep);
+    } else {
+        console.log('Já está no primeiro passo');
+    }
+}
+
+// Função auxiliar para debug da navegação
+function debugNavigation() {
+    console.log('=== DEBUG NAVEGAÇÃO ===');
+    console.log('Passo atual:', currentStep);
+    console.log('Elementos de passo encontrados:');
+    
+    for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`step-${i}`);
+        console.log(`Step ${i}:`, stepEl ? 'Encontrado' : 'NÃO ENCONTRADO', 
+                   stepEl && stepEl.classList.contains('hidden') ? '(oculto)' : '(visível)');
+    }
+    
+    console.log('Botões Voltar:');
+    const backButtons = document.querySelectorAll('button[onclick*="prevStep"]');
+    backButtons.forEach((btn, index) => {
+        console.log(`Botão ${index + 1}:`, btn.getAttribute('onclick'));
+    });
+}
+
+// ========== VALIDAÇÃO DE PASSOS ==========
+function validateStep1() {
+    let isValid = true;
+    clearErrors();
+    
+    const chapterSelect = document.getElementById('chapter-select');
+    const moduleSelect = document.getElementById('module-select');
+    const lessonTitle = document.getElementById('lesson-title');
+    
+    // Validar capítulo
+    if (!chapterSelect.value || chapterSelect.value === '') {
+        showError('chapter-error', 'Selecione um capítulo');
+        chapterSelect.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar módulo
+    if (!moduleSelect.value || moduleSelect.value === '') {
+        showError('module-error', 'Selecione um módulo');
+        moduleSelect.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar título da aula
+    if (!lessonTitle.value.trim()) {
+        showError('lesson-title-error', 'Digite o título da aula');
+        lessonTitle.classList.add('error');
+        isValid = false;
+    }
+    
+    if (isValid) {
+        goToStep(2);
+    } else {
+        scrollToFirstError();
+    }
+    
+    return isValid;
+}
+
+function validateStep2() {
+    let isValid = true;
+    clearErrors();
+    
+    const lessonTitle = document.getElementById('lesson-title');
+    const timeTheory = document.getElementById('estimated-time-theory');
+    
+    // Validar título da aula
+    if (!lessonTitle.value.trim()) {
+        showError('lesson-title-error', 'Digite o título da aula');
+        lessonTitle.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar tempo teórico
+    if (!timeTheory.value || timeTheory.value < 1 || timeTheory.value > 120) {
+        showError('time-theory-error', 'Tempo estimado deve ser entre 1 e 120 minutos');
+        timeTheory.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar tópicos
+    const topics = document.querySelectorAll('.topic-item');
+    let hasContent = false;
+    
+    topics.forEach((topic, index) => {
+        const titleInput = topic.querySelector('.topic-title');
+        const editor = topic.querySelector('.topic-editor');
+        
+        // Validar título do tópico
+        if (!titleInput.value.trim()) {
+            showError('theory-content-error', `Preencha o título do tópico ${index + 1}`);
+            titleInput.style.border = '2px solid #ef4444';
+            isValid = false;
+        } else {
+            titleInput.style.border = '';
+        }
+        
+        // Verificar se há conteúdo no editor
+        if (editor && editor.textContent.trim() && 
+            editor.textContent.trim() !== 'Comece a escrever o conteúdo deste tópico aqui...') {
+            hasContent = true;
+        }
+    });
+    
+    if (!hasContent) {
+        showError('theory-content-error', 'Adicione conteúdo em pelo menos um tópico');
+        isValid = false;
+    }
+    
+    if (isValid) {
+        goToStep(3); // CORREÇÃO: Mudar para passo 3 (Exercícios Práticos)
+    } else {
+        scrollToFirstError();
+    }
+    
+    return isValid;
+}
+
+function validateStep3() {
+    let isValid = true;
+    clearErrors();
+    
+    const practiceTitle = document.getElementById('titulo-pratica');
+    const timePractice = document.getElementById('estimated-time-practice'); // NOVO
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    
+    console.log("Validando passo 3:");
+    console.log("Título prática:", practiceTitle.value);
+    console.log("Tempo prático:", timePractice.value); // NOVO
+    console.log("Total questões:", questionItems.length);
+    
+    // Validar título da prática
+    if (!practiceTitle.value.trim()) {
+        showError('practice-title-error', 'Digite o título da lista de exercícios');
+        practiceTitle.classList.add('error');
+        isValid = false;
+    }
+    
+    // NOVO: Validar tempo prático
+    if (!timePractice.value || timePractice.value < 1 || timePractice.value > 120) {
+        showError('time-practice-error', 'Tempo prático deve ser entre 1 e 120 minutos');
+        timePractice.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar que há pelo menos uma questão
+    if (questionItems.length === 0) {
+        alert('Adicione pelo menos um exercício prático antes de continuar.');
+        isValid = false;
+        return false;
+    }
+    
+    // Resto do código permanece igual...
+    // Validar cada questão individualmente
+    let allValid = true;
+    let firstInvalidQuestion = null;
+    
+    questionItems.forEach((questionEl, index) => {
+        const type = questionEl.dataset.type;
+        let questionValid = true;
+        
+        clearQuestionErrors(questionEl);
+        
+        // Validar questão básica
+        if (type === 'multiple-choice') {
+            questionValid = validateMultipleChoice(questionEl);
+        } else if (type === 'code') {
+            questionValid = validateCodeQuestion(questionEl);
+        } else if (type === 'fill-blank') {
+            questionValid = validateFillBlank(questionEl);
+        }
+        
+        // Validar dicas (3 dicas obrigatórias)
+        if (!validateQuestionHints(questionEl)) {
+            questionValid = false;
+            showQuestionError(questionEl, 'hints-error', 'É obrigatório preencher exatamente 3 dicas para cada questão');
+        }
+        
+        if (!questionValid) {
+            allValid = false;
+            if (!firstInvalidQuestion) {
+                firstInvalidQuestion = questionEl;
+            }
+        }
+    });
+    
+    if (!allValid) {
+        if (firstInvalidQuestion) {
+            firstInvalidQuestion.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Destacar questão com erro
+            firstInvalidQuestion.style.border = '2px solid #ef4444';
+            firstInvalidQuestion.style.borderRadius = '8px';
+            setTimeout(() => {
+                firstInvalidQuestion.style.border = '';
+            }, 3000);
+        }
+        
+        alert('Corrija os erros nas questões antes de continuar. Lembre-se: são obrigatórias 3 dicas preenchidas para cada questão.');
+        return false;
+    }
+    
+    if (isValid) {
+        console.log("Passo 3 válido, indo para passo 4");
+        goToStep(4);
+        updateReview();
+    } else {
+        console.log("Erros no passo 3");
+        scrollToFirstError();
+    }
+    
+    return isValid;
+}
+
+// ========== FUNÇÕES DE VALIDAÇÃO ESPECÍFICAS ==========
+function validateMultipleChoice(questionEl) {
+    let isValid = true;
+    const questionInput = questionEl.querySelector('.question-input');
+    const options = questionEl.querySelectorAll('.option-input');
+    const hasCorrectOption = questionEl.querySelector('.correct-option-radio:checked');
+    
+    if (!questionInput.value.trim()) {
+        showQuestionError(questionEl, 'question-error', 'Digite a pergunta');
+        isValid = false;
+    }
+    
+    if (options.length < 2) {
+        showQuestionError(questionEl, 'options-error', 'Adicione pelo menos 2 opções');
+        isValid = false;
+    } else {
+        let emptyOptions = false;
+        options.forEach(option => {
+            if (!option.value.trim()) {
+                option.classList.add('error');
+                emptyOptions = true;
+            }
+        });
+        
+        if (emptyOptions) {
+            showQuestionError(questionEl, 'options-error', 'Preencha todas as opções');
+            isValid = false;
+        }
+    }
+    
+    if (!hasCorrectOption) {
+        showQuestionError(questionEl, 'options-error', 'Selecione a opção correta');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function validateCodeQuestion(questionEl) {
+    let isValid = true;
+    const questionInput = questionEl.querySelector('.question-input');
+    const expectedOutput = questionEl.querySelector('.expected-output');
+    
+    if (!questionInput.value.trim()) {
+        showQuestionError(questionEl, 'question-error', 'Digite as instruções do exercício');
+        isValid = false;
+    }
+    
+    if (!expectedOutput.value.trim()) {
+        showQuestionError(questionEl, 'output-error', 'Digite a saída esperada');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function validateFillBlank(questionEl) {
+    let isValid = true;
+    const questionInput = questionEl.querySelector('.question-input');
+    const answerInputs = questionEl.querySelectorAll('.answer-input');
+    
+    if (!questionInput.value.trim()) {
+        showQuestionError(questionEl, 'question-error', 'Digite o texto com lacunas');
+        isValid = false;
+    } else {
+        const blankCount = (questionInput.value.match(/\[_____\]/g) || []).length;
+        if (blankCount === 0) {
+            showQuestionError(questionEl, 'question-error', 'Adicione pelo menos uma lacuna');
+            isValid = false;
+        }
+    }
+    
+    let emptyAnswers = false;
+    answerInputs.forEach(input => {
+        if (!input.value.trim()) {
+            input.classList.add('error');
+            emptyAnswers = true;
+        }
+    });
+    
+    if (emptyAnswers) {
+        showQuestionError(questionEl, 'answers-error', 'Preencha todas as respostas');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+
+// ========== FUNÇÃO PARA CALCULAR TEMPO TOTAL ==========
+function updateTotalTime() {
+    const timeTheory = document.getElementById('estimated-time-theory');
+    const timePractice = document.getElementById('estimated-time-practice');
+    
+    if (timeTheory && timePractice) {
+        const theoryValue = parseInt(timeTheory.value) || 0;
+        const practiceValue = parseInt(timePractice.value) || 0;
+        const total = theoryValue + practiceValue;
+        
+        // Atualizar revisão se estiver no passo 4
+        if (currentStep === 4) {
+            updateReview();
+        }
+    }
+}
+
+// ========== GERENCIAMENTO DE QUESTÕES ==========
+function addQuestion(type) {
+    const template = document.getElementById(`${type}-template`);
+    const questionsList = document.getElementById('questions-list');
+    
+    if (!template || !questionsList) return;
+    
+    const emptyState = questionsList.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    const questionEl = template.content.cloneNode(true);
+    questionsList.appendChild(questionEl);
+    
+    const newQuestion = questionsList.lastElementChild;
+    
+    if (type === 'multiple-choice') {
+        initializeMultipleChoiceQuestion(newQuestion);
+    } else if (type === 'code') {
+        initializeCodeQuestion(newQuestion);
+    } else if (type === 'fill-blank') {
+        initializeFillBlankQuestion(newQuestion);
+    }
+    
+    initializeQuestionHints(newQuestion);
+    updateQuestionCount();
+    validateQuestionHints(newQuestion);
+    showSaveIndicator(`Questão de ${getQuestionTypeName(type)} adicionada - Preencha as 3 dicas obrigatórias`);
+}
+
+function removeQuestion(button) {
+    const questionEl = button.closest('.question-item');
+    const questionsList = document.getElementById('questions-list');
+    
+    if (!questionEl || !questionsList) return;
+    
+    questionEl.remove();
+    updateQuestionCount();
+    
+    if (questionsList.querySelectorAll('.question-item').length === 0) {
+        showEmptyState();
+    }
+    
+    showSaveIndicator('Questão removida');
+}
+
+function updateQuestionCount() {
+    const questionCount = document.querySelectorAll('#questions-list .question-item').length;
+    const questionCounter = document.getElementById('question-count');
+    if (questionCounter) {
+        questionCounter.textContent = questionCount;
+    }
+}
+
+function showEmptyState() {
+    const questionsList = document.getElementById('questions-list');
+    if (!questionsList) return;
+    
+    questionsList.innerHTML = `
+        <div class="empty-state">
+            <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem exercícios" class="w-16 h-16 mx-auto">
+            <p class="text-gray-500">Nenhum exercício adicionado ainda</p>
+            <p class="text-sm text-gray-400">Clique em um dos tipos acima para começar</p>
+        </div>
+    `;
+}
+
+// ========== QUESTÕES DE MÚLTIPLA ESCOLHA ==========
+function initializeMultipleChoiceQuestion(questionEl) {
+    if (!questionEl.id) {
+        questionEl.id = 'question-' + Date.now();
+    }
+    
+    const radioInputs = questionEl.querySelectorAll('.correct-option-radio');
+    radioInputs.forEach(radio => {
+        radio.name = `correct-answer-${questionEl.id}`;
+        if (radio.checked) {
+            highlightCorrectOption(radio);
+        }
+    });
+}
+
+function addOption(button) {
+    const questionEl = button.closest('.question-item');
+    const optionsContainer = questionEl.querySelector('.options-container');
+    
+    if (!optionsContainer) {
+        console.error('Container de opções não encontrado');
+        return;
+    }
+    
+    const questionId = questionEl.id || 'question-' + Date.now();
+    const optionCount = optionsContainer.children.length + 1;
+    
+    const optionEl = document.createElement('div');
+    optionEl.className = 'option-item';
+    optionEl.innerHTML = `
+        <input type="radio" name="correct-answer-${questionId}" class="text-blue-600 correct-option-radio">
+        <input type="text" placeholder="Opção ${optionCount}" class="flex-1 p-2 border border-gray-300 rounded option-input">
+        <button type="button" class="remove-option text-red-500 hover:text-red-700 interactive-card p-1" aria-label="Remover opção">×</button>
+    `;
+    
+    optionsContainer.appendChild(optionEl);
+    
+    const radioInput = optionEl.querySelector('.correct-option-radio');
+    const textInput = optionEl.querySelector('.option-input');
+    const removeBtn = optionEl.querySelector('.remove-option');
+    
+    radioInput.addEventListener('change', function() {
+        highlightCorrectOption(this);
+    });
+    
+    removeBtn.addEventListener('click', function() {
+        removeOption(this);
+    });
+    
+    textInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        const errorEl = questionEl.querySelector('.options-error');
+        if (errorEl) errorEl.textContent = '';
+    });
+    
+    textInput.focus();
+}
+
+function removeOption(button) {
+    const optionEl = button.closest('.option-item');
+    const questionEl = button.closest('.question-item');
+    const optionsContainer = questionEl.querySelector('.options-container');
+    
+    if (!optionEl || !optionsContainer) return;
+    
+    if (optionsContainer.children.length <= 1) {
+        alert('É necessário ter pelo menos uma opção.');
+        return;
+    }
+    
+    optionEl.remove();
+}
+
+function highlightCorrectOption(radioInput) {
+    const optionEl = radioInput.closest('.option-item');
+    const questionEl = radioInput.closest('.question-item');
+    
+    if (!optionEl || !questionEl) return;
+    
+    const allOptions = questionEl.querySelectorAll('.option-item');
+    allOptions.forEach(option => {
+        option.classList.remove('correct-option');
+    });
+    
+    if (radioInput.checked) {
+        optionEl.classList.add('correct-option');
+    }
+}
+
+// ========== FUNÇÕES PARA COMPLETAR LACUNAS ==========
+function addBlankToText(button) {
+    console.log('Adicionar lacuna chamado');
+    
+    const questionEl = button.closest('.question-item');
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    
+    if (!textarea) {
+        console.error('Textarea não encontrado');
+        return;
+    }
+    
+    // Focar no textarea primeiro para garantir que temos a seleção correta
+    textarea.focus();
+    
+    // Pequeno delay para garantir que o foco foi aplicado
+    setTimeout(() => {
+        const startPos = textarea.selectionStart;
+        const endPos = textarea.selectionEnd;
+        const currentValue = textarea.value;
+        
+        // Verificar se já existe uma lacuna na posição atual (evitar duplicação)
+        const textBefore = currentValue.substring(0, startPos);
+        const textAfter = currentValue.substring(endPos);
+        
+        // Se já há uma lacuna imediatamente antes ou depois, não adicionar outra
+        if (textBefore.endsWith('[_____]') || textAfter.startsWith('[_____]')) {
+            console.log('Lacuna já existe nesta posição');
+            return;
+        }
+        
+        const newValue = textBefore + '[_____]' + textAfter;
+        
+        textarea.value = newValue;
+        
+        const newCursorPos = startPos + 7; // Tamanho de '[_____]'
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+        
+        updateFillBlankPreview(questionEl);
+        updateAnswerInputs(questionEl); // Isso vai adicionar automaticamente uma nova resposta
+        
+        showSaveIndicator('Lacuna adicionada');
+        console.log('Lacuna adicionada com sucesso');
+    }, 50);
+}
+
+function updateFillBlankPreview(questionEl) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    const preview = questionEl.querySelector('.text-preview');
+    
+    if (!textarea || !preview) return;
+    
+    let text = textarea.value;
+    
+    text = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '<br>')
+        .replace(/ /g, '&nbsp;')
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    
+    text = text.replace(/\[_____\]/g, '<span class="blank-preview">&nbsp;_____&nbsp;</span>');
+    
+    preview.innerHTML = text;
+    
+    // Adicionar classe large se o textarea for large
+    if (textarea.classList.contains('large-textarea')) {
+        preview.classList.add('large-preview');
+    }
+}
+
+function updateAnswerInputs(questionEl) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    const answersContainer = questionEl.querySelector('.answers-container');
+    
+    if (!textarea || !answersContainer) return;
+    
+    const blankCount = (textarea.value.match(/\[_____\]/g) || []).length;
+    const existingAnswers = answersContainer.querySelectorAll('.answer-input');
+    
+    console.log(`Encontradas ${blankCount} lacunas, ${existingAnswers.length} respostas existentes`);
+    
+    // Se não há lacunas, limpar respostas
+    if (blankCount === 0) {
+        answersContainer.innerHTML = '';
+        updateWordBank(questionEl);
+        return;
+    }
+    
+    // Se o número de respostas já corresponde ao número de lacunas, apenas renumerar
+    if (existingAnswers.length === blankCount) {
+        console.log('Número de respostas já corresponde ao número de lacunas');
+        renumberAnswers(questionEl);
+        updateWordBank(questionEl);
+        return;
+    }
+    
+    // Se temos mais respostas que lacunas, remover as extras
+    if (existingAnswers.length > blankCount) {
+        const answersToRemove = existingAnswers.length - blankCount;
+        for (let i = 0; i < answersToRemove; i++) {
+            const lastAnswer = answersContainer.lastElementChild;
+            if (lastAnswer) {
+                lastAnswer.remove();
+            }
+        }
+        renumberAnswers(questionEl);
+        updateWordBank(questionEl);
+        return;
+    }
+    
+    // Se temos menos respostas que lacunas, adicionar as que faltam
+    if (existingAnswers.length < blankCount) {
+        const answersToAdd = blankCount - existingAnswers.length;
+        for (let i = 0; i < answersToAdd; i++) {
+            const newIndex = existingAnswers.length + i + 1;
+            const answerEl = document.createElement('div');
+            answerEl.className = 'flex items-center gap-2';
+            answerEl.innerHTML = `
+                <span class="text-sm font-medium text-gray-600 w-6">${newIndex}.</span>
+                <input type="text" placeholder="Resposta para a lacuna ${newIndex}" 
+                       class="flex-1 p-2 border border-gray-300 rounded answer-input">
+                <button type="button" onclick="removeAnswer(this)" 
+                        class="text-red-500 hover:text-red-700 interactive-card p-1" 
+                        aria-label="Remover resposta">×</button>
+            `;
+            answersContainer.appendChild(answerEl);
+        }
+    }
+    
+    updateWordBank(questionEl);
+}
+
+function updateWordBank(questionEl) {
+    const wordBank = questionEl.querySelector('.word-bank');
+    
+    if (!wordBank) return;
+    
+    // SIMPLESMENTE LIMPAR O BANCO DE PALAVRAS - NÃO GERAR NADA AUTOMATICAMENTE
+    wordBank.innerHTML = '';
+    
+    // Opcional: Mostrar uma mensagem indicando que o aluno verá as opções durante o exercício
+    const message = document.createElement('div');
+    message.className = 'text-gray-500 text-sm text-center py-2';
+    message.textContent = 'As opções aparecerão aqui durante o exercício';
+    wordBank.appendChild(message);
+}
+
+function removeAnswer(button) {
+    const answerEl = button.closest('.flex.items-center');
+    const questionEl = button.closest('.question-item');
+    
+    if (!answerEl || !questionEl) return;
+    
+    // Encontrar o índice da resposta que será removida
+    const answersContainer = questionEl.querySelector('.answers-container');
+    const allAnswers = answersContainer.querySelectorAll('.flex.items-center');
+    const answerIndex = Array.from(allAnswers).indexOf(answerEl);
+    
+    // Verificar se há texto na resposta
+    const answerInput = answerEl.querySelector('.answer-input');
+    const hasText = answerInput && answerInput.value.trim() !== '';
+    
+    let confirmMessage = 'Tem certeza que deseja remover esta resposta?';
+    if (hasText) {
+        confirmMessage = `Tem certeza que deseja remover a resposta "${answerInput.value.trim()}"?`;
+    }
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    console.log(`Removendo resposta no índice: ${answerIndex}`);
+    
+    // Remover a resposta do DOM
+    answerEl.remove();
+    
+    // Remover a lacuna correspondente do texto
+    removeBlankFromText(questionEl, answerIndex);
+    
+    updateWordBank(questionEl);
+    showSaveIndicator('Resposta e lacuna removidas');
+}
+
+function removeBlankFromText(questionEl, blankIndex) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    if (!textarea) return;
+    
+    const currentText = textarea.value;
+    
+    // Encontrar todas as lacunas no texto
+    const blankRegex = /\[_____\]/g;
+    const blanks = [];
+    let match;
+    
+    while ((match = blankRegex.exec(currentText)) !== null) {
+        blanks.push({
+            index: match.index,
+            length: match[0].length
+        });
+    }
+    
+    console.log(`Encontradas ${blanks.length} lacunas no texto`);
+    console.log('Índice da lacuna a ser removida:', blankIndex);
+    
+    // Verificar se existe uma lacuna no índice especificado
+    if (blankIndex >= 0 && blankIndex < blanks.length) {
+        const blankToRemove = blanks[blankIndex];
+        
+        // Reconstruir o texto sem a lacuna removida
+        const newText = currentText.substring(0, blankToRemove.index) + 
+                       currentText.substring(blankToRemove.index + blankToRemove.length);
+        
+        textarea.value = newText;
+        
+        // Atualizar o preview
+        updateFillBlankPreview(questionEl);
+        
+        // Renumerar as respostas restantes
+        renumberAnswers(questionEl);
+        
+        console.log('Lacuna removida do texto com sucesso');
+    } else {
+        console.warn('Índice de lacuna inválido:', blankIndex);
+    }
+}
+
+function renumberAnswers(questionEl) {
+    const answersContainer = questionEl.querySelector('.answers-container');
+    const allAnswers = answersContainer.querySelectorAll('.flex.items-center');
+    
+    allAnswers.forEach((answerEl, index) => {
+        const numberSpan = answerEl.querySelector('span.text-sm');
+        if (numberSpan) {
+            numberSpan.textContent = `${index + 1}.`;
+        }
+        
+        const answerInput = answerEl.querySelector('.answer-input');
+        if (answerInput) {
+            answerInput.placeholder = `Resposta para a lacuna ${index + 1}`;
+        }
+    });
+}
+
+function initializeFillBlankQuestion(questionEl) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    
+    // CORREÇÃO: Configurar Tab para o campo de texto com lacunas
+    if (textarea) {
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                insertSpacesInTextarea(this, 4);
+            }
+        });
+        
+        textarea.addEventListener('input', function() {
+            updateFillBlankPreview(questionEl);
+            updateAnswerInputs(questionEl);
+        });
+        
+        textarea.placeholder = `Digite o texto aqui. Use o botão 'Adicionar Lacuna' para criar as lacunas.
+
+Exemplo para código:
+if idade >= 18:
+    print("Maior de idade")
+else:
+    print("Menor de idade")`;
+    }
+    
+    const preview = questionEl.querySelector('.text-preview');
+    if (preview) {
+        preview.style.whiteSpace = 'pre-wrap';
+        preview.style.fontFamily = 'monospace';
+        preview.style.lineHeight = '1.5';
+    }
+    
+    updateFillBlankPreview(questionEl);
+    updateAnswerInputs(questionEl);
+}
+
+// ========== FUNÇÕES PARA QUESTÕES DE CÓDIGO ==========
+function initializeCodeQuestion(questionEl) {
+    const questionInput = questionEl.querySelector('.question-input');
+    const starterCode = questionEl.querySelector('.starter-code');
+    const expectedOutput = questionEl.querySelector('.expected-output');
+    
+    // CORREÇÃO: Configurar Tab para campos de código
+    if (starterCode) {
+        starterCode.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                insertSpacesInTextarea(this, 4);
+            }
+        });
+        
+        starterCode.placeholder = `# Digite o código inicial aqui\n# Exemplo:\nprint("Hello")\n\nfor i in range(5):\n    print(i)`;
+    }
+    
+    if (expectedOutput) {
+        expectedOutput.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                insertSpacesInTextarea(this, 4);
+            }
+        });
+        
+        expectedOutput.placeholder = `# Digite a saída esperada\n# Exemplo:\nHello\n0\n1\n2\n3\n4`;
+    }
+
+    if (questionInput) {
+        questionInput.addEventListener('input', function() {
+            updateCodePreview(questionEl);
+        });
+    }
+    
+    if (starterCode) {
+        starterCode.addEventListener('input', function() {
+            updateCodePreview(questionEl);
+        });
+        
+        starterCode.placeholder = `# Digite o código inicial aqui\n# Exemplo:\nprint("Hello")\n\nfor i in range(5):\n    print(i)`;
+    }
+    
+    if (expectedOutput) {
+        expectedOutput.addEventListener('input', function() {
+            updateCodePreview(questionEl);
+        });
+        
+        expectedOutput.placeholder = `# Digite a saída esperada\n# Exemplo:\nHello\n0\n1\n2\n3\n4`;
+    }
+    
+
+
+    
+    updateCodePreview(questionEl);
+}
+
+
+// Função para inserir espaços em textareas (campos de código)
+function insertSpacesInTextarea(textarea, spacesCount) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const spaces = ' '.repeat(spacesCount);
+    
+    // Inserir os espaços na posição do cursor
+    textarea.value = textarea.value.substring(0, start) + 
+                     spaces + 
+                     textarea.value.substring(end);
+    
+    // Reposicionar o cursor
+    textarea.selectionStart = textarea.selectionEnd = start + spacesCount;
+    textarea.focus();
+}
+
+function updateCodePreview(questionEl) {
+    const instruction = questionEl.querySelector('.question-input')?.value || 'Digite as instruções do exercício...';
+    const starterCode = questionEl.querySelector('.starter-code')?.value || '# Código inicial aparecerá aqui';
+    const expectedOutput = questionEl.querySelector('.expected-output')?.value || '# Saída esperada aparecerá aqui';
+    
+    const instructionPreview = questionEl.querySelector('.instruction-preview');
+    if (instructionPreview) {
+        instructionPreview.textContent = instruction;
+    }
+    
+    const codePreview = questionEl.querySelector('.code-preview');
+    if (codePreview) {
+        const formattedCode = starterCode
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/\n/g, '<br>')
+            .replace(/ /g, '&nbsp;')
+            .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        
+        codePreview.innerHTML = formattedCode;
+    }
+    
+    const outputPreview = questionEl.querySelector('.output-content');
+    if (outputPreview) {
+        const formattedOutput = expectedOutput
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>')
+            .replace(/ /g, '&nbsp;')
+            .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        
+        outputPreview.innerHTML = formattedOutput;
+    }
+    
+    const outputContainer = questionEl.querySelector('.output-preview');
+    if (outputContainer) {
+        if (expectedOutput.trim()) {
+            outputContainer.classList.remove('hidden');
+        } else {
+            outputContainer.classList.add('hidden');
+        }
+    }
+}
+
+function simulateCodeExecution(button) {
+    const questionEl = button.closest('.question-item');
+    const outputContainer = questionEl.querySelector('.output-preview');
+    const runButton = questionEl.querySelector('.run-button');
+    
+    if (!outputContainer || !runButton) return;
+    
+    runButton.innerHTML = `
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Executando...</span>
+        </div>
+    `;
+    runButton.disabled = true;
+    
+    setTimeout(() => {
+        outputContainer.classList.remove('hidden');
+        
+        runButton.innerHTML = '▶ Executar Código';
+        runButton.disabled = false;
+        
+        showSaveIndicator('Código executado com sucesso!');
+    }, 1500);
+}
+
+// ========== EDITOR DE TÓPICOS ==========
+function initializeEditor(topicElement) {
+    const editor = topicElement.querySelector('.topic-editor');
+    const toolbar = topicElement.querySelector('.editor-toolbar');
+    
+    if (!editor || !toolbar) return;
+
+    // Configurar eventos dos botões básicos
+    const toolbarButtons = toolbar.querySelectorAll('.toolbar-button[data-command]');
+    toolbarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.getAttribute('data-command');
+            
+            if (command === 'insertUnorderedList') {
+                insertUnorderedList(editor);
+            } else if (command === 'insertOrderedList') {
+                insertOrderedList(editor);
+            } else {
+                document.execCommand(command, false, null);
+            }
+            
+            editor.focus();
+            
+            // Destacar botão ativo
+            if (command === 'bold' || command === 'italic' || command === 'underline') {
+                toolbarButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // CORREÇÃO MELHORADA: Configurar o evento de Tab no editor
+    editor.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault(); // Impedir o comportamento padrão do Tab
+            
+            // Inserir 4 espaços (tabulação) independentemente do contexto
+            insertTextAtCursor('    '); // 4 espaços
+            
+            // Disparar evento de input para atualizar o estado
+            const inputEvent = new Event('input', { bubbles: true });
+            editor.dispatchEvent(inputEvent);
+        }
+    });
+
+    // Configurar seletor de cores SIMPLIFICADO
+    const colorPicker = toolbar.querySelector('.color-picker');
+    if (colorPicker) {
+        const colorButton = colorPicker.querySelector('.text-color-button');
+        const colorOptions = colorPicker.querySelector('.color-options');
+        
+        colorButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            colorOptions.style.display = colorOptions.style.display === 'grid' ? 'none' : 'grid';
+        });
+        
+        const colorOptionsList = colorOptions.querySelectorAll('.color-option');
+        colorOptionsList.forEach(option => {
+            option.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                document.execCommand('foreColor', false, color);
+                editor.focus();
+                colorOptions.style.display = 'none';
+            });
+        });
+        
+        // Fechar seletor de cores ao clicar fora
+        document.addEventListener('click', function() {
+            colorOptions.style.display = 'none';
+        });
+    }
+    
+    // Configurar botão de inserir código
+    const insertCodeBtn = toolbar.querySelector('.insert-code');
+    if (insertCodeBtn) {
+        insertCodeBtn.addEventListener('click', function() {
+            insertCodeBlock(editor);
+        });
+    }
+    
+    // Verificar estado de formatação quando o editor ganha foco
+    editor.addEventListener('focus', function() {
+        updateToolbarState(editor, toolbar);
+    });
+    
+    editor.addEventListener('input', function() {
+        updateToolbarState(editor, toolbar);
+    });
+    
+    // Contador de palavras simplificado
+    updateWordCount(editor);
+    editor.addEventListener('input', function() {
+        updateWordCount(editor);
+    });
+}
+
+// FUNÇÃO AUXILIAR PARA INSERIR TEXTO NO CURSOR - VERSÃO CORRIGIDA
+function insertTextAtCursor(text) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+    
+    const range = selection.getRangeAt(0);
+    
+    // Verificar se estamos em um elemento editável
+    const editable = range.startContainer.parentElement.closest('[contenteditable="true"]');
+    if (!editable) return;
+    
+    // Criar nó de texto
+    const textNode = document.createTextNode(text);
+    
+    // Inserir no range
+    range.insertNode(textNode);
+    
+    // Mover o cursor para depois do texto inserido
+    range.setStartAfter(textNode);
+    range.setEndAfter(textNode);
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+// ATUALIZE A FUNÇÃO DE INICIALIZAÇÃO DAS LACUNAS PARA TORNÁ-LAS MAIORES
+function initializeFillBlankQuestion(questionEl) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    
+    // ADICIONAR CLASSE PARA TORNAR MAIOR
+    if (textarea) {
+        textarea.classList.add('large-textarea');
+        
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                insertSpacesInTextarea(this, 4);
+            }
+        });
+        
+        textarea.addEventListener('input', function() {
+            updateFillBlankPreview(questionEl);
+            updateAnswerInputs(questionEl);
+        });
+        
+        textarea.placeholder = `Digite o texto aqui. Use o botão 'Adicionar Lacuna' para criar as lacunas.
+
+Exemplo para código:
+if idade >= 18:
+    print("Maior de idade")
+else:
+    print("Menor de idade")`;
+    }
+    
+    const preview = questionEl.querySelector('.text-preview');
+    if (preview) {
+        preview.style.whiteSpace = 'pre-wrap';
+        preview.style.fontFamily = 'monospace';
+        preview.style.lineHeight = '1.8';
+        preview.style.minHeight = '200px';
+        preview.style.fontSize = '16px';
+    }
+    
+    updateFillBlankPreview(questionEl);
+    updateAnswerInputs(questionEl);
+}
+
+// ATUALIZE A FUNÇÃO DE PREVIEW DAS LACUNAS
+function updateFillBlankPreview(questionEl) {
+    const textarea = questionEl.querySelector('.fill-blank-textarea');
+    const preview = questionEl.querySelector('.text-preview');
+    
+    if (!textarea || !preview) return;
+    
+    let text = textarea.value;
+    
+    text = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '<br>')
+        .replace(/ /g, '&nbsp;')
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    
+    text = text.replace(/\[_____\]/g, '<span class="blank-preview">&nbsp;_____&nbsp;</span>');
+    
+    preview.innerHTML = text;
+    
+    // Aplicar estilos de tamanho grande
+    preview.classList.add('large-preview');
+}
+
+
+// Função para inserir texto na posição do cursor - VERSÃO CORRIGIDA
+function insertTextAtCursor(text) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+    
+    const range = selection.getRangeAt(0);
+    
+    // Verificar se estamos em um elemento editável
+    const editable = range.startContainer.parentElement.closest('[contenteditable="true"]');
+    if (!editable) return;
+    
+    // Criar nó de texto
+    const textNode = document.createTextNode(text);
+    
+    // Inserir no range
+    range.insertNode(textNode);
+    
+    // Mover o cursor para depois do texto inserido
+    range.setStartAfter(textNode);
+    range.setEndAfter(textNode);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Disparar evento de input para atualizar o estado
+    const inputEvent = new Event('input', { bubbles: true });
+    editable.dispatchEvent(inputEvent);
+}
+
+
+function insertUnorderedList(editor) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    
+    if (selectedText) {
+        // Se há texto selecionado, transformar em lista
+        const lines = selectedText.split('\n').filter(line => line.trim());
+        let listHTML = '<ul style="margin: 8px 0; padding-left: 24px; list-style-type: disc;">';
+        
+        lines.forEach(line => {
+            listHTML += `<li>${line}</li>`;
+        });
+        
+        listHTML += '</ul>';
+        
+        // Substituir o texto selecionado pela lista
+        range.deleteContents();
+        const listElement = document.createElement('div');
+        listElement.innerHTML = listHTML;
+        range.insertNode(listElement);
+    } else {
+        // Se não há texto selecionado, inserir lista vazia
+        const listHTML = `
+            <ul style="margin: 8px 0; padding-left: 24px; list-style-type: disc;">
+                <li>• Item da lista</li>
+            </ul>
+        `;
+        document.execCommand('insertHTML', false, listHTML);
+    }
+    
+    editor.focus();
+}
+
+function insertOrderedList(editor) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    
+    if (selectedText) {
+        // Se há texto selecionado, transformar em lista numerada
+        const lines = selectedText.split('\n').filter(line => line.trim());
+        let listHTML = '<ol style="margin: 8px 0; padding-left: 24px; list-style-type: decimal;">';
+        
+        lines.forEach(line => {
+            listHTML += `<li>${line}</li>`;
+        });
+        
+        listHTML += '</ol>';
+        
+        // Substituir o texto selecionado pela lista numerada
+        range.deleteContents();
+        const listElement = document.createElement('div');
+        listElement.innerHTML = listHTML;
+        range.insertNode(listElement);
+    } else {
+        // Se não há texto selecionado, inserir lista numerada vazia
+        const listHTML = `
+            <ol style="margin: 8px 0; padding-left: 24px; list-style-type: decimal;">
+                <li>Primeiro item</li>
+            </ol>
+        `;
+        document.execCommand('insertHTML', false, listHTML);
+    }
+    
+    editor.focus();
+}
+
+function insertCodeBlock(editor) {
+    const codeHTML = `
+        <pre style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px; margin: 12px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
+<code># Seu código aqui\nprint("Hello World")</code>
+        </pre>
+    `;
+    document.execCommand('insertHTML', false, codeHTML);
+    editor.focus();
+}
+
+function updateToolbarState(editor, toolbar) {
+    const buttons = toolbar.querySelectorAll('.toolbar-button[data-command]');
+    buttons.forEach(button => {
+        const command = button.getAttribute('data-command');
+        if (command === 'bold' || command === 'italic' || command === 'underline') {
+            if (document.queryCommandState(command)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
+}
+
+function updateWordCount(editor) {
+    const wordCountDisplay = editor.closest('.editor-container').querySelector('.word-count-display');
+    if (wordCountDisplay) {
+        const text = editor.innerText || '';
+        const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+        wordCountDisplay.textContent = `${wordCount} palavras`;
+    }
+}
+
+// ========== REVISÃO E PUBLICAÇÃO ==========
+function updateReview() {
+    updateReviewSummary();
+    updateReviewTopics();
+    updateReviewQuestions();
+    updateValidationChecklist();
+}
+
+function updateReviewSummary() {
+    const chapterSelect = document.getElementById('chapter-select');
+    const moduleSelect = document.getElementById('module-select');
+    const lessonTitle = document.getElementById('lesson-title');
+    const theoryTitle = document.getElementById('titulo-teoria');
+    const timeTheory = document.getElementById('estimated-time-theory');
+    const timePractice = document.getElementById('estimated-time-practice');
+    const theoryXp = document.getElementById('theory-xp');
+    
+    // Atualizar apenas elementos que existem
+    if (chapterSelect && chapterSelect.selectedIndex >= 0) {
+        setReviewText('review-chapter', chapterSelect.options[chapterSelect.selectedIndex].text);
+    }
+    
+    if (moduleSelect && moduleSelect.selectedIndex >= 0) {
+        setReviewText('review-module', moduleSelect.options[moduleSelect.selectedIndex].text);
+    }
+    
+    setReviewText('review-lesson-title', lessonTitle.value || 'Não definido');
+    setReviewText('review-theory-title', theoryTitle.value || 'Não definido');
+    
+    // Atualizar tempos
+    const theoryTime = parseInt(timeTheory.value) || 0;
+    const practiceTime = parseInt(timePractice.value) || 0;
+    const totalTime = theoryTime + practiceTime;
+    
+    setReviewText('review-time-theory', theoryTime > 0 ? `${theoryTime} minutos` : 'Não definido');
+    setReviewText('review-time-practice', practiceTime > 0 ? `${practiceTime} minutos` : 'Não definido');
+    setReviewText('review-total-time', totalTime > 0 ? `${totalTime} minutos` : 'Não definido');
+    
+    // Calcular XP
+    const theoryXpValue = theoryXp ? parseInt(theoryXp.value) || 0 : 0;
+    const practiceXpValue = calculateTotalPracticeXp();
+    const totalXp = theoryXpValue + practiceXpValue;
+    
+    setReviewText('review-theory-xp', `${theoryXpValue} XP`);
+    setReviewText('review-practice-xp', `${practiceXpValue} XP`);
+    setReviewText('review-total-xp', `${totalXp} XP`);
+    
+    const questionCount = document.querySelectorAll('#questions-list .question-item').length;
+    const questionsBadge = document.getElementById('review-questions-badge');
+    if (questionsBadge) {
+        questionsBadge.textContent = `${questionCount} questão${questionCount !== 1 ? 'es' : ''}`;
+    }
+}
+
+// Nova função para calcular o XP total das questões práticas
+function calculateTotalPracticeXp() {
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    let totalXp = 0;
+    
+    questionItems.forEach(questionEl => {
+        const xpInput = questionEl.querySelector('.xp-input');
+        if (xpInput) {
+            totalXp += parseInt(xpInput.value) || 0;
+        }
+    });
+    
+    return totalXp;
+}
+
+function updateReviewTopics() {
+    const topicsContainer = document.getElementById('review-topics');
+    const topicItems = document.querySelectorAll('.topic-item');
+    
+    if (topicItems.length === 0) {
+        topicsContainer.innerHTML = `
+            <div class="text-center text-gray-500 py-4">
+                <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem tópicos" class="w-12 h-12 mx-auto mb-2 opacity-50">
+                <p>Nenhum tópico adicionado</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let topicsHTML = '';
+    topicItems.forEach((topic, index) => {
+        const title = topic.querySelector('.topic-title').value || `Tópico ${index + 1}`;
+        const content = topic.querySelector('.topic-editor').innerText || 'Sem conteúdo';
+        const preview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        
+        topicsHTML += `
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-semibold text-gray-800">${title}</h4>
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Tópico ${index + 1}</span>
+                </div>
+                <p class="text-gray-600 text-sm">${preview}</p>
+            </div>
+        `;
+    });
+    
+    topicsContainer.innerHTML = topicsHTML;
+}
+
+function updateReviewQuestions() {
+    const questionsContainer = document.getElementById('review-questions');
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    
+    if (questionItems.length === 0) {
+        questionsContainer.innerHTML = `
+            <div class="text-center text-gray-500 py-4">
+                <img src="{% static 'imagem/quiz_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem questões" class="w-12 h-12 mx-auto mb-2 opacity-50">
+                <p>Nenhum exercício adicionado</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let questionsHTML = '';
+    questionItems.forEach((question, index) => {
+        const type = question.dataset.type;
+        const typeNames = {
+            'multiple-choice': 'Múltipla Escolha',
+            'code': 'Programação',
+            'fill-blank': 'Completar Lacunas'
+        };
+        
+        const hintsList = question.querySelector('.hints-list');
+        const hintInputs = hintsList ? hintsList.querySelectorAll('.hint-input') : [];
+        const filledHints = Array.from(hintInputs).filter(input => input.value.trim() !== '');
+        const hintsStatus = filledHints.length === 3 ? 
+            '<span class="text-green-600 text-sm">✓ 3 dicas preenchidas</span>' : 
+            '<span class="text-red-600 text-sm">✗ Faltam ' + (3 - filledHints.length) + ' dicas</span>';
+        
+        let questionContent = '';
+        
+        if (type === 'multiple-choice') {
+            const questionText = question.querySelector('.question-input')?.value || 'Pergunta não definida';
+            const options = question.querySelectorAll('.option-input');
+            let optionsHTML = '';
+            
+            options.forEach((option, optIndex) => {
+                const isCorrect = option.closest('.option-item').classList.contains('correct-option');
+                optionsHTML += `
+                    <div class="flex items-center gap-2 ${isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'}">
+                        <span class="w-4">${optIndex + 1}.</span>
+                        <span>${option.value || 'Opção não definida'}</span>
+                        ${isCorrect ? '<span class="text-xs">✓ Correta</span>' : ''}
+                    </div>
+                `;
+            });
+            
+            questionContent = `
+                <p class="mb-2"><strong>Pergunta:</strong> ${questionText}</p>
+                <div class="ml-4 space-y-1 mt-2">
+                    <strong class="text-sm">Opções:</strong>
+                    ${optionsHTML}
+                </div>
+                <div class="mt-2">${hintsStatus}</div>
+            `;
+        } 
+        else if (type === 'code') {
+            const instruction = question.querySelector('.question-input')?.value || 'Instrução não definida';
+            const starterCode = question.querySelector('.starter-code')?.value || '';
+            const expectedOutput = question.querySelector('.expected-output')?.value || '';
+            
+            const formattedCode = starterCode
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>')
+                .replace(/ /g, '&nbsp;')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            
+            const formattedOutput = expectedOutput
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>')
+                .replace(/ /g, '&nbsp;')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            
+            questionContent = `
+                <p><strong>Instrução:</strong> ${instruction}</p>
+                ${starterCode ? `
+                <div class="mt-2">
+                    <strong>Código Inicial:</strong>
+                    <div class="bg-gray-100 p-3 rounded font-mono text-sm mt-1">${formattedCode}</div>
+                </div>
+                ` : ''}
+                ${expectedOutput ? `
+                <div class="mt-2">
+                    <strong>Saída Esperada:</strong>
+                    <div class="bg-gray-800 text-green-400 p-3 rounded font-mono text-sm mt-1">${formattedOutput}</div>
+                </div>
+                ` : ''}
+                <div class="mt-2">${hintsStatus}</div>
+            `;
+        } 
+        else if (type === 'fill-blank') {
+            const questionText = question.querySelector('.question-input')?.value || 'Texto não definido';
+            const answers = question.querySelectorAll('.answer-input');
+            
+            let formattedText = questionText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>')
+                .replace(/ /g, '&nbsp;')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
+                .replace(/\[_____\]/g, '<span class="blank-preview">&nbsp;_____&nbsp;</span>');
+            
+            let answersHTML = '';
+            answers.forEach((answer, ansIndex) => {
+                if (answer.value.trim()) {
+                    answersHTML += `
+                        <div class="flex items-center gap-2 text-green-600">
+                            <span class="text-sm font-medium w-6">${ansIndex + 1}.</span>
+                            <span>${answer.value}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            questionContent = `
+                <p class="mb-2"><strong>Texto com Lacunas:</strong></p>
+                <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-3">
+                    <div class="text-preview text-gray-700 leading-relaxed">${formattedText}</div>
+                </div>
+                ${answersHTML ? `
+                <div class="mt-2">
+                    <strong class="text-sm">Respostas Corretas:</strong>
+                    <div class="ml-4 space-y-1 mt-1">${answersHTML}</div>
+                </div>
+                ` : '<p class="text-red-500 text-sm">✗ Respostas não definidas</p>'}
+                <div class="mt-2">${hintsStatus}</div>
+            `;
+        }
+        
+        questionsHTML += `
+            <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                            ${typeNames[type] || 'Exercício'}
+                        </span>
+                        <span class="text-gray-500 text-sm">Questão ${index + 1}</span>
+                    </div>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                        ${question.querySelector('.xp-input')?.value || '10'} XP
+                    </span>
+                </div>
+                ${questionContent}
+            </div>
+        `;
+    });
+    
+    questionsContainer.innerHTML = questionsHTML;
+}
+
+function updateValidationChecklist() {
+    const checkTitle = document.getElementById('check-title');
+    const checkTopics = document.getElementById('check-topics');
+    const checkQuestions = document.getElementById('check-questions');
+    const checkTimeTheory = document.getElementById('check-time-theory');
+    const checkTimePractice = document.getElementById('check-time-practice');
+    const checkHints = document.getElementById('check-hints');
+    const saveButton = document.getElementById('save-button');
+    const confirmReview = document.getElementById('confirm-review');
+
+    // Validar título da aula
+    const lessonTitle = document.getElementById('lesson-title');
+    const hasTitle = lessonTitle && lessonTitle.value.trim().length > 0;
+    updateCheckItem(checkTitle, hasTitle);
+
+    // Validar tópicos com conteúdo
+    const topicItems = document.querySelectorAll('.topic-item');
+    let hasTopicsContent = false;
+    topicItems.forEach(topic => {
+        const editor = topic.querySelector('.topic-editor');
+        const content = editor ? editor.innerText.trim() : '';
+        if (content && content !== 'Comece a escrever o conteúdo deste tópico aqui...') {
+            hasTopicsContent = true;
+        }
+    });
+    updateCheckItem(checkTopics, hasTopicsContent);
+
+    // Validar questões
+    const hasQuestions = document.querySelectorAll('#questions-list .question-item').length > 0;
+    updateCheckItem(checkQuestions, hasQuestions);
+
+    // Validar tempo teórico
+    const timeTheory = document.getElementById('estimated-time-theory');
+    const hasTimeTheory = timeTheory && timeTheory.value && timeTheory.value >= 1 && timeTheory.value <= 120;
+    updateCheckItem(checkTimeTheory, hasTimeTheory);
+
+    // Validar tempo prático
+    const timePractice = document.getElementById('estimated-time-practice');
+    const hasTimePractice = timePractice && timePractice.value && timePractice.value >= 1 && timePractice.value <= 120;
+    updateCheckItem(checkTimePractice, hasTimePractice);
+
+    // Validar dicas - todas as questões têm 3 dicas preenchidas
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    let allHintsValid = true;
+    
+    if (hasQuestions) {
+        questionItems.forEach(questionEl => {
+            if (!validateQuestionHints(questionEl)) {
+                allHintsValid = false;
+            }
+        });
+    } else {
+        allHintsValid = false;
+    }
+    
+    updateCheckItem(checkHints, allHintsValid);
+
+    // Atualizar botão de publicação
+    if (saveButton && confirmReview) {
+        const allValid = hasTitle && hasTopicsContent && hasQuestions && hasTimeTheory && hasTimePractice && allHintsValid;
+        saveButton.disabled = !allValid || !confirmReview.checked;
+    }
+}
+
+// Atualize a função de preparação dos dados do formulário
+function prepareFormData() {
+    console.log("=== PREPARANDO DADOS DO FORMULÁRIO ===");
+    
+    try {
+        // Coletar dados dos tópicos
+        const topicosData = collectTopicContent();
+        document.getElementById('topicos-json').value = JSON.stringify(topicosData);
+        
+        // Coletar dados das questões
+        const questionsData = collectQuestionsData();
+        document.getElementById('questoes-json').value = JSON.stringify(questionsData);
+        
+        // Coletar XP teórico
+        const theoryXp = document.getElementById('theory-xp');
+        if (theoryXp) {
+            document.getElementById('theory-xp-hidden').value = theoryXp.value;
+        }
+        
+        // Coletar tempos
+        const timeTheory = document.getElementById('estimated-time-theory');
+        const timePractice = document.getElementById('estimated-time-practice');
+        if (timeTheory) {
+            document.getElementById('tempo-teoria-hidden').value = timeTheory.value;
+        }
+        if (timePractice) {
+            document.getElementById('tempo-pratica-hidden').value = timePractice.value;
+        }
+        
+        console.log("Dados preparados para envio:");
+        console.log("- Tópicos:", topicosData.length, "tópicos");
+        console.log("- Questões:", questionsData.length, "questões");
+        console.log("- XP Teórico:", theoryXp ? theoryXp.value : '0');
+        console.log("- Tempo Teoria:", timeTheory ? timeTheory.value : '0');
+        console.log("- Tempo Prática:", timePractice ? timePractice.value : '0');
+        
+        return true;
+    } catch (error) {
+        console.error('Erro ao preparar dados do formulário:', error);
+        return false;
+    }
+}
+
+function updateCheckItem(element, isValid) {
+    if (!element) return;
+    
+    if (isValid) {
+        element.innerHTML = '✓';
+        element.className = 'w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs';
+    } else {
+        element.innerHTML = '';
+        element.className = 'w-5 h-5 rounded-full border-2 border-gray-300';
+    }
+}
+
+function validateFinalForm() {
+    console.log('Validando formulário final...');
+    
+    const hasTitle = document.getElementById('lesson-title').value.trim().length > 0;
+    const hasQuestions = document.querySelectorAll('#questions-list .question-item').length > 0;
+    const timeTheory = document.getElementById('estimated-time-theory');
+    const timePractice = document.getElementById('estimated-time-practice');
+    const hasTimeTheory = timeTheory && timeTheory.value && timeTheory.value >= 1 && timeTheory.value <= 120;
+    const hasTimePractice = timePractice && timePractice.value && timePractice.value >= 1 && timePractice.value <= 120;
+    const isConfirmed = document.getElementById('confirm-review').checked;
+    const hasChapter = document.getElementById('chapter-select').value && document.getElementById('chapter-select').value !== '';
+    const hasModule = document.getElementById('module-select').value && document.getElementById('module-select').value !== '';
+    
+    // Validar tópicos
+    const topicItems = document.querySelectorAll('.topic-item');
+    let hasTopicsContent = false;
+    topicItems.forEach(topic => {
+        const editor = topic.querySelector('.topic-editor');
+        const content = editor ? editor.innerText.trim() : '';
+        if (content && content !== 'Comece a escrever o conteúdo deste tópico aqui...') {
+            hasTopicsContent = true;
+        }
+    });
+    
+    // Validar dicas
+    const allHintsValid = validateAllQuestionsHints();
+    
+    console.log('Resultado da validação:', {
+        hasTitle,
+        hasTopicsContent,
+        hasQuestions,
+        hasTimeTheory,
+        hasTimePractice,
+        isConfirmed,
+        hasChapter,
+        hasModule,
+        allHintsValid
+    });
+    
+    return hasTitle && 
+           hasTopicsContent && 
+           hasQuestions && 
+           hasTimeTheory && 
+           hasTimePractice && 
+           isConfirmed && 
+           hasChapter && 
+           hasModule && 
+           allHintsValid;
+}
+
+function validateAllQuestionsHints() {
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    let allValid = true;
+    
+    if (questionItems.length === 0) {
+        return false;
+    }
+    
+    questionItems.forEach(questionEl => {
+        const hintsList = questionEl.querySelector('.hints-list');
+        if (!hintsList) {
+            allValid = false;
+            return;
+        }
+        
+        const hintInputs = hintsList.querySelectorAll('.hint-input');
+        const filledHints = Array.from(hintInputs).filter(input => input.value.trim() !== '');
+        
+        if (filledHints.length !== 3) {
+            allValid = false;
+            highlightQuestionError(questionEl);
+        }
+    });
+    
+    return allValid;
+}
+
+// ========== COLETAR DADOS PARA ENVIO ==========
+function collectQuestionsData() {
+    const questions = [];
+    const questionItems = document.querySelectorAll('#questions-list .question-item');
+    
+    questionItems.forEach((questionEl, index) => {
+        const type = questionEl.dataset.type;
+        const questionData = {
+            type: type,
+            ordem: index + 1,
+            dicas: [],
+            xp: parseInt(questionEl.querySelector('.xp-input')?.value) || 10
+        };
+        
+        // Coletar dicas
+        const hintInputs = questionEl.querySelectorAll('.hint-input');
+        hintInputs.forEach(input => {
+            if (input.value.trim()) {
+                questionData.dicas.push(input.value.trim());
+            }
+        });
+        
+        // Coletar dados específicos por tipo
+        if (type === 'multiple-choice') {
+            questionData.pergunta = questionEl.querySelector('.question-input').value;
+            questionData.opcoes = [];
+            
+            questionEl.querySelectorAll('.option-item').forEach((opcaoEl, idx) => {
+                const texto = opcaoEl.querySelector('.option-input').value;
+                const correta = opcaoEl.querySelector('.correct-option-radio').checked;
+                
+                if (texto.trim()) {
+                    questionData.opcoes.push({
+                        texto: texto,
+                        correta: correta
+                    });
+                }
+            });
+        }
+        else if (type === 'code') {
+            questionData.instrucao = questionEl.querySelector('.question-input').value;
+            questionData.codigo_inicial = questionEl.querySelector('.starter-code').value;
+            questionData.saida_esperada = questionEl.querySelector('.expected-output').value;
+        }
+        else if (type === 'fill-blank') {
+            questionData.texto = questionEl.querySelector('.question-input').value;
+            questionData.respostas = [];
+            
+            questionEl.querySelectorAll('.answer-input').forEach(input => {
+                if (input.value.trim()) {
+                    questionData.respostas.push(input.value.trim());
+                }
+            });
+        }
+        
+        questions.push(questionData);
+    });
+    
+    console.log("Questões coletadas:", questions);
+    return questions;
+}
+
+function collectTopicContent() {
+    const topicItems = document.querySelectorAll('.topic-item');
+    const topicosData = [];
+    
+    console.log(`Coletando dados de ${topicItems.length} tópicos...`);
+    
+    topicItems.forEach((topic, index) => {
+        const titulo = topic.querySelector('.topic-title').value || `Tópico ${index + 1}`;
+        const editor = topic.querySelector('.topic-editor');
+        const conteudo = editor ? editor.innerHTML : '';
+        
+        topicosData.push({
+            titulo: titulo,
+            conteudo: conteudo,
+            ordem: index + 1
+        });
+    });
+    
+    console.log("Dados dos tópicos coletados:", topicosData);
+    return topicosData;
+}
+
+// ========== FUNÇÃO DE SALVAR ALTERAÇÕES ==========
+function saveChanges() {
+    console.log("=== SALVANDO ALTERAÇÕES ===");
+    
+    // Primeiro, preparar os dados
+    if (!prepareFormData()) {
+        alert('Erro ao preparar os dados. Verifique o console para mais informações.');
+        return;
+    }
+    
+    // Verificar se o formulário está válido
+    if (!validateFinalForm()) {
+        alert('Por favor, complete todos os requisitos antes de salvar:\n\n' +
+              '✓ Título da aula preenchido\n' +
+              '✓ Pelo menos um tópico com conteúdo\n' + 
+              '✓ Pelo menos um exercício prático\n' +
+              '✓ Tempo teórico e prático definidos\n' +
+              '✓ 3 dicas preenchidas em cada questão\n' +
+              '✓ Confirmação de revisão marcada');
+        return;
+    }
+    
+    // Mostrar indicador de carregamento
+    const saveButton = document.getElementById('save-button');
+    if (saveButton) {
+        saveButton.innerHTML = `
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Salvando...</span>
+            </div>
+        `;
+        saveButton.disabled = true;
+    }
+    
+    console.log("Enviando formulário de edição...");
+    
+    // Disparar o envio do formulário
+    setTimeout(() => {
+        document.getElementById('content-form').submit();
+    }, 1000);
+}
+
+// ========== FUNÇÕES UTILITÁRIAS ==========
+function updateProgressBar() {
+    const progressFill = document.getElementById('progress-fill');
+    if (progressFill) {
+        const width = (currentStep / 4) * 100;
+        progressFill.style.width = `${width}%`;
+        console.log('Barra de progresso atualizada para:', width + '%');
+    }
+}
+
+function showSaveIndicator(message) {
+    const saveIndicator = document.getElementById('save-indicator');
+    if (saveIndicator) {
+        saveIndicator.innerHTML = `
+            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Salvo" class="w-5 h-5">
+            <span>${message}</span>
+        `;
+        saveIndicator.style.display = 'flex';
+        
+        setTimeout(function() {
+            saveIndicator.style.display = 'none';
+        }, 3000);
+    }
+}
+
+function getQuestionTypeName(type) {
+    const names = {
+        'multiple-choice': 'Múltipla Escolha',
+        'code': 'Escrever Código',
+        'fill-blank': 'Completar Lacunas'
+    };
+    return names[type] || 'Exercício';
+}
+
+// Função utilitária para definir texto na revisão
+function setReviewText(elementId, text) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = text;
+    }
+}
+
+// ========== GERENCIAMENTO DE ERROS ==========
+function clearErrors() {
+    document.querySelectorAll('.validation-error').forEach(el => {
+        el.textContent = '';
+    });
+    document.querySelectorAll('.error').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+function clearError(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = '';
+        element.classList.remove('error');
+    }
+}
+
+function showError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+    }
+}
+
+function clearQuestionErrors(questionEl, specificError = null) {
+    if (specificError) {
+        const errorEl = questionEl.querySelector(`.${specificError}`);
+        if (errorEl) errorEl.textContent = '';
+    } else {
+        questionEl.querySelectorAll('.validation-error').forEach(el => {
+            el.textContent = '';
+        });
+    }
+    
+    questionEl.querySelectorAll('.error').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+function showQuestionError(questionEl, errorClass, message) {
+    const errorEl = questionEl.querySelector(`.${errorClass}`);
+    if (errorEl) {
+        errorEl.textContent = message;
+    }
+}
+
+function highlightQuestionError(questionEl) {
+    questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    questionEl.style.border = '2px solid #ef4444';
+    questionEl.style.borderRadius = '8px';
+    setTimeout(() => {
+        questionEl.style.border = '';
+    }, 3000);
+}
+
+function scrollToFirstError() {
+    const firstError = document.querySelector('.error');
+    if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// ========== MODAIS ==========
+function openChapterModal() {
+    const modal = document.getElementById('chapter-modal');
+    if (modal) {
+        modal.classList.add('active');
+        const titleInput = document.getElementById('new-chapter-title');
+        if (titleInput) titleInput.focus();
+    }
+}
+
+function closeChapterModal() {
+    const modal = document.getElementById('chapter-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        const form = document.getElementById('new-chapter-form');
+        if (form) form.reset();
+        clearError('new-chapter-title-error');
+        clearError('new-chapter-title');
+    }
+}
+
+function openModuleModal() {
+    if (!selectedChapterId) {
+        alert('Selecione um capítulo primeiro antes de criar um módulo.');
+        const moduleSelect = document.getElementById('module-select');
+        if (moduleSelect) moduleSelect.value = '';
+        return;
+    }
+    
+    const modal = document.getElementById('module-modal');
+    if (modal) {
+        const chapterName = document.getElementById('selected-chapter-name');
+        if (chapterName) chapterName.textContent = selectedChapterName;
+        
+        modal.classList.add('active');
+        const titleInput = document.getElementById('new-module-title');
+        if (titleInput) titleInput.focus();
+    }
+}
+
+function closeModuleModal() {
+    const modal = document.getElementById('module-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        const form = document.getElementById('new-module-form');
+        if (form) form.reset();
+        clearError('new-module-title-error');
+        clearError('new-module-title');
+    }
+}
+
+// ========== FUNÇÕES DE DEBUG ==========
+function debugTopics() {
+    console.log('=== DEBUG TÓPICOS ===');
+    
+    // Verificar campo hidden
+    const topicosJson = document.getElementById('topicos-json').value;
+    console.log('Campo hidden topicos-json:', topicosJson);
+    
+    // Tentar parsear
+    try {
+        if (topicosJson && topicosJson !== '[]' && topicosJson !== '') {
+            const parsed = JSON.parse(topicosJson);
+            console.log('Tópicos parseados:', parsed);
+            console.log('Número de tópicos:', parsed.length);
+            
+            parsed.forEach((topico, index) => {
+                console.log(`Tópico ${index}:`, {
+                    titulo: topico.titulo,
+                    conteudo_length: topico.conteudo ? topico.conteudo.length : 0,
+                    ordem: topico.ordem
+                });
+            });
+        } else {
+            console.log('Nenhum dado de tópicos encontrado');
+        }
+    } catch (error) {
+        console.error('Erro ao parsear tópicos:', error);
+    }
+    
+    // Verificar tópicos no DOM
+    const topicElements = document.querySelectorAll('.topic-item');
+    console.log('Tópicos no DOM:', topicElements.length);
+}
+
+function forceLoadTopics() {
+    console.log('=== FORÇANDO CARREGAMENTO DE TÓPICOS ===');
+    loadExistingTopics();
+}
+
+console.log('JavaScript de Edição de Conteúdo carregado com sucesso!');
+</script>
+{% endblock %}

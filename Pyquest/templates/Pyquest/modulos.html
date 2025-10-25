@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Módulos - Fundamentos do Python{% endblock %}
+{% block title %}Módulos - {{ capitulo.titulo|default:"Fundamentos do Python" }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -16,26 +16,17 @@
       box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
     }
     
-    .progress-bar {
+    .progress-bar-container {
       overflow: hidden;
       position: relative;
     }
     
-    .progress-bar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
+    .progress-bar-fill {
       height: 100%;
-      width: 75%;
       background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
       border-radius: 9999px;
-      animation: progressAnimation 1.5s ease-in-out;
-    }
-    
-    @keyframes progressAnimation {
-      0% { width: 0%; }
-      100% { width: 75%; }
+      transition: width 1.5s ease-in-out;
+      width: 0%;
     }
     
     .module-card {
@@ -109,7 +100,94 @@
       text-anchor: middle;
       font-weight: bold;
     }
-  </style>
+
+    /* Estilos para a descrição expansível dos módulos */
+    .descricao-modulo-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    
+    .descricao-modulo-resumida {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      line-height: 1.4;
+    }
+    
+    .descricao-modulo-completa {
+      display: none;
+      line-height: 1.4;
+    }
+    
+    .descricao-modulo-expandir {
+      color: #3B82F6;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 8px;
+      transition: color 0.2s ease;
+    }
+    
+    .descricao-modulo-expandir:hover {
+      color: #1E40AF;
+      text-decoration: underline;
+    }
+
+    .stats-modulo {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para expandir/recolher a descrição dos módulos
+    function toggleDescricaoModulo(button) {
+        const container = button.closest('.descricao-modulo-container');
+        const resumida = container.querySelector('.descricao-modulo-resumida');
+        const completa = container.querySelector('.descricao-modulo-completa');
+        
+        if (resumida.style.display === 'none') {
+            // Recolher
+            resumida.style.display = '-webkit-box';
+            completa.style.display = 'none';
+            button.innerHTML = 'Mostrar Mais <img src="{% static "imagem/arrow_drop_down_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png" %}" alt="Expandir" class="w-4 h-4 ml-1">';
+        } else {
+            // Expandir
+            resumida.style.display = 'none';
+            completa.style.display = 'block';
+            button.innerHTML = 'Mostrar Menos <img src="{% static "imagem/unfold_less_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png" %}" alt="Recolher" class="w-4 h-4 ml-1">';
+        }
+    }
+    
+    // Adicionar evento de clique a todos os botões de expandir dos módulos
+    document.querySelectorAll('.descricao-modulo-expandir').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleDescricaoModulo(this);
+        });
+    });
+    
+    // Verificar se a descrição dos módulos precisa ser truncada
+    document.querySelectorAll('.descricao-modulo-container').forEach(container => {
+        const textoCompleto = container.querySelector('.descricao-modulo-completa').textContent;
+        
+        // Se o texto tiver mais de 20 palavras, mostra o botão de expandir
+        const palavras = textoCompleto.trim().split(/\s+/).length;
+        if (palavras > 20) {
+            container.querySelector('.descricao-modulo-expandir').style.display = 'inline-flex';
+        }
+    });
+});
+</script>
 {% endblock %}
 
 {% block content %}
@@ -126,8 +204,8 @@
   <div class="flex items-center gap-6 z-10">
     <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="w-16 h-16 floating-element">
     <div>
-      <h2 class="text-2xl font-bold">Fundamentos do Python</h2>
-      <p class="text-sm text-blue-100">Aprenda os Conceitos Básicos e essenciais da linguagem Python</p>
+      <h2 class="text-2xl font-bold">{{ capitulo.titulo|default:"Fundamentos do Python" }}</h2>
+      <p class="text-sm text-blue-100">{{ capitulo.descricao|default:"Aprenda os Conceitos Básicos e essenciais da linguagem Python" }}</p>
     </div>
   </div>
   
@@ -139,118 +217,116 @@
   </div>
 </div>
 
-<!-- PROGRESSO DO CAPÍTULO -->
+<!-- PROGRESSO DO CAPÍTULO DINÂMICO -->
 <div class="bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-2xl p-6 mb-6 shadow-md">
   <div class="flex justify-between items-center mb-4">
     <span class="font-bold text-blue-800">Progresso do Capítulo</span>
-    <span class="font-bold text-blue-600">75%</span>
+    <span class="font-bold text-blue-600">{{ progresso_capitulo }}%</span>
   </div>
-  <div class="w-full bg-blue-200 rounded-full h-3 mb-2 progress-bar"></div>
+  <div class="w-full bg-blue-200 rounded-full h-3 mb-2 progress-bar-container">
+    <div class="progress-bar-fill" style="width: {{ progresso_capitulo }}%"></div>
+  </div>
   <div class="text-xs text-blue-600 flex justify-between">
-    <span>2 de 3 módulos concluídos</span>
-    <span>370 XP Total</span>
+    <span>{{ modulos_concluidos_capitulo }} de {{ total_modulos_capitulo }} módulos concluídos</span>
+    <span>{{ xp_total_capitulo }} XP Total</span>
   </div>
 </div>
 
-<!-- CARDS DE DICAS / BADGES -->
-<div class="grid md:grid-cols-2 gap-6 mb-6">
-  <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-md flex items-center gap-6 card-hover">
-    <div class="bg-blue-600 p-3 rounded-xl">
-      <img src="{% static 'imagem/emoji_objects_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-8 h-8">
-    </div>
-    <div>
-      <h4 class="font-bold text-blue-800">Dica do Dia</h4>
-      <p class="text-sm text-blue-700">Sempre comente seu código para facilitar a manutenção.</p>
-    </div>
-  </div>
-
-  <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-md flex items-center gap-6 card-hover">
-    <div class="bg-blue-600 p-3 rounded-xl">
-      <img src="{% static 'imagem/diamond_shine_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-8 h-8">
-    </div>
-    <div>
-      <h4 class="font-bold text-blue-800">Conquista Desbloqueada</h4>
-      <p class="text-sm text-blue-700">Você completou 2 módulos! Continue assim!</p>
-    </div>
+<!-- DICA DE ESTUDO -->
+<div class="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-6 shadow flex items-start">
+  <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-6 h-6 mr-3 flex-shrink-0">
+  <div>
+    <p class="font-semibold">Dica de Estudo</p>
+    <p>Complete os módulos em ordem sequencial para um aprendizado mais eficiente. Cada módulo concluído desbloqueia novos conceitos!</p>
   </div>
 </div>
 
-<!-- CARDS DE MÓDULOS COM BARRA LATERAL E IMAGENS -->
-<div class="grid md:grid-cols-3 gap-6">
-  <!-- Módulo 1 -->
-  <a href="{% url 'tarefas' %}" class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+<!-- CARDS DE MÓDULOS COM DADOS DINÂMICOS -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for mod_stat in modulos_com_stats %}
+  <!-- Módulo {{ forloop.counter }} -->
+  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden h-full flex flex-col">
     <div class="w-full h-2 bg-blue-600"></div>
-    <div class="p-6">
+    <div class="p-6 flex-1 flex flex-col">
       <div class="flex items-center gap-4 mb-4">
-        <div class="bg-blue-100 p-3 rounded-xl">
+        <div class="bg-blue-100 p-3 rounded-xl flex-shrink-0">
+          <!-- Ícone dinâmico baseado no módulo -->
+          {% if forloop.counter == 1 %}
           <img src="{% static 'imagem/python1.png' %}" alt="Introdução" class="w-10 h-10">
-        </div>
-        <h3 class="font-bold text-blue-800 text-lg">Introdução ao Python</h3>
-      </div>
-      <p class="text-sm text-blue-700 mb-4">Aprenda os conceitos básicos do Python, instalação, sintaxe inicial e primeiras funções.</p>
-      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
-        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
-      </div>
-      <div class="flex justify-between text-xs text-blue-700 mb-2">
-        <span>2/2 lições</span>
-        <span>100 XP</span>
-      </div>
-      <div class="text-xs text-blue-800 flex items-center font-semibold">
-        <span class="mr-1">Concluído</span>
-        <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
-      </div>
-    </div>
-  </a>
-
-  <!-- Módulo 2 -->
-  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
-    <div class="w-full h-2 bg-blue-600"></div>
-    <div class="p-6">
-      <div class="flex items-center gap-4 mb-4">
-        <div class="bg-blue-100 p-3 rounded-xl">
+          {% elif forloop.counter == 2 %}
           <img src="{% static 'imagem/variaveis2.png' %}" alt="Variáveis" class="w-10 h-10">
-        </div>
-        <h3 class="font-bold text-blue-800 text-lg">Variáveis e Tipos</h3>
-      </div>
-      <p class="text-sm text-blue-700 mb-4">Explore variáveis, tipos de dados, conversões e boas práticas para organizar seu código.</p>
-      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
-        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
-      </div>
-      <div class="flex justify-between text-xs text-blue-700 mb-2">
-        <span>3/3 lições</span>
-        <span>150 XP</span>
-      </div>
-      <div class="text-xs text-blue-800 flex items-center font-semibold">
-        <span class="mr-1">Concluído</span>
-        <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
-      </div>
-    </div>
-  </div>
-
-  <!-- Módulo 3 -->
-  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
-    <div class="w-full h-2 bg-blue-600"></div>
-    <div class="p-6">
-      <div class="flex items-center gap-4 mb-4">
-        <div class="bg-blue-100 p-3 rounded-xl">
+          {% else %}
           <img src="{% static 'imagem/calculate_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Operadores" class="w-10 h-10">
+          {% endif %}
         </div>
-        <h3 class="font-bold text-blue-800 text-lg">Operadores</h3>
+        <h3 class="font-bold text-blue-800 text-lg leading-tight">{{ mod_stat.modulo.titulo }}</h3>
       </div>
-      <p class="text-sm text-blue-700 mb-4">Aprenda operadores aritméticos, lógicos e de comparação para manipular dados e tomar decisões.</p>
-      <div class="w-full bg-blue-200 h-2 rounded-full mb-4">
-        <div class="bg-blue-600 h-2 rounded-full" style="width: 80%"></div>
+      
+      <!-- Descrição com botão "Mostrar Mais" -->
+      <div class="descricao-modulo-container flex-1">
+        <p class="text-sm text-blue-700 mb-2 descricao-modulo-resumida">{{ mod_stat.modulo.descricao }}</p>
+        <p class="text-sm text-blue-700 mb-2 descricao-modulo-completa">{{ mod_stat.modulo.descricao }}</p>
+        <button class="descricao-modulo-expandir" style="display: none;">
+          Mostrar Mais <img src="{% static 'imagem/arrow_drop_down_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Expandir" class="w-4 h-4 ml-1">
+        </button>
       </div>
-      <div class="flex justify-between text-xs text-blue-700 mb-2">
-        <span>2/3 lições</span>
-        <span>120 XP</span>
-      </div>
-      <div class="text-xs text-blue-800 flex items-center font-semibold">
-        <span class="mr-1">Em progresso</span>
-        <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-4 h-4">
+
+      <!-- Estatísticas do Módulo DINÂMICAS -->
+      <div class="stats-modulo mt-auto">
+        <!-- Barra de progresso dinâmica CORRIGIDA -->
+        <div class="w-full bg-blue-200 h-2 rounded-full mb-3 progress-bar-container">
+          <div class="progress-bar-fill" style="width: {{ mod_stat.progresso_percentual }}%"></div>
+        </div>
+        
+        <div class="flex justify-between text-xs text-blue-700 mb-2">
+          <span class="font-medium">
+            {{ mod_stat.aulas_concluidas }}/{{ mod_stat.total_aulas }} lições
+          </span>
+          <span class="font-bold">
+            {{ mod_stat.xp_total }} XP
+          </span>
+        </div>
+        
+        <!-- Status do módulo dinâmico -->
+        <div class="flex justify-between items-center mt-2">
+          <div class="text-xs text-blue-800 flex items-center font-semibold">
+            {% if mod_stat.progresso_percentual == 100 %}
+            <span class="mr-1">Concluído</span>
+            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
+            {% elif mod_stat.progresso_percentual > 0 %}
+            <span class="mr-1">Em progresso</span>
+            <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-4 h-4">
+            {% else %}
+            <span class="mr-1">Não iniciado</span>
+            <img src="{% static 'imagem/play_circle_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Não iniciado" class="w-4 h-4">
+            {% endif %}
+          </div>
+          
+          <!-- Tempo estimado -->
+          <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
+            {% if mod_stat.tempo_total_modulo %}
+              {{ mod_stat.tempo_total_modulo }}min
+            {% else %}
+              0min
+            {% endif %}
+          </span>
+        </div>
       </div>
     </div>
   </div>
+  {% empty %}
+  <!-- Mensagem quando não há módulos -->
+  <div class="col-span-3 text-center py-12">
+    <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem módulos" class="w-24 h-24 mx-auto mb-4 opacity-50">
+    <h3 class="text-xl font-bold text-blue-700 mb-2">Nenhum módulo disponível</h3>
+    <p class="text-blue-600 mb-4">Este capítulo ainda não possui módulos configurados.</p>
+    {% if user.groups.filter.name == 'professores' or user.is_staff %}
+    <a href="{% url 'criar_conteudo' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+      Criar Primeiro Módulo
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
 </div>
 
 <!-- BOTÃO DE CONTINUAR ESTUDANDO -->
@@ -260,6 +336,7 @@
     <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5 ml-2">
   </a>
 </div>
+
 <script>
    // Marcar o item de conteúdo como ativo
   document.addEventListener('DOMContentLoaded', function() {

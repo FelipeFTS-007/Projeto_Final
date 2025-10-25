@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gerenciar Conteúdo - PyQuest{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .aula-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .aula-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #3b82f6;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-publicado {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-rascunho {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .dificuldade-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .dificuldade-beginner {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .dificuldade-intermediate {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .dificuldade-advanced {
+        background: #fce7f3;
+        color: #9d174d;
+    }
+    
+    .questoes-count {
+        background: #3b82f6;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+    }
+    
+    .search-input {
+        padding-left: 2.5rem;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-edit {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #2563eb;
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+
+    .tipo-questao {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+        display: inline-block;
+    }
+
+    .tipos-questoes {
+        margin-top: 0.5rem;
+    }
+
+
+    .btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+/* Adicione estas classes para os botões de status */
+.btn-activate {
+    background: #10b981;
+    color: white;
+}
+
+.btn-activate:hover {
+    background: #059669;
+}
+
+.btn-deactivate {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-deactivate:hover {
+    background: #d97706;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Cabeçalho -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Gerenciar Conteúdo</h1>
+                <p class="text-blue-100 text-lg">Administre suas aulas e exercícios</p>
+            </div>
+            <a href="{% url 'criar_conteudo' %}" 
+               class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition interactive-card flex items-center gap-2">
+                <img src="{% static 'imagem/add_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Criar" class="w-5 h-5">
+                Criar Nova Aula
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas CORRIGIDAS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Na seção de estatísticas -->
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm">Total de Aulas</p>
+                    <h3 class="text-2xl font-bold">{{ total_aulas }}</h3>
+                </div>
+                <img src="{% static 'imagem/menu_book_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Aulas" class="w-8 h-8 opacity-80">
+            </div>
+        </div>
+
+        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm">Total Questões</p>
+                    <h3 class="text-2xl font-bold">{{ total_questoes }}</h3>
+                </div>
+                <img src="{% static 'imagem/quiz_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Questões" class="w-8 h-8 opacity-80">
+            </div>
+        </div>
+
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-cyan-100 text-sm">Aulas Ativas</p>
+                    <h3 class="text-2xl font-bold">{{ aulas_publicadas }}</h3>
+                </div>
+                <img src="{% static 'imagem/visibility_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Ativas" class="w-8 h-8 opacity-80">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Filtros e Busca CORRIGIDOS -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Filtrar Conteúdo</h3>
+        
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Busca -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+                    <div class="search-box">
+                        <img src="{% static 'imagem/search_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Buscar" class="search-icon w-5 h-5">
+                        <input type="text" name="search" value="{{ search_query }}" 
+                               placeholder="Buscar por título, descrição..." 
+                               class="search-input w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <!-- Capítulo -->
+                <div>
+                    <label for="capitulo" class="block text-sm font-medium text-gray-700 mb-2">Capítulo</label>
+                    <select id="capitulo" name="capitulo" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Todos os capítulos</option>
+                        {% for capitulo in capitulos %}
+                        <option value="{{ capitulo.id }}" {% if capitulo_selecionado == capitulo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ capitulo.titulo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- No filtro de status (substituir o filtro de módulo) -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="status" name="status" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Todos os status</option>
+                        <option value="ativo" {% if status_selecionado == "ativo" %}selected{% endif %}>Ativo</option>
+                        <option value="inativo" {% if status_selecionado == "inativo" %}selected{% endif %}>Inativo</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/filter_alt_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Filtrar" class="w-5 h-5">
+                    Aplicar Filtros
+                </button>
+                
+                <!-- Na condição de limpar filtros -->
+                {% if capitulo_selecionado or status_selecionado or search_query %}
+                <a href="{% url 'gerenciar_conteudo' %}" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition interactive-card flex items-center gap-2">
+                    <img src="{% static 'imagem/backspace_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Limpar" class="w-5 h-5">
+                    Limpar Filtros
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Aulas CORRIGIDA -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <!-- No cabeçalho da lista de aulas -->
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-800">Suas Aulas ({{ total_aulas }})</h3>
+            
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span class="flex items-center gap-1">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    Ativas: {{ aulas_publicadas }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    Inativas: {{ aulas_inativas }}
+                </span>
+            </div>
+        </div>
+        
+        {% if aulas %}
+        <div class="space-y-4">
+            {% for aula in aulas %}
+            <div class="aula-card p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h4 class="font-semibold text-gray-800 text-lg">{{ aula.titulo_aula }}</h4>
+                            
+                            <!-- Status -->
+                            <span class="status-badge {% if aula.ativo %}status-publicado{% else %}status-rascunho{% endif %}">
+                                {% if aula.ativo %}Publicado{% else %}Desativado{% endif %}
+                            </span>
+                            
+                            <!-- Dificuldade do Capítulo -->
+                            <span class="dificuldade-badge dificuldade-{{ aula.modulo.capitulo.dificuldade|lower }}">
+                                {{ aula.modulo.capitulo.get_dificuldade_display }}
+                            </span>
+                            
+                            <!-- Questões -->
+                            <div class="questoes-count" title="Número de questões">
+                                {{ aula.questoes.count }}
+                            </div>
+                        </div>
+                        
+                        <!-- Descrição -->
+                        {% if aula.descricao_breve %}
+                        <p class="text-gray-600 mb-3">{{ aula.descricao_breve|truncatewords:20 }}</p>
+                        {% endif %}
+                        
+                        <!-- Metadados -->
+                        <!-- Na seção de metadados (procure por esta parte) -->
+                        <div class="flex items-center gap-6 text-sm text-gray-500 mb-2">
+                            <span class="flex items-center gap-1">
+                                <img src="{% static 'imagem/folder_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Capítulo" class="w-4 h-4">
+                                {{ aula.modulo.capitulo.titulo }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <img src="{% static 'imagem/description_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Módulo" class="w-4 h-4">
+                                {{ aula.modulo.titulo }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <img src="{% static 'imagem/schedule_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-4 h-4">
+                                {{ aula.tempo_total }}min
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <img src="{% static 'imagem/auto_awesome_mosaic_35dp_64748B_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-4 h-4">
+                                {{ aula.get_xp_total }} XP
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <img src="{% static 'imagem/format_list_bulleted_35dp_64748b_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Ordem" class="w-4 h-4">
+                                Ordem: {{ aula.ordem }}
+                            </span>
+                        </div>
+                        
+                        <!-- Adicione esta seção logo após a seção de metadados -->
+                        <div class="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                Teoria: {{ aula.tempo_teoria }}min / {{ aula.xp_teoria }} XP
+                            </span>
+                            <span class="bg-green-50 text-green-700 px-2 py-1 rounded">
+                                Prática: {{ aula.tempo_pratica }}min / {{ aula.xp_pratica }} XP
+                            </span>
+                            <span class="bg-purple-50 text-purple-700 px-2 py-1 rounded font-semibold">
+                                Total: {{ aula.tempo_total }}min / {{ aula.get_xp_total }} XP
+                            </span>
+                        </div>
+
+                        <!-- Tipos de Questões -->
+                        {% if aula.questoes.all %}
+                        <div class="tipos-questoes">
+                            <strong class="text-sm text-gray-700">Tipos de questões:</strong>
+                            <div class="mt-1">
+                                {% for questao in aula.questoes.all %}
+                                <span class="tipo-questao">{{ questao.get_tipo_display }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mt-2">
+                            <div class="flex items-center gap-2 text-yellow-800">
+                                <img src="{% static 'imagem/info_35dp_92400e_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Aviso" class="w-4 h-4">
+                                <span class="text-sm">Nenhuma questão cadastrada</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Ações ATUALIZADAS - COM BOTÕES DE ATIVAR/DESATIVAR -->
+                    <div class="flex items-center gap-2 ml-4">
+                        <!-- Botão Ativar/Desativar -->
+                        <form method="post" action="{% url 'alternar_status_aula' aula.id %}" class="inline">
+                            {% csrf_token %}
+                            {% if aula.ativo %}
+                            <button type="submit" class="action-btn bg-yellow-500 hover:bg-yellow-600 flex items-center gap-2" title="Desativar">
+                                <img src="{% static 'imagem/visibility_off_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Desativar" class="w-4 h-4">
+                                Desativar
+                            </button>
+                            {% else %}
+                            <button type="submit" class="action-btn bg-green-500 hover:bg-green-600 flex items-center gap-2" title="Ativar">
+                                <img src="{% static 'imagem/visibility_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Ativar" class="w-4 h-4">
+                                Ativar
+                            </button>
+                            {% endif %}
+                        </form>
+                        
+                        <!-- Editar -->
+                        <a href="{% url 'editar_conteudo' aula.id %}" 
+                        class="action-btn btn-edit flex items-center gap-2" title="Editar">
+                            <img src="{% static 'imagem/edit_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Editar" class="w-4 h-4">
+                            Editar
+                        </a>
+                        
+                        <!-- Excluir -->
+                        <form method="post" action="{% url 'excluir_conteudo' aula.id %}" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir esta aula? Esta ação não pode ser desfeita.');">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn btn-delete flex items-center gap-2" title="Excluir">
+                                <img src="{% static 'imagem/delete_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Excluir" class="w-4 h-4">
+                                Excluir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Informações de data -->
+                <div class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                    <div class="flex justify-between">
+                        <span>Criada em: {{ aula.data_criacao|date:"d/m/Y H:i" }}</span>
+                        {% if aula.data_atualizacao and aula.data_atualizacao != aula.data_criacao %}
+                        <span>Atualizada em: {{ aula.data_atualizacao|date:"d/m/Y H:i" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state text-center py-8">
+            <img src="{% static 'imagem/note_stack_100dp_64748b_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem aulas" class="w-16 h-16 mx-auto mb-4 opacity-50">
+            <p class="text-gray-500 text-lg mb-2">Nenhuma aula encontrada</p>
+            <p class="text-gray-400 mb-6">
+                {% if capitulo_selecionado or status_selecionado or search_query %}
+                Tente ajustar os filtros ou criar uma nova aula.
+                {% else %}
+                Crie sua primeira aula para começar a ensinar!
+                {% endif %}
+            </p>
+            <a href="{% url 'criar_conteudo' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2 mx-auto w-fit">
+                <img src="{% static 'imagem/add_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Criar" class="w-5 h-5">
+                Criar Primeira Aula
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Atualizar módulos quando capítulo for alterado
+document.getElementById('capitulo').addEventListener('change', function() {
+    const capituloId = this.value;
+    const moduloSelect = document.getElementById('modulo');
+    
+    if (capituloId) {
+        // Fazer requisição para buscar módulos do capítulo
+        fetch(`/api/modulos/${capituloId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar módulos');
+                }
+                return response.json();
+            })
+            .then(modulos => {
+                moduloSelect.innerHTML = '<option value="">Todos os módulos</option>';
+                modulos.forEach(modulo => {
+                    const option = document.createElement('option');
+                    option.value = modulo.id;
+                    option.textContent = modulo.titulo;
+                    moduloSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                moduloSelect.innerHTML = '<option value="">Erro ao carregar módulos</option>';
+            });
+    } else {
+        moduloSelect.innerHTML = '<option value="">Todos os módulos</option>';
+        // Recarregar a página sem o filtro de módulo
+        const url = new URL(window.location);
+        url.searchParams.delete('modulo');
+        window.location.href = url.toString();
+    }
+});
+
+// Submeter form quando módulo for alterado (opcional)
+document.getElementById('modulo').addEventListener('change', function() {
+    if (this.value) {
+        document.querySelector('form').submit();
+    }
+});
+
+// Busca em tempo real
+let searchTimeout;
+document.querySelector('input[name="search"]').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.querySelector('form').submit();
+    }, 500);
+});
+</script>
+{% endblock %}

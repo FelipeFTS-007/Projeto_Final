@@ -25,5 +25,11 @@ urlpatterns = [
     path('forum/comment/<int:comment_id>/like/', views.like_comment, name='like_comment'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('criar-conteudo/', views.criar_conteudo, name='criar_conteudo'),
+    path('api/modulos/<int:capitulo_id>/', views.get_modulos_ajax, name='get_modulos_ajax'),
+    path('api/criar-capitulo/', views.criar_capitulo_ajax, name='criar_capitulo_ajax'),
+    path('api/criar-modulo/', views.criar_modulo_ajax, name='criar_modulo_ajax'),
     path('gerenciar-conteudo/', views.gerenciar_conteudo, name='gerenciar_conteudo'),
+    path('editar-conteudo/<int:aula_id>/', views.editar_conteudo, name='editar_conteudo'),
+    path('excluir-conteudo/<int:aula_id>/', views.excluir_conteudo, name='excluir_conteudo'),
+    path('alternar-status-aula/<int:aula_id>/', views.alternar_status_aula, name='alternar_status_aula'),
 ]

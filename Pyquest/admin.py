@@ -60,11 +60,6 @@ class ModuloAdmin(admin.ModelAdmin):
     inlines = [AulaInline]
 
 
-@admin.register(Aula)
-class AulaAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "modulo", "ordem", "ativo")
-    search_fields = ("titulo", "modulo__titulo")
-
 
 
 @admin.register(Notificacao)
@@ -72,3 +67,6 @@ class NotificacaoAdmin(admin.ModelAdmin):
     list_display = ("usuario", "mensagem", "lida", "enviada_em")
     search_fields = ("usuario__username", "mensagem")
     list_filter = ("lida", "enviada_em")
+
+
+

@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 
 class Perfil(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -107,15 +108,49 @@ class Conquista(models.Model):
 
 
 class Capitulo(models.Model):
-    titulo = models.CharField(max_length=255)
+    DIFICULDADE_CHOICES = [
+        ('beginner', 'Iniciante'),
+        ('intermediate', 'Intermediário'),
+        ('advanced', 'Avançado'),
+    ]
+    
+    titulo = models.CharField(max_length=200)
     descricao = models.TextField()
     ordem = models.IntegerField()
     ativo = models.BooleanField(default=True)
+    dificuldade = models.CharField(max_length=20, choices=DIFICULDADE_CHOICES, default='beginner')
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.titulo
+    
+    def get_dificuldade_predominante(self):
+        """Retorna a dificuldade predominante baseada nas aulas do capítulo"""
+        from collections import Counter
+        
+        # Buscar todas as dificuldades das aulas ativas
+        dificuldades = Aula.objects.filter(
+            modulo__capitulo=self,
+            ativo=True
+        ).values_list('dificuldade', flat=True)
+        
+        if not dificuldades:
+            return 'beginner'
+        
+        # Encontrar a dificuldade mais comum
+        contador = Counter(dificuldades)
+        return contador.most_common(1)[0][0]
+    
+    def get_nivel_dificuldade_display(self):
+        """Retorna o display name da dificuldade"""
+        dificuldade = self.get_dificuldade_predominante()
+        dificuldade_map = {
+            'beginner': 'Iniciante',
+            'intermediate': 'Intermediário', 
+            'advanced': 'Avançado'
+        }
+        return dificuldade_map.get(dificuldade, 'Iniciante')
 
 
 class Modulo(models.Model):
@@ -132,16 +167,168 @@ class Modulo(models.Model):
         return self.titulo
 
 
+
+
+
+# models.py - ATUALIZAR o modelo Aula
 class Aula(models.Model):
     modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE, related_name="aulas")
-    titulo = models.CharField(max_length=255)
-    conteudo = models.TextField()
+    
+    # Informações básicas
+    titulo_aula = models.CharField(max_length=255, verbose_name="Título da Aula")
+    titulo_tarefa = models.CharField(max_length=255, blank=True, null=True, verbose_name="Título da Tarefa")
+    descricao_breve = models.TextField(blank=True, null=True, verbose_name="Descrição Breve")
+    
+    # Conteúdo teórico
+    titulo_teoria = models.CharField(max_length=255, default="Conteúdo Teórico", verbose_name="Título do Conteúdo Teórico")
+    
+    # Conteúdo prático
+    titulo_pratica = models.CharField(max_length=255, default="Exercícios Práticos", verbose_name="Título do Conteúdo Prático")
+    conteudo_pratico = models.TextField(blank=True, null=True, verbose_name="Conteúdo Prático")
+    
+    # TEMPOS SEPARADOS - NOVOS CAMPOS
+    tempo_teoria = models.IntegerField(default=30, verbose_name="Tempo Estimado para Teoria (minutos)")
+    tempo_pratica = models.IntegerField(default=15, verbose_name="Tempo Estimado para Prática (minutos)")
+    tempo_total = models.IntegerField(default=45, verbose_name="Tempo Total Estimado (minutos)")
+    
+    # XP SEPARADO - NOVOS CAMPOS
+    xp_teoria = models.IntegerField(default=30, verbose_name="XP por Concluir Teoria")
+    xp_pratica = models.IntegerField(default=0, verbose_name="XP Total das Questões Práticas")
+    
+    # Metadados
     ordem = models.IntegerField()
     ativo = models.BooleanField(default=True)
-
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    
+    data_criacao = models.DateTimeField(default=timezone.now)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+    )
+    
+    # Campos para controle de estrutura
+    tem_teoria = models.BooleanField(default=True)
+    tem_exercicios = models.BooleanField(default=True)
+    
     def __str__(self):
-        return self.titulo
+        return self.titulo_aula
+    
+    # No models.py, na classe Aula
+    def save(self, *args, **kwargs):
+        # Garantir que os valores sejam inteiros
+        try:
+            self.tempo_teoria = int(self.tempo_teoria) if self.tempo_teoria is not None else 30
+        except (ValueError, TypeError):
+            self.tempo_teoria = 30
+            
+        try:
+            self.tempo_pratica = int(self.tempo_pratica) if self.tempo_pratica is not None else 15
+        except (ValueError, TypeError):
+            self.tempo_pratica = 15
+        
+        # Calcular tempo total automaticamente - CORRIGIDO
+        self.tempo_total = (self.tempo_teoria or 0) + (self.tempo_pratica or 0)
+        
+        # Calcular XP prático total baseado nas questões
+        if self.pk:  # Só calcular se a aula já foi salva
+            from django.db.models import Sum
+            xp_pratico_calculado = self.questoes.aggregate(total_xp=Sum('xp'))['total_xp']
+            self.xp_pratica = int(xp_pratico_calculado) if xp_pratico_calculado is not None else 0
+        
+        super().save(*args, **kwargs)
+    def contar_questoes(self):
+        return self.questoes.count()
+    
+    def contar_topicos(self):
+        return self.topicos.count()
+    
+    def tem_conteudo_teorico(self):
+        return self.topicos.exists()
+    
+    def get_xp_total(self):
+        """Retorna o XP total da aula (teoria + prática)"""
+        try:
+            # Converte explicitamente para inteiro, tratando None e strings
+            teorico = int(self.xp_teoria) if self.xp_teoria is not None else 0
+            pratico = int(self.xp_pratica) if self.xp_pratica is not None else 0
+            return teorico + pratico
+        except (ValueError, TypeError):
+            # Se houver qualquer erro na conversão, retorna 0
+            return 0
 
+    class Meta:
+        ordering = ['ordem']
+
+# models.py - ADICIONE este modelo
+class AulaConcluida(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    aula = models.ForeignKey(Aula, on_delete=models.CASCADE)
+    data_conclusao = models.DateTimeField(auto_now_add=True)
+    xp_ganho = models.IntegerField(default=0)
+    
+    class Meta:
+        unique_together = ['usuario', 'aula']
+    
+    def __str__(self):
+        return f"{self.usuario.username} - {self.aula.titulo_aula}"
+
+class TopicoTeorico(models.Model):
+    aula = models.ForeignKey(Aula, on_delete=models.CASCADE, related_name="topicos")
+    titulo = models.CharField(max_length=255, default="Tópico")
+    ordem = models.IntegerField(default=1)
+    conteudo = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['ordem']
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.aula.titulo_aula}"
+
+
+class Questao(models.Model):
+    TIPO_CHOICES = [
+        ('multiple-choice', 'Múltipla Escolha'),
+        ('code', 'Programação'), 
+        ('fill-blank', 'Completar Lacunas'),
+    ]
+    
+    aula = models.ForeignKey(Aula, on_delete=models.CASCADE, related_name="questoes")
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    enunciado = models.TextField()
+    descricao = models.TextField(blank=True, null=True)
+    ordem = models.IntegerField(default=1)
+    xp = models.IntegerField(default=10)
+    codigo_inicial = models.TextField(blank=True, null=True)
+    saida_esperada = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['ordem']
+    
+    def __str__(self):
+        return f"{self.tipo} - {self.enunciado[:50]}"
+
+class OpcaoQuestao(models.Model):
+    questao = models.ForeignKey(Questao, on_delete=models.CASCADE, related_name="opcoes")
+    texto = models.TextField()
+    correta = models.BooleanField(default=False)
+    ordem = models.IntegerField(default=1)
+    
+    class Meta:
+        ordering = ['ordem']
+    
+    def __str__(self):
+        return f"{self.texto[:30]} - {'✓' if self.correta else '✗'}"
+
+class DicaQuestao(models.Model):
+    questao = models.ForeignKey(Questao, on_delete=models.CASCADE, related_name="dicas")
+    texto = models.TextField()
+    ordem = models.IntegerField(default=1)
+    
+    class Meta:
+        ordering = ['ordem']
+    
+    def __str__(self):
+        return f"Dica {self.ordem}: {self.texto[:30]}"
     
 class Hashtag(models.Model):
     nome = models.CharField(max_length=50, unique=True)
@@ -188,6 +375,22 @@ class Notificacao(models.Model):
         return f"Notificação para {self.usuario.username}"
 
 
+
+
+
+# Adicione ao models.py
+class ModuloConcluido(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
+    data_conclusao = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['usuario', 'modulo']
+
+
+
+
+
 #isso tem que esta no final#
 
 
@@ -209,3 +412,6 @@ def create_professor_group(sender, **kwargs):
         if created:
             # Adicione permissões específicas se necessário
             print("Grupo 'professores' criado com sucesso!")
+
+
+

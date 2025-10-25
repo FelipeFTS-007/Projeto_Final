@@ -349,8 +349,6 @@ class Post(models.Model):
         return f"{self.autor.username}: {self.conteudo[:30]}"
     
 
-
-
 class Comentario(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comentarios")
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comentarios")

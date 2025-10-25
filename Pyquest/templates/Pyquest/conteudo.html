@@ -152,6 +152,21 @@
       color: #1E40AF;
       text-decoration: underline;
     }
+
+    /* Adicione ao bloco extra_css */
+    .pagination-current {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        color: white;
+    }
+
+    .pagination-link {
+        transition: all 0.3s ease;
+    }
+
+    .pagination-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
 </style>
 {% endblock %}
 
@@ -327,4 +342,30 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
   {% endfor %}
 </div>
+<!-- PAGINAÇÃO - ESTILO TAREFAS -->
+{% if is_paginated %}
+<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
+    <div class="text-sm text-blue-600">
+        Mostrando {{ page_obj.end_index }} de {{ page_obj.paginator.count }} capítulos
+    </div>
+    
+    <div class="flex items-center gap-4">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center">
+              ←
+            </a>
+        {% endif %}
+        
+        <span class="text-blue-600 font-medium">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center">
+              →
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -5,37 +5,118 @@
 
 {% block extra_css %}
 <style>
-  .post { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-  .post:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-  .comment { border-left: 3px solid #e5e7eb; }
-  .comment:hover { border-left-color: #2682EA; }
-  .reply-form { transition: all 0.3s ease; }
-  .filter-btn { transition: all 0.2s ease; }
-  .filter-btn:hover { transform: translateY(-1px); }
-  .avatar { transition: transform 0.2s ease; }
-  .avatar:hover { transform: scale(1.05); }
-  
+  @keyframes heartPulse {
+    0% {
+      transform: scale(1);
+    }
+
+    25% {
+      transform: scale(1.3);
+    }
+
+    50% {
+      transform: scale(0.9);
+    }
+
+    75% {
+      transform: scale(1.15);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-heart {
+    animation: heartPulse 0.4s ease-in-out;
+  }
+
+
+  .post {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .post:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .comment {
+    border-left: 3px solid #e5e7eb;
+  }
+
+  .comment:hover {
+    border-left-color: #2682EA;
+  }
+
+  .reply-form {
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn {
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .avatar {
+    transition: transform 0.2s ease;
+  }
+
+  .avatar:hover {
+    transform: scale(1.05);
+  }
+
   /* CORREÇÃO DA IMAGEM - REMOVIDO OBJECT-COVER */
   .post-image {
     width: 100%;
     height: auto;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
-    max-height: 500px; /* Altura máxima, mas não corta */
-    object-fit: contain; /* Mantém proporção sem cortar */
+    max-height: 500px;
+    /* Altura máxima, mas não corta */
+    object-fit: contain;
+    /* Mantém proporção sem cortar */
   }
-  
+
+  /* Estilos para o modal de perfil */
+  #profileModal {
+    font-family: inherit;
+  }
+
+  .modal-enter {
+    transition: all 0.3s ease;
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   .post-image:hover {
     transform: scale(1.01);
   }
-  
+
   /* Estilos para o emoji picker */
   .emoji-picker-container {
     position: relative;
     margin-bottom: 8px;
   }
-  
+
   .emoji-trigger {
     background: #f3f4f6;
     border: 1px solid #d1d5db;
@@ -45,12 +126,12 @@
     font-size: 1.2rem;
     transition: all 0.2s ease;
   }
-  
+
   .emoji-trigger:hover {
     background: #e5e7eb;
     transform: scale(1.05);
   }
-  
+
   .emoji-panel {
     position: absolute;
     bottom: 100%;
@@ -58,7 +139,7 @@
     background: white;
     border: 1px solid #d1d5db;
     border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     padding: 12px;
     z-index: 1000;
     max-height: 200px;
@@ -66,11 +147,11 @@
     display: none;
     backdrop-filter: blur(10px);
   }
-  
+
   .emoji-category {
     margin-bottom: 12px;
   }
-  
+
   .emoji-category h4 {
     margin: 0 0 8px 0;
     font-size: 0.75rem;
@@ -79,13 +160,13 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .emoji-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 4px;
   }
-  
+
   .emoji-btn {
     background: none;
     border: none;
@@ -95,52 +176,53 @@
     font-size: 1.3rem;
     transition: all 0.2s ease;
   }
-  
+
   .emoji-btn:hover {
     background: #2682EA;
     transform: scale(1.2);
   }
-  
+
   .file-upload-preview {
     margin-top: 8px;
   }
-  
+
   .image-preview {
     max-width: 200px;
     max-height: 150px;
     border-radius: 8px;
     margin-top: 4px;
     border: 2px solid #e5e7eb;
-    object-fit: contain; /* Corrige preview também */
+    object-fit: contain;
+    /* Corrige preview também */
   }
-  
+
   /* Estilos modernos para os modais */
   .modal-overlay {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(8px);
   }
-  
+
   .modal-content {
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  
+
   .modal-header {
     border-bottom: 1px solid #e5e7eb;
     padding: 20px 24px 0;
   }
-  
+
   .modal-body {
     padding: 20px 24px;
   }
-  
+
   .modal-footer {
     border-top: 1px solid #e5e7eb;
     padding: 0 24px 20px;
   }
-  
+
   .btn-primary {
     background: linear-gradient(135deg, #2682EA 0%, #1a67c9 100%);
     border: none;
@@ -149,12 +231,12 @@
     font-weight: 600;
     transition: all 0.3s ease;
   }
-  
+
   .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(38, 130, 234, 0.4);
   }
-  
+
   .btn-secondary {
     background: #f8fafc;
     border: 1px solid #e5e7eb;
@@ -163,12 +245,12 @@
     font-weight: 600;
     transition: all 0.3s ease;
   }
-  
+
   .btn-secondary:hover {
     background: #f1f5f9;
     transform: translateY(-1px);
   }
-  
+
   .form-input {
     border: 2px solid #e5e7eb;
     border-radius: 12px;
@@ -176,13 +258,13 @@
     transition: all 0.3s ease;
     font-size: 14px;
   }
-  
+
   .form-input:focus {
     border-color: #2682EA;
     box-shadow: 0 0 0 3px rgba(38, 130, 234, 0.1);
     transform: translateY(-1px);
   }
-  
+
   .file-upload-area {
     border: 2px dashed #d1d5db;
     border-radius: 12px;
@@ -191,18 +273,18 @@
     transition: all 0.3s ease;
     cursor: pointer;
   }
-  
+
   .file-upload-area:hover {
     border-color: #2682EA;
     background: #f8fafc;
   }
-  
+
   .file-upload-area.dragover {
     border-color: #2682EA;
     background: #f0f7ff;
     transform: scale(1.02);
   }
-  
+
   .upload-icon {
     font-size: 2rem;
     color: #2682EA;
@@ -217,15 +299,18 @@
   <div class="flex-1">
     <!-- Estatísticas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+      <div
+        class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
         <p class="text-gray-600 font-medium">Membros Totais</p>
         <p class="text-2xl font-bold text-[#2682EA]">{{ total_users }}</p>
       </div>
-      <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+      <div
+        class="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
         <p class="text-gray-600 font-medium">Ativos Hoje</p>
         <p class="text-2xl font-bold text-[#2682EA]">{{ active_today }}</p>
       </div>
-      <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
+      <div
+        class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl shadow-lg p-4 text-center transform hover:scale-105 transition-transform duration-300">
         <p class="text-gray-600 font-medium">Posts Hoje</p>
         <p class="text-2xl font-bold text-[#2682EA]">{{ posts_today }}</p>
       </div>
@@ -233,45 +318,66 @@
 
     <!-- Busca e filtros -->
     <div class="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-gray-100">
-      <form method="get" class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2 focus-within:border-[#2682EA] transition-colors duration-300">
+      <form method="get"
+        class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2 focus-within:border-[#2682EA] transition-colors duration-300">
         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
         <input name="q" value="{{ request.GET.q }}" type="text" placeholder="Buscar no fórum..."
-               class="w-full outline-none text-gray-600 bg-transparent" />
+          class="w-full outline-none text-gray-600 bg-transparent" />
       </form>
 
       <div id="filters" class="flex flex-wrap gap-2 mt-3">
-        <a href="?filter=all" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'all' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Todos os Posts</a>
-        <a href="?filter=popular" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'popular' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais Populares</a>
-        <a href="?filter=recent" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'recent' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais Recentes</a>
-        <a href="?filter=following" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'following' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Seguindo</a>
+        <a href="?filter=all"
+          class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'all' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Todos
+          os Posts</a>
+        <a href="?filter=popular"
+          class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'popular' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais
+          Populares</a>
+        <a href="?filter=recent"
+          class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'recent' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Mais
+          Recentes</a>
+        <a href="?filter=following"
+          class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 {% if current_filter == 'following' %}bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Seguindo</a>
       </div>
     </div>
 
     <!-- LISTA DE POSTS -->
     <div id="postsContainer" class="space-y-4">
       {% for post in posts %}
-      <div class="post bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+      <div
+        class="post bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
-          <img src="{{ post.autor.perfil.avatar.url }}" "
-               class="avatar w-12 h-12 rounded-full cursor-pointer border-2 border-[#2682EA] p-1" alt="">
+          <img src="{{ post.autor.perfil.avatar.url }}"
+            class="avatar w-12 h-12 rounded-full cursor-pointer border-2 border-[#2682EA] p-1"
+            alt="{{ post.autor.username }}" onclick="openProfile(this)" data-name="{{ post.autor.username }}"
+            data-xp="{{ post.autor.perfil.xp }}" data-level="{{ post.autor.perfil.nivel }}"
+            data-bio="{{ post.autor.perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
+            data-avatar="{{ post.autor.perfil.avatar.url }}" data-github="{{ post.autor.perfil.github|default:'' }}"
+            data-linkedin="{{ post.autor.perfil.linkedin|default:'' }}"
+            data-conquistas='[{% for c in post.autor.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %}, {% endif %}{% endfor %}]' />
           <div class="flex-1">
             <p class="font-semibold text-gray-800">{{ post.autor.username }}</p>
             <p class="text-sm text-gray-500">@{{ post.autor.username }} • {{ post.created_at|timesince }} atrás</p>
             {% if post.autor == request.user %}
             <div class="flex gap-3 text-xs mt-2">
-              <button type="button" onclick="openEditModal('{{ post.id }}', '{{ post.conteudo|escapejs }}', '{{ post.hashtags.all|join:', '|escapejs }}', '{% if post.imagem %}{{ post.imagem.url }}{% endif %}')" 
-                      class="text-[#2682EA] hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-200">
+              <button type="button"
+                onclick="openEditModal('{{ post.id }}', '{{ post.conteudo|escapejs }}', '{{ post.hashtags.all|join:', '|escapejs }}', '{% if post.imagem %}{{ post.imagem.url }}{% endif %}')"
+                class="text-[#2682EA] hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                  </path>
                 </svg>
                 Editar
               </button>
               <button type="button" onclick="openDeleteModal('{{ post.id }}')"
-                      class="text-red-600 hover:text-red-800 font-medium flex items-center gap-1 transition-colors duration-200">
+                class="text-red-600 hover:text-red-800 font-medium flex items-center gap-1 transition-colors duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                  </path>
                 </svg>
                 Excluir
               </button>
@@ -281,44 +387,58 @@
         </div>
 
         <p class="text-gray-700 mb-4 whitespace-pre-wrap text-lg leading-relaxed">{{ post.conteudo }}</p>
-        
+
         {% if post.imagem %}
         <div class="mb-4 flex justify-center">
           <img src="{{ post.imagem.url }}" alt="Imagem do post" class="post-image">
         </div>
         {% endif %}
-        
+
         <div class="flex flex-wrap gap-2 mb-4">
           {% for tag in post.hashtags.all %}
-          <span class="bg-gradient-to-r from-blue-50 to-blue-100 text-[#2682EA] px-3 py-1.5 rounded-full text-xs font-medium border border-blue-200 hover:border-[#2682EA] transition-colors duration-200">#{{ tag.nome }}</span>
+          <span
+            class="bg-gradient-to-r from-blue-50 to-blue-100 text-[#2682EA] px-3 py-1.5 rounded-full text-xs font-medium border border-blue-200 hover:border-[#2682EA] transition-colors duration-200">
+            #{{ tag.nome }}
+          </span>
           {% endfor %}
         </div>
 
         <!-- Interações -->
         <div class="flex gap-6 text-gray-500 text-sm border-t border-gray-100 pt-4">
-          <button type="button" onclick="toggleComments('{{ post.id }}')" class="flex items-center gap-2 hover:text-[#2682EA] transition-colors duration-200">
+          <button type="button" onclick="toggleComments('{{ post.id }}')"
+            class="flex items-center gap-2 hover:text-[#2682EA] transition-colors duration-200">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+              </path>
             </svg>
             <span>{{ post.comentarios.count }}</span>
           </button>
 
           <!-- LIKE SYSTEM CORRIGIDO -->
-          <form action="{% url 'like_post' post.id %}" method="post" class="inline">
+          <form action="{% url 'like_post' post.id %}" method="post" class="like-form inline">
             {% csrf_token %}
-            <button type="submit" class="flex items-center gap-2 hover:text-red-500 transition-colors duration-200 focus:outline-none">
+            <button type="submit" class="flex items-center space-x-1 text-gray-600 hover:text-red-600">
               {% if user in post.likes.all %}
-                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
+              <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+          2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5
+          2.09C13.09 3.81 14.76 3 16.5 3
+          19.58 3 22 5.42 22 8.5c0 3.78-3.4
+          6.86-8.55 11.54L12 21.35z" />
+              </svg>
               {% else %}
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000
+          6.364L12 20.364l7.682-7.682a4.5
+          4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5
+          4.5 0 00-6.364 0z" />
+              </svg>
               {% endif %}
               <span>{{ post.likes.count }}</span>
             </button>
           </form>
+
         </div>
 
         <!-- Área de comentários -->
@@ -327,129 +447,169 @@
           <div class="mb-6">
             <form class="comment-form" data-post-id="{{ post.id }}">
               {% csrf_token %}
-              
+
               <div class="emoji-picker-container mb-3">
                 <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀</button>
                 <div class="emoji-panel">
                   <div class="emoji-category">
                     <h4>Smileys</h4>
                     <div class="emoji-grid">
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😀</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😃</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😄</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😁</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😆</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😅</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">😂</button>
-                      <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'comment-{{ post.id }}')">🤣</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😀</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😃</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😄</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😁</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😆</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😅</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">😂</button>
+                      <button type="button" class="emoji-btn"
+                        onclick="insertEmoji(this, 'comment-{{ post.id }}')">🤣</button>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <textarea name="texto" id="comment-{{ post.id }}" rows="3" class="w-full form-input"
-                        placeholder="Escreva um comentário..."></textarea>
+                placeholder="Escreva um comentário..."></textarea>
               <button type="submit" class="btn-primary text-sm px-4 py-2 mt-2">
                 Comentar
               </button>
             </form>
           </div>
-          
+
           <!-- Lista de comentários -->
           <div class="space-y-4">
             {% for comentario in post.comentarios.all %}
-              {% if not comentario.parent %}
-              <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
-                <p class="text-sm text-gray-800 mb-2">
-                  <b class="text-[#2682EA]">{{ comentario.autor.username }}</b>: 
+            {% if not comentario.parent %}
+            <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
+              <div class="flex items-center gap-2 mb-2">
+                <img src="{{ comentario.autor.perfil.avatar.url }}"
+                  class="w-6 h-6 rounded-full cursor-pointer border border-[#2682EA]" onclick="openProfile(this)"
+                  data-name="{{ comentario.autor.username }}" data-xp="{{ comentario.autor.perfil.xp }}"
+                  data-level="{{ comentario.autor.perfil.nivel }}"
+                  data-bio="{{ comentario.autor.perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
+                  data-avatar="{{ comentario.autor.perfil.avatar.url }}"
+                  data-github="{{ comentario.autor.perfil.github|default:'' }}"
+                  data-linkedin="{{ comentario.autor.perfil.linkedin|default:'' }}"
+                  data-conquistas='[{% for c in comentario.autor.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %}, {% endif %}{% endfor %}]' />
+                <p class="text-sm text-gray-800">
+                  <b class="text-[#2682EA]">{{ comentario.autor.username }}</b>:
                   {{ comentario.texto }}
                 </p>
+              </div>
 
-                <div class="flex items-center gap-4 text-xs">
-                  <!-- Like no comentário -->
-                  <form action="{% url 'like_comment' comentario.id %}" method="post" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors duration-200 focus:outline-none">
-                      {% if user in comentario.likes.all %}
-                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                      {% else %}
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                      {% endif %}
-                      <span>{{ comentario.likes.count }}</span>
-                    </button>
-                  </form>
-
-                  <!-- Botão para responder -->
-                  <button type="button" onclick="toggleReplyForm('{{ comentario.id }}')" 
-                          class="text-[#2682EA] hover:underline font-medium">
-                    Responder
+              <div class="flex items-center gap-4 text-xs">
+                <!-- Like no comentário -->
+                <form action="{% url 'like_comment' comentario.id %}" method="post" class="like-form inline">
+                  {% csrf_token %}
+                  <button type="submit"
+                    class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors duration-200 focus:outline-none">
+                    {% if user in comentario.likes.all %}
+                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    {% else %}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {% endif %}
+                    <span>{{ comentario.likes.count }}</span>
                   </button>
-                </div>
+                </form>
 
-                <!-- Formulário de resposta -->
-                <div id="reply-form-{{ comentario.id }}" style="display:none;" class="mt-3 ml-4">
-                  <form class="reply-form" data-post-id="{{ post.id }}" data-parent-id="{{ comentario.id }}">
-                    {% csrf_token %}
-                    
-                    <div class="emoji-picker-container mb-2">
-                      <button type="button" class="emoji-trigger text-sm" onclick="toggleEmojiPicker(this)">😀</button>
-                      <div class="emoji-panel">
-                        <div class="emoji-category">
-                          <h4>Smileys</h4>
-                          <div class="emoji-grid">
-                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😀</button>
-                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😃</button>
-                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😄</button>
-                            <button type="button" class="emoji-btn" onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😁</button>
-                          </div>
+                <!-- Botão para responder -->
+                <button type="button" onclick="toggleReplyForm('{{ comentario.id }}')"
+                  class="text-[#2682EA] hover:underline font-medium">
+                  Responder
+                </button>
+              </div>
+
+              <!-- Formulário de resposta -->
+              <div id="reply-form-{{ comentario.id }}" style="display:none;" class="mt-3 ml-4">
+                <form class="reply-form" data-post-id="{{ post.id }}" data-parent-id="{{ comentario.id }}">
+                  {% csrf_token %}
+
+                  <div class="emoji-picker-container mb-2">
+                    <button type="button" class="emoji-trigger text-sm" onclick="toggleEmojiPicker(this)">😀</button>
+                    <div class="emoji-panel">
+                      <div class="emoji-category">
+                        <h4>Smileys</h4>
+                        <div class="emoji-grid">
+                          <button type="button" class="emoji-btn"
+                            onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😀</button>
+                          <button type="button" class="emoji-btn"
+                            onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😃</button>
+                          <button type="button" class="emoji-btn"
+                            onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😄</button>
+                          <button type="button" class="emoji-btn"
+                            onclick="insertEmoji(this, 'reply-{{ comentario.id }}')">😁</button>
                         </div>
                       </div>
                     </div>
-                    
-                    <textarea name="texto" id="reply-{{ comentario.id }}" rows="2" class="w-full form-input text-sm" 
-                              placeholder="Responder a @{{ comentario.autor.username }}..."></textarea>
-                    <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">
-                      Responder
-                    </button>
-                  </form>
+                  </div>
+
+                  <textarea name="texto" id="reply-{{ comentario.id }}" rows="2" class="w-full form-input text-sm"
+                    placeholder="Responder a @{{ comentario.autor.username }}..."></textarea>
+                  <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">
+                    Responder
+                  </button>
+                </form>
+              </div>
+
+              <!-- Respostas -->
+              {% for reply in comentario.replies.all %}
+              <div class="ml-6 mt-3 bg-white border rounded-lg p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <img src="{{ reply.autor.perfil.avatar.url }}"
+                    class="w-5 h-5 rounded-full cursor-pointer border border-[#2682EA]" onclick="openProfile(this)"
+                    data-name="{{ reply.autor.username }}" data-xp="{{ reply.autor.perfil.xp }}"
+                    data-level="{{ reply.autor.perfil.nivel }}"
+                    data-bio="{{ reply.autor.perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
+                    data-avatar="{{ reply.autor.perfil.avatar.url }}"
+                    data-github="{{ reply.autor.perfil.github|default:'' }}"
+                    data-linkedin="{{ reply.autor.perfil.linkedin|default:'' }}"
+                    data-conquistas='[{% for c in reply.autor.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %},{% endif %}{% endfor %}]' />
+                  <p class="text-xs text-gray-700">
+                    <b class="text-[#2682EA]">{{ reply.autor.username }}</b>
+                    {% if reply.mencionado %}
+                    <span class="text-gray-500">→ @{{ reply.mencionado.username }}</span>
+                    {% endif %}
+                    : {{ reply.texto }}
+                  </p>
                 </div>
 
-                <!-- Respostas -->
-                {% for reply in comentario.replies.all %}
-                  <div class="ml-6 mt-3 bg-white border rounded-lg p-3">
-                    <p class="text-xs text-gray-700">
-                      <b class="text-[#2682EA]">{{ reply.autor.username }}</b> 
-                      {% if reply.mencionado %}
-                        <span class="text-gray-500">→ @{{ reply.mencionado.username }}</span>
-                      {% endif %}
-                      : {{ reply.texto }}
-                    </p>
-                    
-                    <form action="{% url 'like_comment' reply.id %}" method="post" class="inline">
-                      {% csrf_token %}
-                      <button type="submit" class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors duration-200 focus:outline-none text-xs mt-1">
-                        {% if user in reply.likes.all %}
-                          <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          </svg>
-                        {% else %}
-                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                          </svg>
-                        {% endif %}
-                        <span>{{ reply.likes.count }}</span>
-                      </button>
-                    </form>
-                  </div>
-                {% endfor %}
+                <form action="{% url 'like_comment' reply.id %}" method="post" class="like-form inline">
+                  {% csrf_token %}
+                  <button type="submit"
+                    class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors duration-200 focus:outline-none text-xs mt-1">
+                    {% if user in reply.likes.all %}
+                    <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    {% else %}
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {% endif %}
+                    <span>{{ reply.likes.count }}</span>
+                  </button>
+                </form>
               </div>
-              {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
             {% empty %}
-              <p class="text-gray-400 text-sm text-center py-4">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+            <p class="text-gray-400 text-sm text-center py-4">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
             {% endfor %}
           </div>
         </div>
@@ -457,7 +617,9 @@
       {% empty %}
       <div class="text-center py-12">
         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+          </path>
         </svg>
         <p class="text-gray-500 text-lg">Nenhum post encontrado.</p>
         <p class="text-gray-400 text-sm mt-1">Seja o primeiro a criar um post!</p>
@@ -465,17 +627,7 @@
       {% endfor %}
     </div>
 
-    <!-- Paginação -->
-    {% if is_paginated %}
-    <div class="flex justify-center mt-8">
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary mx-2">Anterior</a>
-      {% endif %}
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary mx-2">Próximo</a>
-      {% endif %}
-    </div>
-    {% endif %}
+
   </div>
 
   <!-- SIDEBAR DIREITA -->
@@ -484,15 +636,17 @@
     <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
       <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
         <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
         </svg>
         Tópicos em Alta
       </h3>
-      <ul class="space-y-2 text-sm">
+
+      <!-- 🔹 container dinâmico -->
+      <ul id="top-hashtags" class="space-y-2 text-sm">
         {% for tag in trending_tags %}
         <li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
           <span class="text-[#2682EA] font-medium">#{{ tag.nome }}</span>
-          <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">{{ tag.count }} usos</span>
+          <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">{{ tag.contador }} usos</span>
         </li>
         {% empty %}
         <li class="text-gray-500 text-sm text-center py-4">Nenhuma hashtag no período</li>
@@ -500,11 +654,16 @@
       </ul>
     </div>
 
+    <!-- DEBUG TEMPORÁRIO -->
+    <div class="bg-yellow-100 p-2 rounded mb-2 text-xs">
+      <strong>Debug:</strong> {{ trending_tags|length }} hashtags encontradas
+    </div>
     <!-- Contribuidores destaque -->
     <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
       <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
         <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          <path
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
         </svg>
         Contribuidores Destaque
       </h3>
@@ -512,11 +671,20 @@
         {% for user in top_users %}
         <li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
           <span class="flex items-center gap-2 cursor-pointer avatar group">
-            
-            <img src="{{ user.perfil.avatar.url }}" class="w-6 h-6 rounded-full group-hover:scale-110 transition-transform duration-200"> 
+
+            <img src="{{ user.perfil.avatar.url }}"
+              class="w-6 h-6 rounded-full group-hover:scale-110 transition-transform duration-200 cursor-pointer"
+              onclick="openProfile(this)" data-name="{{ user.username }}" data-xp="{{ user.perfil.xp }}"
+              data-level="{{ user.perfil.nivel }}"
+              data-bio="{{ user.perfil.descricao|default:'Esse usuário ainda não escreveu uma bio.' }}"
+              data-avatar="{{ user.perfil.avatar.url }}" data-github="{{ user.perfil.github|default:'' }}"
+              data-linkedin="{{ user.perfil.linkedin|default:'' }}"
+              data-conquistas='[{% for c in user.conquistas.all|slice:":5" %}{"titulo":"{{ c.titulo }}","icone":"{% if c.icone %}{{ c.icone.url }}{% else %}{% endif %}"}{% if not forloop.last %}, {% endif %}{% endfor %}]' />
             <span class="font-medium text-gray-700">{{ user.username }}</span>
           </span>
-          <span class="bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white px-2 py-1 rounded-full text-xs font-bold">{{ user.perfil.xp }} XP</span>
+          <span
+            class="bg-gradient-to-r from-[#2682EA] to-[#1a67c9] text-white px-2 py-1 rounded-full text-xs font-bold">{{user.perfil.xp}}
+            XP</span>
         </li>
         {% endfor %}
       </ul>
@@ -526,16 +694,150 @@
     <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
       <h3 class="font-semibold mb-3 text-gray-700 flex items-center gap-2">
         <svg class="w-5 h-5 text-[#2682EA]" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
         </svg>
         Ações Rápidas
       </h3>
       <div class="space-y-2">
-        <button id="openPostModal" class="w-full btn-primary py-3 rounded-xl text-lg font-semibold transform hover:scale-105 transition-transform duration-300">
+        <button id="openPostModal"
+          class="w-full btn-primary py-3 rounded-xl text-lg font-semibold transform hover:scale-105 transition-transform duration-300">
           Criar Post
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Modal de Perfil - ADICIONAR ESTE CÓDIGO -->
+<div id="profileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 backdrop-blur-sm">
+  <div
+    class="bg-white rounded-2xl w-[500px] max-w-[90vw] shadow-2xl overflow-hidden modal-enter animate-fadeInUp transform transition-all duration-300 scale-95">
+    <!-- Cabeçalho com gradiente melhorado -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 flex items-center gap-4 relative">
+      <div class="relative">
+        <div class="absolute -inset-1 bg-white/20 rounded-full blur-sm"></div>
+        <img id="modal-avatar" src="" alt="avatar"
+          class="w-16 h-16 rounded-full border-2 border-white shadow-md relative z-10">
+      </div>
+      <div>
+        <h2 id="modal-name" class="text-lg font-semibold text-white"></h2>
+        <p id="modal-details" class="text-sm text-blue-100"></p>
+      </div>
+      <button onclick="closeProfile()"
+        class="absolute right-4 top-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Conteúdo do modal -->
+    <div class="max-h-[70vh] overflow-y-auto">
+      <!-- Bio -->
+      <div id="modal-bio"
+        class="bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-700 p-4 m-6 rounded-xl shadow-inner text-sm italic border border-blue-100">
+        Bio do usuário aparecerá aqui.
+      </div>
+
+      <!-- Stats com design de cartão melhorado -->
+      <div class="grid grid-cols-2 gap-4 px-6 pb-6">
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
+          <p id="modal-xp" class="text-blue-700 font-bold text-xl">0 XP</p>
+          <p class="text-sm text-blue-600 mt-1">XP Total</p>
+        </div>
+        <div
+          class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm border border-blue-100 text-center">
+          <p id="modal-level" class="text-blue-700 font-bold text-xl">Nível 0</p>
+          <p class="text-sm text-blue-600 mt-1">Progresso</p>
+        </div>
+      </div>
+
+      <!-- Conquistas -->
+      <div class="px-6 pb-6">
+        <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd" />
+          </svg>
+          Conquistas
+        </h3>
+        <div id="modal-conquistas" class="flex flex-wrap gap-2">
+          <!-- preenchido via JS -->
+        </div>
+      </div>
+
+      <!-- Redes sociais - Agora com mensagem quando não há link -->
+      <div class="px-6 py-4 bg-gray-50">
+        <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+          </svg>
+          Redes Sociais
+        </h3>
+
+        <!-- GitHub -->
+        <div class="mb-3">
+          <button id="modal-github-btn"
+            class="w-full text-center bg-gray-800 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-gray-900 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+            GitHub
+          </button>
+          <div id="github-message" class="hidden mt-1">
+            <p class="text-xs text-gray-500 italic flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+              </svg>
+              Este usuário não cadastrou um perfil do GitHub
+            </p>
+          </div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div>
+          <button id="modal-linkedin-btn"
+            class="w-full text-center bg-blue-600 text-white px-3 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+            LinkedIn
+          </button>
+          <div id="linkedin-message" class="hidden mt-1">
+            <p class="text-xs text-gray-500 italic flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+              </svg>
+              Este usuário não cadastrou um perfil do LinkedIn
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de notificação -->
+<div id="toast"
+  class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 z-50">
+  <div class="flex items-center gap-2">
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd"
+        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+        clip-rule="evenodd" />
+    </svg>
+    <span id="toast-message"></span>
   </div>
 </div>
 
@@ -548,7 +850,7 @@
     </div>
     <form action="{% url 'create_post' %}" method="post" enctype="multipart/form-data" class="modal-body">
       {% csrf_token %}
-      
+
       <div class="emoji-picker-container mb-4">
         <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀 Adicionar emoji</button>
         <div class="emoji-panel">
@@ -580,9 +882,10 @@
           </div>
         </div>
       </div>
-      
-      <textarea name="conteudo" id="postContent" class="w-full form-input mb-4" placeholder="O que você está pensando?" rows="5"></textarea>
-      
+
+      <textarea name="conteudo" id="postContent" class="w-full form-input mb-4" placeholder="O que você está pensando?"
+        rows="5"></textarea>
+
       <!-- Área de upload moderna -->
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">Imagem (opcional)</label>
@@ -591,12 +894,14 @@
           <p class="text-gray-600 font-medium">Clique para adicionar uma imagem</p>
           <p class="text-gray-400 text-sm">ou arraste e solte aqui</p>
         </div>
-        <input type="file" name="imagem" id="postImage" accept="image/*" class="hidden" onchange="previewImage(this, 'postImagePreview')">
+        <input type="file" name="imagem" id="postImage" accept="image/*" class="hidden"
+          onchange="previewImage(this, 'postImagePreview')">
         <div id="postImagePreview" class="file-upload-preview mt-2"></div>
       </div>
-      
-      <input name="hashtags" type="text" class="w-full form-input mb-4" placeholder="Adicione hashtags separadas por vírgula (ex: python, django, programação)" />
-      
+
+      <input name="hashtags" type="text" class="w-full form-input mb-4"
+        placeholder="Adicione hashtags separadas por vírgula (ex: python, django, programação)" />
+
       <div class="modal-footer flex justify-end gap-3 pt-4">
         <button type="button" onclick="closePostModal()" class="btn-secondary">Cancelar</button>
         <button type="submit" class="btn-primary">Publicar Post</button>
@@ -614,7 +919,7 @@
     </div>
     <form id="editForm" method="POST" enctype="multipart/form-data" class="modal-body">
       {% csrf_token %}
-      
+
       <div class="emoji-picker-container mb-4">
         <button type="button" class="emoji-trigger" onclick="toggleEmojiPicker(this)">😀 Adicionar emoji</button>
         <div class="emoji-panel">
@@ -629,9 +934,9 @@
           </div>
         </div>
       </div>
-      
+
       <textarea id="editContent" name="conteudo" class="w-full form-input mb-4" rows="5"></textarea>
-      
+
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">Imagem (opcional)</label>
         <div class="file-upload-area" onclick="document.getElementById('editImage').click()">
@@ -639,12 +944,14 @@
           <p class="text-gray-600 font-medium">Clique para alterar a imagem</p>
           <p class="text-gray-400 text-sm">ou arraste e solte aqui</p>
         </div>
-        <input type="file" name="imagem" id="editImage" accept="image/*" class="hidden" onchange="previewImage(this, 'editImagePreview')">
+        <input type="file" name="imagem" id="editImage" accept="image/*" class="hidden"
+          onchange="previewImage(this, 'editImagePreview')">
         <div id="editImagePreview" class="file-upload-preview mt-2"></div>
       </div>
-      
-      <input id="editHashtags" name="hashtags" type="text" class="w-full form-input mb-4" placeholder="Hashtags separadas por vírgula" />
-      
+
+      <input id="editHashtags" name="hashtags" type="text" class="w-full form-input mb-4"
+        placeholder="Hashtags separadas por vírgula" />
+
       <div class="modal-footer flex justify-end gap-3 pt-4">
         <button type="button" onclick="closeEditModal()" class="btn-secondary">Cancelar</button>
         <button type="submit" class="btn-primary">Salvar Alterações</button>
@@ -660,7 +967,8 @@
     <div class="modal-body text-center">
       <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
         </svg>
       </div>
       <h2 class="text-xl font-bold text-gray-800 mb-2">Confirmar Exclusão</h2>
@@ -669,355 +977,432 @@
         {% csrf_token %}
         <div class="flex justify-center gap-3">
           <button type="button" onclick="closeDeleteModal()" class="btn-secondary">Cancelar</button>
-          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl font-semibold transition-colors duration-300">Excluir</button>
+          <button type="submit"
+            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl font-semibold transition-colors duration-300">Excluir</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+<!-- PAGINAÇÃO - ESTILO TAREFAS (INFERIOR ESQUERDO) -->
+{% if is_paginated %}
+<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
+  <div class="text-sm text-blue-600">
+  </div>
+
+  <div class="flex items-center gap-4">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+      ←
+    </a>
+    {% endif %}
+
+    <span class="text-blue-600 font-medium">
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+      →
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// ===== FUNÇÕES BÁSICAS DE MODAL =====
-function openPostModal() {
-  document.getElementById("postModal").classList.remove("hidden");
-}
+  // ===== FUNÇÕES BÁSICAS DE MODAL =====
+  function openPostModal() {
+    document.getElementById("postModal").classList.remove("hidden");
+  }
 
-function closePostModal() {
-  document.getElementById("postModal").classList.add("hidden");
-}
+  function closePostModal() {
+    document.getElementById("postModal").classList.add("hidden");
+  }
 
-document.getElementById("openPostModal").addEventListener("click", openPostModal);
+  document.getElementById("openPostModal").addEventListener("click", openPostModal);
 
-let currentDeleteId = null;
+  let currentDeleteId = null;
 
-function openDeleteModal(postId) {
-  currentDeleteId = postId;
-  const form = document.getElementById("deleteForm");
-  form.action = `/forum/${postId}/delete/`;
-  document.getElementById("deleteModal").classList.remove("hidden");
-}
+  function openDeleteModal(postId) {
+    currentDeleteId = postId;
+    const form = document.getElementById("deleteForm");
+    form.action = `/forum/${postId}/delete/`;
+    document.getElementById("deleteModal").classList.remove("hidden");
+  }
 
-function closeDeleteModal() {
-  currentDeleteId = null;
-  document.getElementById("deleteModal").classList.add("hidden");
-}
+  function closeDeleteModal() {
+    currentDeleteId = null;
+    document.getElementById("deleteModal").classList.add("hidden");
+  }
 
-let currentEditId = null;
+  let currentEditId = null;
 
-function openEditModal(postId, content, hashtags, imageUrl) {
-  currentEditId = postId;
-  document.getElementById("editContent").value = content;
-  document.getElementById("editHashtags").value = hashtags;
-  document.getElementById("editForm").action = `/forum/${postId}/edit/`;
-  
-  // Mostrar imagem atual se existir
-  const editImagePreview = document.getElementById('editImagePreview');
-  if (imageUrl && imageUrl !== 'None') {
-    editImagePreview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Imagem atual:</p>
+  function openEditModal(postId, content, hashtags, imageUrl) {
+    currentEditId = postId;
+    document.getElementById("editContent").value = content;
+    document.getElementById("editHashtags").value = hashtags;
+    document.getElementById("editForm").action = `/forum/${postId}/edit/`;
+
+    // Mostrar imagem atual se existir
+    const editImagePreview = document.getElementById('editImagePreview');
+    if (imageUrl && imageUrl !== 'None') {
+      editImagePreview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Imagem atual:</p>
                                  <img src="${imageUrl}" class="image-preview">`;
-  } else {
-    editImagePreview.innerHTML = '<p class="text-sm text-gray-600">Nenhuma imagem atual</p>';
+    } else {
+      editImagePreview.innerHTML = '<p class="text-sm text-gray-600">Nenhuma imagem atual</p>';
+    }
+
+    document.getElementById("editModal").classList.remove("hidden");
   }
-  
-  document.getElementById("editModal").classList.remove("hidden");
-}
 
-function closeEditModal() {
-  currentEditId = null;
-  document.getElementById("editModal").classList.add("hidden");
-}
+  function closeEditModal() {
+    currentEditId = null;
+    document.getElementById("editModal").classList.add("hidden");
+  }
 
-// ===== FUNÇÕES DE EMOJI PICKER =====
-function toggleEmojiPicker(button) {
-  const panel = button.nextElementSibling;
-  const isVisible = panel.style.display === 'block';
-  
-  // Fechar todos os outros painéis
-  document.querySelectorAll('.emoji-panel').forEach(p => {
-    if (p !== panel) p.style.display = 'none';
-  });
-  
-  // Alternar o painel atual
-  panel.style.display = isVisible ? 'none' : 'block';
-}
+  // ===== FUNÇÕES DE EMOJI PICKER =====
+  function toggleEmojiPicker(button) {
+    const panel = button.nextElementSibling;
+    const isVisible = panel.style.display === 'block';
 
-function insertEmoji(emojiButton, targetId) {
-  const emoji = emojiButton.textContent;
-  const textarea = document.getElementById(targetId);
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const text = textarea.value;
-  
-  textarea.value = text.substring(0, start) + emoji + text.substring(end);
-  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-  textarea.focus();
-  
-  // Fechar o painel de emojis após a inserção
-  emojiButton.closest('.emoji-panel').style.display = 'none';
-}
+    // Fechar todos os outros painéis
+    document.querySelectorAll('.emoji-panel').forEach(p => {
+      if (p !== panel) p.style.display = 'none';
+    });
 
-// ===== FUNÇÃO DE PREVIEW DE IMAGEM =====
-function previewImage(input, previewId) {
-  const preview = document.getElementById(previewId);
-  const file = input.files[0];
-  
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      preview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Prévia:</p>
+    // Alternar o painel atual
+    panel.style.display = isVisible ? 'none' : 'block';
+  }
+
+  function insertEmoji(emojiButton, targetId) {
+    const emoji = emojiButton.textContent;
+    const textarea = document.getElementById(targetId);
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+
+    textarea.value = text.substring(0, start) + emoji + text.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+    textarea.focus();
+
+    // Fechar o painel de emojis após a inserção
+    emojiButton.closest('.emoji-panel').style.display = 'none';
+  }
+
+  // ===== FUNÇÃO DE PREVIEW DE IMAGEM =====
+  function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        preview.innerHTML = `<p class="text-sm text-gray-600 mb-1">Prévia:</p>
                           <img src="${e.target.result}" class="image-preview">`;
-    };
-    reader.readAsDataURL(file);
-  } else {
-    preview.innerHTML = '';
-  }
-}
-
-// ===== FUNÇÕES DE UI =====
-function toggleComments(postId) {
-  const commentsDiv = document.getElementById(`comments-${postId}`);
-  commentsDiv.style.display = commentsDiv.style.display === "none" ? "block" : "none";
-}
-
-function toggleReplyForm(commentId) {
-  const formDiv = document.getElementById(`reply-form-${commentId}`);
-  document.querySelectorAll('[id^="reply-form-"]').forEach(form => {
-    if (form.id !== `reply-form-${commentId}`) {
-      form.style.display = "none";
-    }
-  });
-  
-  formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
-  if (formDiv.style.display === "block") {
-    const textarea = formDiv.querySelector('textarea');
-    if (textarea) textarea.focus();
-  }
-}
-
-// ===== UTILITIES =====
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.innerHTML = '';
     }
   }
-  return cookieValue;
-}
 
-// Fechar emoji picker ao clicar fora
-document.addEventListener('click', function(event) {
-  if (!event.target.closest('.emoji-picker-container')) {
-    document.querySelectorAll('.emoji-panel').forEach(panel => {
-      panel.style.display = 'none';
-    });
+  // ===== FUNÇÕES DE UI =====
+  function toggleComments(postId) {
+    const commentsDiv = document.getElementById(`comments-${postId}`);
+    commentsDiv.style.display = commentsDiv.style.display === "none" ? "block" : "none";
   }
-});
 
-// Drag and drop para upload de imagens
-document.addEventListener('DOMContentLoaded', function() {
-  const uploadAreas = document.querySelectorAll('.file-upload-area');
-  uploadAreas.forEach(area => {
-    area.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.classList.add('dragover');
-    });
-    
-    area.addEventListener('dragleave', function(e) {
-      e.preventDefault();
-      this.classList.remove('dragover');
-    });
-    
-    area.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        const input = this.nextElementSibling;
-        input.files = files;
-        const event = new Event('change');
-        input.dispatchEvent(event);
+  function toggleReplyForm(commentId) {
+    const formDiv = document.getElementById(`reply-form-${commentId}`);
+    document.querySelectorAll('[id^="reply-form-"]').forEach(form => {
+      if (form.id !== `reply-form-${commentId}`) {
+        form.style.display = "none";
       }
     });
+
+    formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
+    if (formDiv.style.display === "block") {
+      const textarea = formDiv.querySelector('textarea');
+      if (textarea) textarea.focus();
+    }
+  }
+
+
+
+  // Fechar emoji picker ao clicar fora
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.emoji-picker-container')) {
+      document.querySelectorAll('.emoji-panel').forEach(panel => {
+        panel.style.display = 'none';
+      });
+    }
   });
-});
 
-// ===== LIKE SYSTEM SIMPLIFICADO (SEM AJAX) =====
-// Removemos o sistema AJAX complexo e voltamos ao comportamento original
-// Os likes agora funcionam com submit normal do formulário
-
-// ===== COMMENT SYSTEM SIMPLIFICADO =====
-class CommentSystem {
-  constructor() {
-    this.init();
-  }
-
-  init() {
-    this.setupEventListeners();
-  }
-
-  setupEventListeners() {
-    document.addEventListener('submit', (e) => {
-      if (e.target.classList.contains('comment-form')) {
+  // Drag and drop para upload de imagens
+  document.addEventListener('DOMContentLoaded', function () {
+    const uploadAreas = document.querySelectorAll('.file-upload-area');
+    uploadAreas.forEach(area => {
+      area.addEventListener('dragover', function (e) {
         e.preventDefault();
-        this.handleCommentSubmit(e.target);
-      }
-      
-      if (e.target.classList.contains('reply-form')) {
-        e.preventDefault();
-        this.handleReplySubmit(e.target);
-      }
-    });
-  }
-
-  async handleCommentSubmit(form) {
-    const postId = form.dataset.postId;
-    const formData = new FormData(form);
-    const textarea = form.querySelector('textarea');
-    const commentText = textarea.value.trim();
-    
-    if (!commentText) return;
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.textContent;
-    submitButton.disabled = true;
-    submitButton.textContent = 'Enviando...';
-
-    try {
-      const response = await fetch(`/forum/${postId}/comment/`, {
-        method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: formData
+        this.classList.add('dragover');
       });
 
-      if (!response.ok) throw new Error('Network error');
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        this.addNewComment(form, postId, data);
-        textarea.value = '';
-      } else {
-        throw new Error('Server error');
-      }
-    } catch (error) {
-      console.error('Comment error:', error);
-      alert('Erro ao enviar comentário. Tente novamente.');
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = originalText;
-    }
-  }
+      area.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+      });
 
-  addNewComment(form, postId, data) {
-    const commentsContainer = form.closest('#comments-' + postId).querySelector('.space-y-4');
-    
-    const newCommentHtml = `
-      <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
-        <p class="text-sm text-gray-800 mb-2"><b class="text-[#2682EA]">${data.author}</b>: ${data.text}</p>
-        <div class="flex items-center gap-4 text-xs">
-          <form action="/forum/comment/${data.comment_id}/like/" method="post" class="inline">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-            <button type="submit" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors duration-200 focus:outline-none">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              </svg>
-              <span>0</span>
-            </button>
-          </form>
-          <button type="button" onclick="toggleReplyForm('${data.comment_id}')" 
-                  class="text-[#2682EA] hover:underline font-medium">
-            Responder
-          </button>
-        </div>
-        <div id="reply-form-${data.comment_id}" style="display:none;" class="mt-3 ml-4">
-          <form class="reply-form" data-post-id="${postId}" data-parent-id="${data.comment_id}">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-            <textarea name="texto" rows="2" class="w-full form-input text-sm" 
-                      placeholder="Responder a @${data.author}..."></textarea>
-            <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">
-              Responder
-            </button>
-          </form>
-        </div>
+      area.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          const input = this.nextElementSibling;
+          input.files = files;
+          const event = new Event('change');
+          input.dispatchEvent(event);
+        }
+      });
+    });
+  });
+
+  // ===== LIKE SYSTEM SIMPLIFICADO (SEM AJAX) =====
+  // Removemos o sistema AJAX complexo e voltamos ao comportamento original
+  // Os likes agora funcionam com submit normal do formulário
+
+  // ===== COMMENT SYSTEM SIMPLIFICADO =====
+  class CommentSystem {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+      document.addEventListener('submit', (e) => {
+        if (e.target.classList.contains('comment-form')) {
+          e.preventDefault();
+          this.handleCommentSubmit(e.target);
+        }
+
+        if (e.target.classList.contains('reply-form')) {
+          e.preventDefault();
+          this.handleReplySubmit(e.target);
+        }
+      });
+    }
+
+    async handleCommentSubmit(form) {
+      const postId = form.dataset.postId;
+      const formData = new FormData(form);
+      const textarea = form.querySelector('textarea');
+      const commentText = textarea.value.trim();
+
+      if (!commentText) return;
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+
+      const url = `/forum/${postId}/comment/`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          credentials: 'same-origin', // envia cookies (sessão, csrftoken) para mesma origem
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Accept': 'application/json'
+          },
+          body: formData
+        });
+
+        console.log('[comment] fetch ->', url, 'status:', response.status, 'redirected:', response.redirected);
+
+        // Se houve redirect (ex.: para login), loga e trata
+        if (response.redirected) {
+          console.warn('[comment] fetch foi redirecionado para:', response.url);
+          // provavelmente sessão expirada / login necessário
+          alert('Sua sessão expirou. Faça login novamente.');
+          return;
+        }
+
+        // Se status não OK, mostra corpo (útil para ver tracebacks em dev)
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('[comment] resposta HTTP não OK:', response.status, text);
+          alert('Erro ao enviar comentário (status ' + response.status + '). Veja console para detalhes.');
+          return;
+        }
+
+        // Tenta parsear JSON com proteção
+        let data;
+        try {
+          data = await response.json();
+        } catch (err) {
+          const txt = await response.text();
+          console.error('[comment] resposta não é JSON:', txt);
+          alert('Erro ao processar resposta do servidor. Veja console.');
+          return;
+        }
+
+        console.log('[comment] resposta JSON:', data);
+
+        if (data && data.success) {
+          // chama sua função que insere o comentário no DOM
+          this.addNewComment(form, postId, data);
+          textarea.value = '';
+        } else {
+          console.error('[comment] data.success falso ou ausente:', data);
+          alert('Erro do servidor ao criar comentário. Veja console.');
+        }
+
+      } catch (error) {
+        console.error('[comment] erro fetch:', error);
+        alert('Erro de rede ao enviar comentário. Tente novamente.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    }
+
+
+    addNewComment(form, postId, data) {
+      const commentsContainer = form.closest('#comments-' + postId).querySelector('.space-y-4');
+
+      const newCommentHtml = `
+    <div class="comment bg-gray-50 rounded-xl p-4 border-l-4 border-[#2682EA]">
+      <div class="flex items-center mb-2">
+        <img src="${data.avatar_url}?v=${Date.now()}"
+             alt="${data.author}"
+             class="w-8 h-8 rounded-full cursor-pointer mr-2 border border-gray-300 hover:ring-2 hover:ring-blue-300 transition"
+             onclick="openProfile(this)"
+             data-avatar="${data.avatar_url}"
+             data-name="${data.author}"
+             data-bio="${data.bio || ''}"
+             data-xp="${data.xp || 0}"
+             data-level="${data.level || 1}"
+             data-github="${data.github || '#'}"
+             data-linkedin="${data.linkedin || '#'}"
+             data-conquistas='${JSON.stringify(data.conquistas || [])}'>
+        <b class="text-[#2682EA]">${data.author}</b>
       </div>
-    `;
+      <p class="text-sm text-gray-800 mb-2">${data.text}</p>
+      <div class="flex items-center gap-4 text-xs">
+        <form action="/forum/comment/${data.comment_id}/like/" method="post" class="inline like-form">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+          <button type="submit" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682
+                    a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318
+                    a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <span>0</span>
+          </button>
+        </form>
+        <button type="button" onclick="toggleReplyForm('${data.comment_id}')" 
+                class="text-[#2682EA] hover:underline font-medium">
+          Responder
+        </button>
+      </div>
+      <div id="reply-form-${data.comment_id}" style="display:none;" class="mt-3 ml-4">
+        <form class="reply-form" data-post-id="${postId}" data-parent-id="${data.comment_id}">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+          <textarea name="texto" rows="2" class="w-full form-input text-sm" placeholder="Responder..."></textarea>
+          <button type="submit" class="btn-primary text-xs px-3 py-1.5 mt-1">Responder</button>
+        </form>
+      </div>
+    </div>
+  `;
 
-    const emptyMessage = commentsContainer.querySelector('p.text-gray-400');
-    if (emptyMessage) emptyMessage.remove();
+      const emptyMessage = commentsContainer.querySelector('p.text-gray-400');
+      if (emptyMessage) emptyMessage.remove();
 
-    commentsContainer.insertAdjacentHTML('afterbegin', newCommentHtml);
-    
-    const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
-    if (commentCount) {
-      commentCount.textContent = parseInt(commentCount.textContent) + 1;
-    }
-  }
+      commentsContainer.insertAdjacentHTML('afterbegin', newCommentHtml);
 
-  async handleReplySubmit(form) {
-    const postId = form.dataset.postId;
-    const parentId = form.dataset.parentId;
-    const formData = new FormData(form);
-    const textarea = form.querySelector('textarea');
-    const replyText = textarea.value.trim();
-    
-    if (!replyText) return;
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.textContent;
-    submitButton.disabled = true;
-    submitButton.textContent = 'Enviando...';
-
-    try {
-      const response = await fetch(`/forum/${postId}/reply/${parentId}/`, {
-        method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: formData
-      });
-
-      if (!response.ok) throw new Error('Network error');
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        this.addNewReply(form, postId, data);
-        textarea.value = '';
-      } else {
-        throw new Error('Server error');
+      // 🔹 Atualiza contador
+      const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
+      if (commentCount) {
+        commentCount.textContent = parseInt(commentCount.textContent) + 1;
       }
-    } catch (error) {
-      console.error('Reply error:', error);
-      alert('Erro ao enviar resposta. Tente novamente.');
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = originalText;
-    }
-  }
 
-  addNewReply(form, postId, data) {
-    const parentComment = form.closest('.comment');
-    let repliesContainer = parentComment.querySelector('.ml-6');
-    
-    if (!repliesContainer) {
-      repliesContainer = document.createElement('div');
-      repliesContainer.className = 'ml-6 mt-3';
-      parentComment.appendChild(repliesContainer);
+      // 🔹 Atualiza hashtags em “Tópicos em alta”
+      if (data.hashtags && data.hashtags.length > 0) {
+        const trendingDiv = document.getElementById("trending-hashtags");
+        data.hashtags.forEach(tag => {
+          if (trendingDiv && !trendingDiv.innerHTML.includes(tag)) {
+            trendingDiv.insertAdjacentHTML("beforeend", `<span class="hashtag">#${tag}</span>`);
+          }
+        });
+      }
     }
 
-    const newReplyHtml = `
+
+
+    async handleReplySubmit(form) {
+      const postId = form.dataset.postId;
+      const parentId = form.dataset.parentId;
+      const formData = new FormData(form);
+      const textarea = form.querySelector('textarea');
+      const replyText = textarea.value.trim();
+
+      if (!replyText) return;
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+
+      try {
+        const response = await fetch(`/forum/${postId}/reply/${parentId}/`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+
+        if (data.success) {
+          this.addNewReply(form, postId, data);
+          textarea.value = '';
+        } else {
+          throw new Error('Server error');
+        }
+      } catch (error) {
+        console.error('Reply error:', error);
+        alert('Erro ao enviar resposta. Tente novamente.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    }
+
+    addNewReply(form, postId, data) {
+      const parentComment = form.closest('.comment');
+      let repliesContainer = parentComment.querySelector('.ml-6');
+
+      if (!repliesContainer) {
+        repliesContainer = document.createElement('div');
+        repliesContainer.className = 'ml-6 mt-3';
+        parentComment.appendChild(repliesContainer);
+      }
+
+      const newReplyHtml = `
       <div class="bg-white border rounded-lg p-3 mb-2">
         <p class="text-xs text-gray-700">
           <b class="text-[#2682EA]">${data.author}</b> 
@@ -1036,19 +1421,299 @@ class CommentSystem {
       </div>
     `;
 
-    repliesContainer.insertAdjacentHTML('beforeend', newReplyHtml);
-    
-    const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
-    if (commentCount) {
-      commentCount.textContent = parseInt(commentCount.textContent) + 1;
+      repliesContainer.insertAdjacentHTML('beforeend', newReplyHtml);
+
+      const commentCount = document.querySelector(`button[onclick="toggleComments('${postId}')"] span`);
+      if (commentCount) {
+        commentCount.textContent = parseInt(commentCount.textContent) + 1;
+      }
     }
   }
-}
 
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-  new CommentSystem();
-  console.log('Forum system initialized successfully');
-});
+  // ===== INITIALIZATION =====
+  document.addEventListener('DOMContentLoaded', function () {
+    new CommentSystem();
+    console.log('Forum system initialized successfully');
+  });
 </script>
+<script>
+  // ===== FUNÇÕES DO MODAL DE PERFIL =====
+  function openProfile(el) {
+    const modal = document.getElementById("profileModal");
+    if (!modal) {
+      console.error("Modal de perfil não encontrado!");
+      return;
+    }
+
+    document.getElementById("modal-avatar").src = el.dataset.avatar;
+    document.getElementById("modal-name").textContent = el.dataset.name;
+    document.getElementById("modal-details").textContent = `Nível ${el.dataset.level}`;
+    document.getElementById("modal-bio").textContent = el.dataset.bio;
+    document.getElementById("modal-xp").textContent = el.dataset.xp + " XP";
+    document.getElementById("modal-level").textContent = "Nível " + el.dataset.level;
+
+    // Configurar os botões de redes sociais
+    const githubBtn = document.getElementById("modal-github-btn");
+    const linkedinBtn = document.getElementById("modal-linkedin-btn");
+    const githubMessage = document.getElementById("github-message");
+    const linkedinMessage = document.getElementById("linkedin-message");
+
+    const githubUrl = el.dataset.github || "";
+    const linkedinUrl = el.dataset.linkedin || "";
+
+    // GitHub
+    if (githubUrl && githubUrl !== "#" && githubUrl !== "None") {
+      githubBtn.disabled = false;
+      githubBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      githubMessage.classList.add("hidden");
+      githubBtn.onclick = function () {
+        window.open(githubUrl, '_blank');
+      };
+    } else {
+      githubBtn.disabled = true;
+      githubBtn.classList.add("opacity-50", "cursor-not-allowed");
+      githubMessage.classList.remove("hidden");
+      githubBtn.onclick = function () {
+        showToast("Este usuário não cadastrou um perfil do GitHub");
+      };
+    }
+
+    // LinkedIn
+    if (linkedinUrl && linkedinUrl !== "#" && linkedinUrl !== "None") {
+      linkedinBtn.disabled = false;
+      linkedinBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      linkedinMessage.classList.add("hidden");
+      linkedinBtn.onclick = function () {
+        window.open(linkedinUrl, '_blank');
+      };
+    } else {
+      linkedinBtn.disabled = true;
+      linkedinBtn.classList.add("opacity-50", "cursor-not-allowed");
+      linkedinMessage.classList.remove("hidden");
+      linkedinBtn.onclick = function () {
+        showToast("Este usuário não cadastrou um perfil do LinkedIn");
+      };
+    }
+
+    // Conquistas
+    const conquistas = JSON.parse(el.dataset.conquistas || "[]");
+    const conquistasDiv = document.getElementById("modal-conquistas");
+    if (conquistasDiv) {
+      conquistasDiv.innerHTML = "";
+      if (conquistas.length === 0) {
+        conquistasDiv.innerHTML = `<p class="text-gray-400 text-sm italic">Nenhuma conquista desbloqueada.</p>`;
+      } else {
+        conquistas.forEach(c => {
+          conquistasDiv.innerHTML += `
+          <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 rounded-lg text-xs shadow-sm hover:shadow-md transition-all duration-300 border border-blue-100">
+            ${c.icone ? `<img src="${c.icone}" class="w-4 h-4"/>` : "🏆"} 
+            <span class="font-medium">${c.titulo}</span>
+          </div>`;
+        });
+      }
+    }
+
+    modal.classList.remove("hidden");
+
+    // Pequeno atraso para a animação de entrada
+    setTimeout(() => {
+      const modalEnter = modal.querySelector('.modal-enter');
+      if (modalEnter) {
+        modalEnter.classList.remove('scale-95');
+        modalEnter.classList.add('scale-100');
+      }
+    }, 10);
+  }
+
+  function closeProfile() {
+    const modal = document.getElementById("profileModal");
+    if (!modal) return;
+
+    const modalEnter = modal.querySelector('.modal-enter');
+    if (modalEnter) {
+      modalEnter.classList.remove('scale-100');
+      modalEnter.classList.add('scale-95');
+    }
+
+    setTimeout(() => {
+      modal.classList.add("hidden");
+    }, 200);
+  }
+
+  // Função para mostrar toast de notificação
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (!toast) {
+      // Criar toast dinamicamente se não existir
+      const toastDiv = document.createElement('div');
+      toastDiv.id = 'toast';
+      toastDiv.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 z-50';
+      toastDiv.innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <span id="toast-message">${message}</span>
+      </div>
+    `;
+      document.body.appendChild(toastDiv);
+    }
+
+    const toastMessage = document.getElementById("toast-message");
+    if (toastMessage) {
+      toastMessage.textContent = message;
+    }
+
+    // Mostrar toast
+    toast.classList.remove("translate-y-16", "opacity-0");
+    toast.classList.add("translate-y-0", "opacity-100");
+
+    // Esconder toast após 3 segundos
+    setTimeout(() => {
+      toast.classList.remove("translate-y-0", "opacity-100");
+      toast.classList.add("translate-y-16", "opacity-0");
+    }, 3000);
+  }
+
+  // Fechar modal ao clicar fora
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById("profileModal");
+    if (modal) {
+      modal.addEventListener("click", function (e) {
+        if (e.target === this) closeProfile();
+      });
+    }
+  });
+</script>
+
+
+<script>
+
+
+  // ===== FUNÇÃO CSRF =====
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // ===== SISTEMA DE LIKES (FINAL E FUNCIONAL) =====
+  document.addEventListener("submit", async function (e) {
+    if (e.target.matches("form.like-form")) {
+      e.preventDefault();
+
+      const form = e.target;
+      const url = form.action;
+      const csrftoken = getCookie("csrftoken");
+      const button = form.querySelector("button");
+      const icon = form.querySelector("svg");
+      button.disabled = true;
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+
+        if (!response.ok) throw new Error("Erro no servidor");
+
+        const data = await response.json();
+        const span = form.querySelector("span");
+        span.textContent = data.likes_count;
+
+        // Alterna ícone e anima
+        if (data.liked) {
+          icon.classList.add("text-red-500");
+          icon.setAttribute("fill", "currentColor");
+          icon.setAttribute("stroke", "none");
+        } else {
+          icon.classList.remove("text-red-500");
+          icon.setAttribute("fill", "none");
+          icon.setAttribute("stroke", "currentColor");
+        }
+
+        // ✨ animação
+        icon.classList.add("animate-heart");
+        setTimeout(() => icon.classList.remove("animate-heart"), 400);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        button.disabled = false;
+      }
+    }
+  });
+
+  // ===== ANIMAÇÃO CSS =====
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes heartPulse {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.3); }
+      50% { transform: scale(0.9); }
+      75% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .animate-heart {
+      animation: heartPulse 0.4s ease-in-out;
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+<script>
+  // ===== Atualizar Tópicos em Alta =====
+  async function atualizarTopicosEmAlta() {
+    try {
+      const response = await fetch("{% url 'top_hashtags_json' %}");
+      if (!response.ok) throw new Error("Erro ao buscar hashtags");
+
+      const data = await response.json();
+      const container = document.getElementById("top-hashtags");
+
+      if (!container) return;
+
+      if (data.hashtags.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-sm">Nenhuma hashtag disponível</p>';
+        return;
+      }
+
+      container.innerHTML = data.hashtags
+        .map(
+          (h) => `
+          <div class="flex items-center justify-between bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm mb-2">
+            <span>#${h.nome}</span>
+            <span class="text-xs text-gray-500">${h.contador}</span>
+          </div>`
+        )
+        .join("");
+    } catch (error) {
+      console.error("Erro ao atualizar tópicos:", error);
+    }
+  }
+
+  // Atualiza automaticamente quando cria novo post
+  document.addEventListener("DOMContentLoaded", () => {
+    const formPost = document.getElementById("newPostForm");
+    if (formPost) {
+      formPost.addEventListener("submit", async (e) => {
+        setTimeout(atualizarTopicosEmAlta, 1000); // atraso leve p/ salvar
+      });
+    }
+  });
+
+  // Atualiza periodicamente (a cada 30s)
+  setInterval(atualizarTopicosEmAlta, 30000);
+</script>
+
 {% endblock %}

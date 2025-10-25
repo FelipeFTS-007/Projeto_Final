@@ -14,9 +14,10 @@ from django.http import JsonResponse
 import json
 from .forms import *
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.db import models
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.conf import settings
 
 
 
@@ -86,6 +87,9 @@ def login_view(request):
         else:
             messages.error(request, "Usuário ou senha inválidos.")
             return redirect("login")
+    storage = messages.get_messages(request)
+    for message in storage:
+        pass  # Isso limpa as mensagens    
 
     return render(request, "Pyquest/login.html")
 
@@ -139,16 +143,11 @@ def perfil(request):
 
     XP_POR_NIVEL = 100
 
-    # --- subir de nível automático ---
     while perfil.xp >= XP_POR_NIVEL:
         perfil.nivel += 1
         perfil.xp -= XP_POR_NIVEL
         perfil.save()
 
-    conquistas_desbloqueadas = request.user.conquistas.all()
-    conquistas_bloqueadas = Conquista.objects.exclude(id__in=conquistas_desbloqueadas)
-
-    # --- progresso até o próximo nível ---
     progresso_xp = (perfil.xp % XP_POR_NIVEL) / XP_POR_NIVEL * 100
 
     if request.method == "POST":
@@ -163,26 +162,51 @@ def perfil(request):
         messages.success(request, "Perfil atualizado com sucesso!")
         return redirect("perfil")
 
+    # ========== FILTROS CORRIGIDOS ========== #
+    raridade = request.GET.get('raridade', 'todas')
+    categoria = request.GET.get('categoria', 'todas')
+    
+    # Buscar TODAS as conquistas
+    conquistas_query = Conquista.objects.all()
+    
+    # Aplicar filtros apenas se não for "todas"
+    if raridade != 'todas':
+        conquistas_query = conquistas_query.filter(raridade=raridade)
+    
+    if categoria != 'todas':
+        conquistas_query = conquistas_query.filter(categoria=categoria)
+    
+    # Paginação
+    itens_por_pagina = 2
+    paginator = Paginator(conquistas_query, itens_por_pagina)
+    
+    page_number = request.GET.get('page')
+    
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    
+    # Separar conquistas da página atual
+    conquistas_pagina = page_obj.object_list
+    conquistas_desbloqueadas_pagina = [c for c in conquistas_pagina if c in request.user.conquistas.all()]
+    conquistas_bloqueadas_pagina = [c for c in conquistas_pagina if c not in request.user.conquistas.all()]
 
-    desbloq_qs = request.user.conquistas.all()
-    bloq_qs = Conquista.objects.exclude(id__in=desbloq_qs)
-
-    desbloq_count = desbloq_qs.count()
-    bloq_count = bloq_qs.count()
-    total = desbloq_count + bloq_count
-
-   
     context = {
         "perfil": perfil,
-        "conquistas_desbloqueadas": conquistas_desbloqueadas,
-        "conquistas_bloqueadas": conquistas_bloqueadas,
+        "conquistas_desbloqueadas": conquistas_desbloqueadas_pagina,
+        "conquistas_bloqueadas": conquistas_bloqueadas_pagina,
         "progresso_xp": progresso_xp,
-        "conquistas_desbloqueadas": desbloq_qs,
-        "conquistas_bloqueadas": bloq_qs,
-        "desbloq_count": desbloq_count,
-        "total_conquistas": total,
+        "desbloq_count": request.user.conquistas.count(),
+        "total_conquistas": Conquista.objects.count(),
+        "page_obj": page_obj,
+        "raridade_filtro": raridade,
+        "categoria_filtro": categoria,
     }
     return render(request, "Pyquest/perfil.html", context)
+
 
 
 # views.py (substitua a função ranking existente)
@@ -191,22 +215,34 @@ def perfil(request):
 @login_required
 def ranking(request):
     # ordena por XP decrescente
-    perfis = Perfil.objects.select_related('user').order_by('-xp')
-
-    # calcula posição do usuário atual (1-based). se não encontrado, fica None
+    perfis_completo = Perfil.objects.select_related('user').order_by('-xp')
+    
+    # Paginação - usa uma cópia para não afetar o Top 3
+    paginator = Paginator(perfis_completo, 3)  # 10 usuários por página
+    page_number = request.GET.get('page')
+    
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    
+    # calcula posição do usuário atual (1-based)
     posicao_usuario = None
     try:
-        # lista de user_id na mesma ordem do queryset
-        ids = list(perfis.values_list('user_id', flat=True))
+        ids = list(perfis_completo.values_list('user_id', flat=True))
         if request.user.id in ids:
             posicao_usuario = ids.index(request.user.id) + 1
     except Exception:
         posicao_usuario = None
 
     contexto = {
-        "perfis": perfis,
+        "perfis": perfis_completo,  # Lista COMPLETA para o Top 3
+        "page_obj": page_obj,       # Lista PAGINADA para o ranking completo
         "usuario_logado": request.user.id,
         "posicao_usuario": posicao_usuario,
+        "is_paginated": paginator.num_pages > 1,
     }
     return render(request, "Pyquest/ranking.html", contexto)
 
@@ -224,49 +260,62 @@ def criar_perfil(sender, instance, created, **kwargs):
 @login_required
 def forum(request):
     try:
-        # Estatísticas
         total_users = User.objects.count()
-        
         hoje = timezone.now().date()
+
         active_today = User.objects.filter(
-            Q(post__created_at__date=hoje) | 
+            Q(post__created_at__date=hoje) |
             Q(comentarios__created_at__date=hoje)
         ).distinct().count()
-        
+
         posts_today = Post.objects.filter(created_at__date=hoje).count()
-        
-        # Tópicos em alta (hashtags mais usadas na última semana)
-        uma_semana_atras = timezone.now() - timedelta(days=7)
-        trending_tags = Hashtag.objects.filter(
-            posts__created_at__gte=uma_semana_atras
-        ).annotate(count=Count('posts')).order_by('-count')[:10]
-        
-        # Contribuidores destaque (usuários com mais XP)
-        top_users = User.objects.filter(perfil__isnull=False).order_by('-perfil__xp')[:10]
-        
-        # Filtros
+
+        # 🔹 Hashtags ordenadas e filtradas
+        trending_tags = (
+            Hashtag.objects
+            .filter(contador__gte=1)
+            .order_by('-contador', '-ultimo_uso')[:10]
+        )
+
+        # 🔹 Usuários com mais XP
+        top_users = (
+            User.objects
+            .filter(perfil__isnull=False)
+            .order_by('-perfil__xp')[:10]
+        )
+
+        # 🔹 Posts e filtros
         current_filter = request.GET.get('filter', 'all')
         search_query = request.GET.get('q', '')
-        
-        posts = Post.objects.all().order_by("-created_at").prefetch_related("comentarios", "hashtags","autor__perfil" )
-        
-        # Aplicar filtro de busca
+
+        posts = (
+            Post.objects
+            .all()
+            .order_by("-created_at")
+            .prefetch_related("comentarios", "hashtags", "autor__perfil")
+        )
+
         if search_query:
             posts = posts.filter(
                 Q(conteudo__icontains=search_query) |
                 Q(hashtags__nome__icontains=search_query) |
                 Q(autor__username__icontains=search_query)
             ).distinct()
-        
-        # Aplicar filtros
+
         if current_filter == 'popular':
             posts = posts.annotate(like_count=Count('likes')).order_by('-like_count', '-created_at')
         elif current_filter == 'recent':
             posts = posts.order_by('-created_at')
-        elif current_filter == 'following':
-            # Implementar lógica de seguir usuários depois
-            posts = posts.order_by('-created_at')
-        
+
+        paginator = Paginator(posts, 3)
+        page_number = request.GET.get('page')
+        try:
+            posts = paginator.page(page_number)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+
         context = {
             "posts": posts,
             "total_users": total_users,
@@ -276,23 +325,32 @@ def forum(request):
             "top_users": top_users,
             "current_filter": current_filter,
             "search_query": search_query,
+            "is_paginated": paginator.num_pages > 1,
+            "page_obj": posts,
         }
 
         return render(request, "Pyquest/forum.html", context)
-    
+
     except Exception as e:
-        # Fallback em caso de erro
-        print(f"Erro no forum: {e}")
+        print(f"[ERRO] forum: {e}")
         posts = Post.objects.all().order_by("-created_at")
+        paginator = Paginator(posts, 10)
+        try:
+            posts = paginator.page(1)
+        except:
+            posts = []
+
         context = {
             "posts": posts,
             "total_users": User.objects.count(),
             "active_today": 0,
             "posts_today": 0,
-            "trending_tags": [],
-            "top_users": [],
+            "trending_tags": Hashtag.objects.order_by('-contador', '-ultimo_uso')[:10],
+            "top_users": User.objects.filter(perfil__isnull=False).order_by('-perfil__xp')[:10],
             "current_filter": "all",
             "search_query": "",
+            "is_paginated": paginator.num_pages > 1,
+            "page_obj": posts,
         }
         return render(request, "Pyquest/forum.html", context)
 
@@ -300,26 +358,30 @@ def forum(request):
 @login_required
 def create_post(request):
     if request.method == "POST":
-        conteudo = request.POST.get("conteudo")
+        conteudo = request.POST.get("conteudo", "").strip()
         hashtags_text = request.POST.get("hashtags", "")
-        imagem = request.FILES.get("imagem")  # NOVO
 
-        if conteudo:
-            post = Post.objects.create(
-                autor=request.user,
-                conteudo=conteudo,
-                imagem=imagem,  # NOVO
-                created_at=timezone.now()
-            )
-            
-            # salvar hashtags
-            hashtags = [tag.strip().lower() for tag in hashtags_text.split(",") if tag.strip()]
-            for nome in hashtags:
-                tag, created = Hashtag.objects.get_or_create(nome=nome)
-                post.hashtags.add(tag)
+        if not conteudo:
+            return redirect("forum")
+
+        post = Post.objects.create(
+            autor=request.user,
+            conteudo=conteudo
+        )
+
+        # 🔹 Processar hashtags
+        hashtags = [tag.strip().lower().lstrip('#') for tag in hashtags_text.split(",") if tag.strip()]
+        for nome in hashtags:
+            tag, created = Hashtag.objects.get_or_create(nome=nome)
+            tag.contador = (tag.contador or 0) + 1
+            tag.ultimo_uso = timezone.now()
+            tag.save()
+            post.hashtags.add(tag)
 
         return redirect("forum")
+
     return redirect("forum")
+
 
 
 
@@ -351,6 +413,7 @@ def edit_post(request, post_id):
 
 
 
+
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id, autor=request.user)
@@ -368,44 +431,91 @@ def delete_post(request, post_id):
 def add_comment(request, post_id):
     if request.method == "POST":
         post = get_object_or_404(Post, id=post_id)
-        texto = request.POST.get("texto")
-        
-        if texto.strip():
-            comentario = Comentario.objects.create(
-                post=post, 
-                autor=request.user, 
-                texto=texto
-            )
-            
-            # Se for uma requisição AJAX, retorna JSON
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'comment_id': comentario.id,
-                    'author': comentario.autor.username,
-                    'text': comentario.texto,
-                })
-    
-    # Redirecionamento normal para requisições não-AJAX
+        texto = request.POST.get("texto", "").strip()
+
+        if not texto:
+            return JsonResponse({"success": False, "error": "Comentário vazio."})
+
+        comentario = Comentario.objects.create(
+            post=post,
+            autor=request.user,
+            texto=texto
+        )
+
+        # 🔹 Detectar e registrar hashtags usadas em comentários
+        hashtags = [tag.strip('#').lower() for tag in texto.split() if tag.startswith('#')]
+        for nome in hashtags:
+            tag, created = Hashtag.objects.get_or_create(nome=nome)
+            tag.contador = (tag.contador or 0) + 1
+            tag.ultimo_uso = timezone.now()
+            tag.save()
+
+        # 🔹 Retorno AJAX com avatar e conquistas
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            perfil = comentario.autor.perfil
+            conquistas_data = []
+            if hasattr(perfil, "conquistas") and hasattr(perfil.conquistas, "all"):
+                conquistas_data = [
+                    {"titulo": c.titulo, "icone": c.icone.url if c.icone else None}
+                    for c in perfil.conquistas.all()
+                ]
+            return JsonResponse({
+                "success": True,
+                "comment_id": comentario.id,
+                "author": comentario.autor.username,
+                "text": comentario.texto,
+                "avatar_url": perfil.avatar.url if perfil.avatar else "/static/img/default-avatar.png",
+                "bio": perfil.descricao or "",
+                "xp": perfil.xp,
+                "level": perfil.nivel,
+                "github": perfil.github or "#",
+                "linkedin": perfil.linkedin or "#",
+                "conquistas": conquistas_data,
+            })
+
     return redirect("forum")
 
 @login_required
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+    liked = False
+
     if request.user in post.likes.all():
         post.likes.remove(request.user)
     else:
         post.likes.add(request.user)
+        liked = True
+
+    # Se for uma requisição AJAX, retorna JSON
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "liked": liked,
+            "likes_count": post.likes.count(),
+        })
+
+    # Fallback (caso JS falhe)
     return redirect("forum")
+
 
 @login_required
 def like_comment(request, comment_id):
     comentario = get_object_or_404(Comentario, id=comment_id)
+    liked = False
+
     if request.user in comentario.likes.all():
         comentario.likes.remove(request.user)
     else:
         comentario.likes.add(request.user)
+        liked = True
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "liked": liked,
+            "likes_count": comentario.likes.count(),
+        })
+
     return redirect("forum")
+
 
 
 @login_required
@@ -438,6 +548,17 @@ def reply_comment(request, post_id, parent_id):
                 })
     
     return redirect("forum")
+
+
+
+
+def top_hashtags_json(request):
+    hashtags = Hashtag.objects.order_by('-contador', '-ultimo_uso')[:5]
+    data = [
+        {"nome": h.nome, "contador": h.contador}
+        for h in hashtags
+    ]
+    return JsonResponse({"hashtags": data})
 
 
 def is_professor(user):
@@ -1105,14 +1226,24 @@ def conteudo(request):
         'modulos__aulas'
     ).order_by('ordem')
     
+    # Aplicar paginação
+    paginator = Paginator(capitulos, 3)  # 6 capítulos por página
+    page_number = request.GET.get('page')
+    
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    
     capitulos_com_stats = []
     
-    for capitulo in capitulos:
+    for capitulo in page_obj:  # Usar page_obj em vez de capitulos
         total_modulos = capitulo.modulos.filter(ativo=True).count()
         total_aulas = Aula.objects.filter(modulo__capitulo=capitulo, ativo=True).count()
         
         # **PROGRESSO REAL DO USUÁRIO**
-        # Contar módulos concluídos pelo usuário (você precisaria criar este modelo)
         modulos_concluidos = 0  # ModuloConcluido.objects.filter(usuario=request.user, modulo__capitulo=capitulo).count()
         
         # Calcular percentual
@@ -1138,7 +1269,6 @@ def conteudo(request):
             'dificuldade': capitulo.dificuldade
         })
     
-    
     # Estatísticas gerais (agora baseadas em dados reais)
     total_capitulos_concluidos = len([c for c in capitulos_com_stats if c['progresso_percentual'] == 100])
     total_capitulos_em_progresso = len([c for c in capitulos_com_stats if 0 < c['progresso_percentual'] < 100])
@@ -1149,8 +1279,10 @@ def conteudo(request):
         'total_concluidos': total_capitulos_concluidos,
         'total_em_progresso': total_capitulos_em_progresso,
         'total_bloqueados': total_capitulos_bloqueados,
+        'page_obj': page_obj,  # Adicionar page_obj ao contexto
+        'is_paginated': paginator.num_pages > 1,  # Para controle no template
     }
-    
+
     return render(request, "Pyquest/conteudo.html", context)
 
 # NOVA FUNÇÃO: Determinar dificuldade do capítulo baseado nas aulas

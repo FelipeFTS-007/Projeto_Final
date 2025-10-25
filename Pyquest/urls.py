@@ -21,8 +21,8 @@ urlpatterns = [
     path("forum/<int:post_id>/delete/", views.delete_post, name="delete_post"),
     path('forum/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('forum/<int:post_id>/like/', views.like_post, name='like_post'),
-    path('forum/<int:post_id>/reply/<int:parent_id>/', views.reply_comment, name='reply_comment'),
     path('forum/comment/<int:comment_id>/like/', views.like_comment, name='like_comment'),
+    path('forum/<int:post_id>/reply/<int:parent_id>/', views.reply_comment, name='reply_comment'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('criar-conteudo/', views.criar_conteudo, name='criar_conteudo'),
     path('api/modulos/<int:capitulo_id>/', views.get_modulos_ajax, name='get_modulos_ajax'),
@@ -32,4 +32,5 @@ urlpatterns = [
     path('editar-conteudo/<int:aula_id>/', views.editar_conteudo, name='editar_conteudo'),
     path('excluir-conteudo/<int:aula_id>/', views.excluir_conteudo, name='excluir_conteudo'),
     path('alternar-status-aula/<int:aula_id>/', views.alternar_status_aula, name='alternar_status_aula'),
+    path("forum/top_hashtags/", views.top_hashtags_json, name="top_hashtags_json"),
 ]

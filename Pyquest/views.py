@@ -588,6 +588,12 @@ def criar_conteudo(request):
             titulo_teoria = request.POST.get('titulo_teoria', 'Conteúdo Teórico')
             descricao_breve = request.POST.get('descricao_breve', '')
             
+            # Dados do conteúdo prático - AGORA OBRIGATÓRIO
+            titulo_pratica = request.POST.get('titulo_pratica', 'Exercícios Práticos')
+            conteudo_pratico = request.POST.get('conteudo_pratico', '')  # AGORA OBRIGATÓRIO
+            
+            print(f"Dados práticos - Título: {titulo_pratica}, Descrição: {conteudo_pratico[:100]}...")
+            
             # NOVOS CAMPOS DE TEMPO E XP
             tempo_teoria = request.POST.get('tempo_estimado_teoria', 30)
             tempo_pratica = request.POST.get('tempo_estimado_pratica', 15)
@@ -621,6 +627,10 @@ def criar_conteudo(request):
                 titulo_aula=titulo_aula,
                 titulo_teoria=titulo_teoria,
                 descricao_breve=descricao_breve,
+                # CAMPOS PRÁTICOS - AGORA OBRIGATÓRIOS
+                titulo_pratica=titulo_pratica,
+                conteudo_pratico=conteudo_pratico,
+                # TEMPOS E XP
                 tempo_teoria=tempo_teoria,
                 tempo_pratica=tempo_pratica,
                 xp_teoria=xp_teoria,
@@ -633,6 +643,7 @@ def criar_conteudo(request):
             print(f"Aula criada: {aula.titulo_aula} (ID: {aula.id})")
             print(f"Tempos - Teoria: {tempo_teoria}min, Prática: {tempo_pratica}min, Total: {aula.tempo_total}min")
             print(f"XP - Teoria: {xp_teoria}, Prática: {aula.xp_pratica}, Total: {aula.get_xp_total()}")
+            print(f"Conteúdo prático salvo: {conteudo_pratico[:100]}...")
             
             # --- PROCESSAR TÓPICOS ---
             for i, topico_data in enumerate(topicos_data):
@@ -755,7 +766,7 @@ def criar_capitulo_ajax(request):
                 descricao=data.get('descricao', ''),
                 ordem=Capitulo.objects.count() + 1,
                 ativo=True,
-                dificuldade=data.get('dificuldade', 'beginner')  # ← ADICIONE ESTA LINHA
+                dificuldade=data.get('dificuldade', 'beginner')
             )
             return JsonResponse({
                 'success': True,
@@ -862,7 +873,6 @@ def gerenciar_conteudo(request):
     
     return render(request, 'Pyquest/gerenciar_conteudo.html', context)
 
-# views.py - VIEW editar_conteudo COMPLETAMENTE REWRITTEN
 # views.py - VIEW editar_conteudo COMPLETA E ATUALIZADA
 @login_required
 def editar_conteudo(request, aula_id):
@@ -882,6 +892,10 @@ def editar_conteudo(request, aula_id):
             # Dados do conteúdo teórico
             titulo_teoria = request.POST.get('titulo_teoria', 'Conteúdo Teórico')
             descricao_breve = request.POST.get('descricao_breve', '')
+            
+            # Dados do conteúdo prático - CORREÇÃO: CAPTURAR CAMPOS PRÁTICOS
+            titulo_pratica = request.POST.get('titulo_pratica', 'Exercícios Práticos')
+            conteudo_pratico = request.POST.get('conteudo_pratico', '')
             
             # NOVOS CAMPOS DE TEMPO E XP
             tempo_teoria = request.POST.get('tempo_estimado_teoria', 30)
@@ -910,10 +924,16 @@ def editar_conteudo(request, aula_id):
                 print(f"Erro ao decodificar questões JSON: {e}")
                 questoes_data = []
             
-            # ATUALIZAR A AULA COM OS NOVOS CAMPOS
+            # ATUALIZAR A AULA COM TODOS OS CAMPOS - CORREÇÃO COMPLETA
             aula.titulo_aula = titulo_aula
             aula.titulo_teoria = titulo_teoria
             aula.descricao_breve = descricao_breve
+            
+            # CAMPOS PRÁTICOS - CORREÇÃO ADICIONADA
+            aula.titulo_pratica = titulo_pratica
+            aula.conteudo_pratico = conteudo_pratico
+            
+            # TEMPOS E XP
             aula.tempo_teoria = tempo_teoria
             aula.tempo_pratica = tempo_pratica
             aula.xp_teoria = xp_teoria
@@ -928,6 +948,7 @@ def editar_conteudo(request, aula_id):
             print(f"Aula atualizada: {aula.titulo_aula} (ID: {aula.id})")
             print(f"Tempos - Teoria: {tempo_teoria}min, Prática: {tempo_pratica}min, Total: {aula.tempo_total}min")
             print(f"XP - Teoria: {xp_teoria}, Prática: {aula.xp_pratica}, Total: {aula.get_xp_total()}")
+            print(f"Conteúdo prático salvo: {conteudo_pratico[:100]}...")
             
             # --- PROCESSAR TÓPICOS TEÓRICOS ---
             # Remover tópicos existentes
@@ -1042,6 +1063,7 @@ def editar_conteudo(request, aula_id):
             import traceback
             traceback.print_exc()
             messages.error(request, f'Erro ao atualizar conteúdo: {str(e)}')
+            return redirect('gerenciar_conteudo')
     
     # ========== GET REQUEST - CARREGAR DADOS EXISTENTES ==========
     
@@ -1108,6 +1130,8 @@ def editar_conteudo(request, aula_id):
     print(f"XP teoria: {aula.xp_teoria}")
     print(f"XP prática: {aula.xp_pratica}")
     print(f"XP total: {aula.get_xp_total()}")
+    print(f"Título prática: {aula.titulo_pratica}")
+    print(f"Conteúdo prático: {aula.conteudo_pratico[:100] if aula.conteudo_pratico else 'Vazio'}")
     
     for i, topico in enumerate(topicos_existentes):
         print(f"Tópico {i+1}: {topico['titulo']} - Conteúdo: {len(topico['conteudo'])} chars")
@@ -1310,7 +1334,6 @@ def determinar_dificuldade_capitulo(capitulo):
 
 
 # views.py - ATUALIZE a função modulos
-# views.py - ATUALIZE a função modulos (CORREÇÃO DO PROGRESSO)
 @login_required
 def modulos(request):
     capitulo_id = request.GET.get('capitulo')
@@ -1326,18 +1349,31 @@ def modulos(request):
                 # Buscar aulas do módulo
                 aulas_do_modulo = Aula.objects.filter(modulo=modulo, ativo=True)
                 
-                # Contar aulas ativas do módulo
-                total_aulas = aulas_do_modulo.count()
+                # Contar TOTAL DE PARTES (teoria + prática) disponíveis
+                total_partes = 0
+                for aula in aulas_do_modulo:
+                    if aula.tem_teoria:
+                        total_partes += 1
+                    if aula.tem_exercicios:
+                        total_partes += 1
                 
-                # Contar aulas concluídas pelo usuário - VERIFICAÇÃO CORRETA
-                aulas_concluidas = AulaConcluida.objects.filter(
-                    usuario=request.user, 
-                    aula__in=aulas_do_modulo
-                ).count()
+                # Contar partes concluídas pelo usuário
+                partes_concluidas = 0
+                for aula in aulas_do_modulo:
+                    conclusao = AulaConcluida.objects.filter(
+                        usuario=request.user, 
+                        aula=aula
+                    ).first()
+                    
+                    if conclusao:
+                        if aula.tem_teoria and conclusao.teoria_concluida:
+                            partes_concluidas += 1
+                        if aula.tem_exercicios and conclusao.pratica_concluida:
+                            partes_concluidas += 1
                 
-                # Calcular progresso - SE NÃO HÁ AULAS, PROGRESSO É 0
-                if total_aulas > 0:
-                    progresso_percentual = int((aulas_concluidas / total_aulas) * 100)
+                # Calcular progresso - SE NÃO HÁ PARTES, PROGRESSO É 0
+                if total_partes > 0:
+                    progresso_percentual = int((partes_concluidas / total_partes) * 100)
                 else:
                     progresso_percentual = 0
                 
@@ -1355,8 +1391,9 @@ def modulos(request):
                 
                 modulos_com_stats.append({
                     'modulo': modulo,
-                    'total_aulas': total_aulas,
-                    'aulas_concluidas': aulas_concluidas,
+                    'total_aulas': aulas_do_modulo.count(),  # Mantém contagem de aulas para referência
+                    'total_partes': total_partes,  # Nova: total de partes (teoria + prática)
+                    'partes_concluidas': partes_concluidas,  # Nova: partes concluídas
                     'progresso_percentual': progresso_percentual,
                     'xp_total': xp_total,
                     'tempo_total_modulo': tempo_total_modulo,
@@ -1365,10 +1402,10 @@ def modulos(request):
             # Progresso geral do capítulo - CORREÇÃO
             total_modulos_capitulo = modulos.count()
             
-            # Contar módulos onde TODAS as aulas foram concluídas
+            # Contar módulos onde TODAS as partes foram concluídas
             modulos_concluidos_capitulo = 0
             for mod_stat in modulos_com_stats:
-                if mod_stat['total_aulas'] > 0 and mod_stat['aulas_concluidas'] == mod_stat['total_aulas']:
+                if mod_stat['total_partes'] > 0 and mod_stat['partes_concluidas'] == mod_stat['total_partes']:
                     modulos_concluidos_capitulo += 1
             
             if total_modulos_capitulo > 0:
@@ -1393,35 +1430,46 @@ def modulos(request):
             messages.error(request, "Capítulo não encontrado.")
             return redirect('conteudo')
     
-    # Fallback se não houver capítulo específico
+    # Fallback se não houver capítulo específico (código similar corrigido)
     capitulo = Capitulo.objects.filter(ativo=True).first()
     if capitulo:
         modulos = Modulo.objects.filter(capitulo=capitulo, ativo=True).order_by('ordem')
         
         modulos_com_stats = []
         for modulo in modulos:
-            # Buscar aulas do módulo
             aulas_do_modulo = Aula.objects.filter(modulo=modulo, ativo=True)
             
-            total_aulas = aulas_do_modulo.count()
+            # Contar TOTAL DE PARTES (teoria + prática) disponíveis
+            total_partes = 0
+            for aula in aulas_do_modulo:
+                if aula.tem_teoria:
+                    total_partes += 1
+                if aula.tem_exercicios:
+                    total_partes += 1
             
-            # Contar aulas concluídas pelo usuário - VERIFICAÇÃO CORRETA
-            aulas_concluidas = AulaConcluida.objects.filter(
-                usuario=request.user, 
-                aula__in=aulas_do_modulo
-            ).count()
+            # Contar partes concluídas pelo usuário
+            partes_concluidas = 0
+            for aula in aulas_do_modulo:
+                conclusao = AulaConcluida.objects.filter(
+                    usuario=request.user, 
+                    aula=aula
+                ).first()
+                
+                if conclusao:
+                    if aula.tem_teoria and conclusao.teoria_concluida:
+                        partes_concluidas += 1
+                    if aula.tem_exercicios and conclusao.pratica_concluida:
+                        partes_concluidas += 1
             
-            if total_aulas > 0:
-                progresso_percentual = int((aulas_concluidas / total_aulas) * 100)
+            if total_partes > 0:
+                progresso_percentual = int((partes_concluidas / total_partes) * 100)
             else:
                 progresso_percentual = 0
             
-            # XP total do módulo
             xp_total = 0
             for aula in aulas_do_modulo:
                 xp_total += aula.get_xp_total()
             
-            # CALCULAR TEMPO TOTAL DO MÓDULO
             tempo_total_modulo = 0
             for aula in aulas_do_modulo:
                 tempo_aula = aula.tempo_total or 0
@@ -1430,8 +1478,9 @@ def modulos(request):
             
             modulos_com_stats.append({
                 'modulo': modulo,
-                'total_aulas': total_aulas,
-                'aulas_concluidas': aulas_concluidas,
+                'total_aulas': aulas_do_modulo.count(),
+                'total_partes': total_partes,
+                'partes_concluidas': partes_concluidas,
                 'progresso_percentual': progresso_percentual,
                 'xp_total': xp_total,
                 'tempo_total_modulo': tempo_total_modulo,
@@ -1439,10 +1488,9 @@ def modulos(request):
         
         total_modulos_capitulo = modulos.count()
         
-        # Contar módulos onde TODAS as aulas foram concluídas
         modulos_concluidos_capitulo = 0
         for mod_stat in modulos_com_stats:
-            if mod_stat['total_aulas'] > 0 and mod_stat['aulas_concluidas'] == mod_stat['total_aulas']:
+            if mod_stat['total_partes'] > 0 and mod_stat['partes_concluidas'] == mod_stat['total_partes']:
                 modulos_concluidos_capitulo += 1
         
         progresso_capitulo = int((modulos_concluidos_capitulo / total_modulos_capitulo) * 100) if total_modulos_capitulo > 0 else 0
@@ -1468,14 +1516,217 @@ def modulos(request):
     
     return render(request, "Pyquest/modulos.html", context)
 
-
-# ---------- PÁGINAS EXISTENTES ----------
-
+# views.py - ATUALIZAR função tarefas
+@login_required
 def tarefas(request):
-    return render(request, "Pyquest/tarefas.html")
+    modulo_id = request.GET.get('modulo_id')
+    
+    if not modulo_id:
+        messages.error(request, "Módulo não especificado.")
+        return redirect('conteudo')
+    
+    try:
+        modulo = Modulo.objects.select_related('capitulo').get(id=modulo_id, ativo=True)
+        
+        # Buscar todas as aulas do módulo
+        aulas = Aula.objects.filter(
+            modulo=modulo, 
+            ativo=True
+        ).prefetch_related(
+            'topicos',
+            'questoes',
+            'aulaconcluida_set'
+        ).order_by('ordem')
+        
+        # Separar dados para template
+        aulas_com_dados = []
+        total_xp_teoria = 0
+        total_xp_pratica = 0
+        total_aulas_concluidas_teoria = 0
+        total_aulas_concluidas_pratica = 0
+        
+        for aula in aulas:
+            # Verificar conclusão separada
+            aula_concluida_teoria = False
+            aula_concluida_pratica = False
+            
+            conclusao = AulaConcluida.objects.filter(
+                usuario=request.user, 
+                aula=aula
+            ).first()
+            
+            if conclusao:
+                aula_concluida_teoria = conclusao.teoria_concluida
+                aula_concluida_pratica = conclusao.pratica_concluida
+            
+            # Contar tópicos e questões
+            total_topicos = aula.topicos.count()
+            total_questoes = aula.questoes.count()
+            
+            # Calcular XP
+            xp_teoria = aula.xp_teoria or 0
+            xp_pratica = aula.xp_pratica or 0
+            
+            total_xp_teoria += xp_teoria
+            total_xp_pratica += xp_pratica
+            
+            # Verificar conclusão para estatísticas
+            if aula_concluida_teoria and total_topicos > 0:
+                total_aulas_concluidas_teoria += 1
+            if aula_concluida_pratica and total_questoes > 0:
+                total_aulas_concluidas_pratica += 1
+            
+            aulas_com_dados.append({
+                'aula': aula,
+                'concluida_teoria': aula_concluida_teoria,  # MUDOU AQUI
+                'concluida_pratica': aula_concluida_pratica,  # MUDOU AQUI
+                'total_topicos': total_topicos,
+                'total_questoes': total_questoes,
+                'xp_teoria': xp_teoria,
+                'xp_pratica': xp_pratica,
+                'tempo_teoria': aula.tempo_teoria or 0,
+                'tempo_pratica': aula.tempo_pratica or 0,
+            })
+        
+        # Calcular totais
+        total_aulas_teoria = len([a for a in aulas_com_dados if a['total_topicos'] > 0])
+        total_aulas_pratica = len([a for a in aulas_com_dados if a['total_questoes'] > 0])
+        
+        # Calcular progresso percentual
+        progresso_teoria = int((total_aulas_concluidas_teoria / total_aulas_teoria * 100)) if total_aulas_teoria > 0 else 0
+        progresso_pratica = int((total_aulas_concluidas_pratica / total_aulas_pratica * 100)) if total_aulas_pratica > 0 else 0
+        
+        # Progresso geral do módulo
+        total_aulas_geral = len(aulas_com_dados)
+        total_aulas_concluidas_geral = len([a for a in aulas_com_dados if a['concluida_teoria'] and a['concluida_pratica']])  # MUDOU AQUI
+        progresso_geral = int((total_aulas_concluidas_geral / total_aulas_geral * 100)) if total_aulas_geral > 0 else 0
+        
+        context = {
+            'modulo': modulo,
+            'aulas_com_dados': aulas_com_dados,
+            'total_aulas_teoria': total_aulas_teoria,
+            'total_aulas_pratica': total_aulas_pratica,
+            'total_aulas_concluidas_teoria': total_aulas_concluidas_teoria,
+            'total_aulas_concluidas_pratica': total_aulas_concluidas_pratica,
+            'progresso_teoria': progresso_teoria,
+            'progresso_pratica': progresso_pratica,
+            'progresso_geral': progresso_geral,
+            'total_xp_teoria': total_xp_teoria,
+            'total_xp_pratica': total_xp_pratica,
+            'total_xp_geral': total_xp_teoria + total_xp_pratica,
+        }
+        
+        return render(request, "Pyquest/tarefas.html", context)
+        
+    except Modulo.DoesNotExist:
+        messages.error(request, "Módulo não encontrado.")
+        return redirect('conteudo')
 
+
+@login_required
 def teoria(request):
-    return render(request, "Pyquest/teoria.html")
+    aula_id = request.GET.get('aula_id')
+    
+    if not aula_id:
+        messages.error(request, "Aula não especificada.")
+        return redirect('tarefas')
+    
+    try:
+        # Buscar a aula com todos os tópicos teóricos
+        aula = Aula.objects.select_related('modulo', 'modulo__capitulo').get(
+            id=aula_id, 
+            ativo=True
+        )
+        
+        # Buscar todos os tópicos teóricos da aula, ordenados
+        topicos = TopicoTeorico.objects.filter(aula=aula).order_by('ordem')
+        
+        # Verificar se o usuário já concluiu a parte teórica
+        aula_concluida = AulaConcluida.objects.filter(
+            usuario=request.user,
+            aula=aula,
+            teoria_concluida=True
+        ).exists()
+        
+        context = {
+            'aula': aula,
+            'topicos': topicos,
+            'aula_concluida': aula_concluida,
+            'total_topicos': topicos.count(),
+        }
+        
+        return render(request, "Pyquest/teoria.html", context)
+        
+    except Aula.DoesNotExist:
+        messages.error(request, "Aula não encontrada.")
+        return redirect('tarefas')
+
+
+@login_required
+@require_POST
+def marcar_aula_concluida(request):
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        tipo = data.get('tipo')  # 'teoria' ou 'pratica'
+        
+        aula = Aula.objects.get(id=aula_id, ativo=True)
+        
+        # Buscar ou criar registro de conclusão
+        aula_concluida, created = AulaConcluida.objects.get_or_create(
+            usuario=request.user,
+            aula=aula
+        )
+        
+        xp_ganho = 0
+        redirect_url = ""
+        
+        if tipo == 'teoria' and not aula_concluida.teoria_concluida:
+            # Concluir parte teórica
+            aula_concluida.teoria_concluida = True
+            aula_concluida.data_conclusao_teoria = timezone.now()
+            aula_concluida.xp_teoria_ganho = aula.xp_teoria
+            xp_ganho = aula.xp_teoria
+            redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
+            
+        elif tipo == 'pratica' and not aula_concluida.pratica_concluida:
+            # Concluir parte prática
+            aula_concluida.pratica_concluida = True
+            aula_concluida.data_conclusao_pratica = timezone.now()
+            aula_concluida.xp_pratica_ganho = aula.xp_pratica
+            xp_ganho = aula.xp_pratica
+            redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
+        
+        if xp_ganho > 0:
+            aula_concluida.save()
+            
+            # Atualizar perfil do usuário
+            perfil = request.user.perfil
+            perfil.xp += xp_ganho
+            perfil.save()
+            
+            # Registrar atividade
+            tipo_atividade = "teoria" if tipo == 'teoria' else "prática"
+            Atividade.objects.create(
+                user=request.user,
+                aula=aula,
+                titulo=f"Aula de {tipo_atividade} concluída: {aula.titulo_aula}",
+                xp_ganho=xp_ganho
+            )
+        
+        return JsonResponse({
+            'success': True, 
+            'xp_ganho': xp_ganho,
+            'redirect_url': redirect_url
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+# ---------- PÁGINAS EXISTENTES ---------- #
+
+
+
 
 def pratica(request):
     return render(request, "Pyquest/pratica.html")

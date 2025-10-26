@@ -1275,13 +1275,17 @@
                             <div class="validation-error" id="practice-title-error"></div>
                         </div>
                         
+                        <!-- ATUALIZADO: Descrição agora é obrigatória -->
                         <div>
                             <label for="conteudo-pratico" class="block text-sm font-medium text-gray-700 mb-2">
-                                Descrição da Lista
+                                Descrição da Lista de Exercícios *
+                                <span class="text-gray-500 text-xs font-normal">(obrigatória)</span>
                             </label>
                             <textarea id="conteudo-pratico" name="conteudo_pratico" rows="3"
-                                    placeholder="Descreva o objetivo desta lista de exercícios..."
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"></textarea>
+                                    placeholder="Descreva o objetivo e conteúdo desta lista de exercícios..."
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"
+                                    required></textarea>
+                            <div class="validation-error" id="practice-description-error"></div>
                         </div>
                     </div>
 
@@ -2651,12 +2655,14 @@ function validateStep3() {
     clearErrors();
     
     const practiceTitle = document.getElementById('titulo-pratica');
-    const timePractice = document.getElementById('estimated-time-practice'); // NOVO
+    const practiceDescription = document.getElementById('conteudo-pratico'); // NOVO
+    const timePractice = document.getElementById('estimated-time-practice');
     const questionItems = document.querySelectorAll('#questions-list .question-item');
     
     console.log("Validando passo 3:");
     console.log("Título prática:", practiceTitle.value);
-    console.log("Tempo prático:", timePractice.value); // NOVO
+    console.log("Descrição prática:", practiceDescription.value); // NOVO
+    console.log("Tempo prático:", timePractice.value);
     console.log("Total questões:", questionItems.length);
     
     // Validar título da prática
@@ -2666,7 +2672,14 @@ function validateStep3() {
         isValid = false;
     }
     
-    // NOVO: Validar tempo prático
+    // NOVO: Validar descrição da prática (agora obrigatória)
+    if (!practiceDescription.value.trim()) {
+        showError('practice-description-error', 'Digite a descrição da lista de exercícios');
+        practiceDescription.classList.add('error');
+        isValid = false;
+    }
+    
+    // Validar tempo prático
     if (!timePractice.value || timePractice.value < 1 || timePractice.value > 120) {
         showError('time-practice-error', 'Tempo prático deve ser entre 1 e 120 minutos');
         timePractice.classList.add('error');
@@ -2680,8 +2693,7 @@ function validateStep3() {
         return false;
     }
     
-    // Resto do código permanece igual...
-    // Validar cada questão individualmente
+    // Resto do código de validação das questões permanece igual
     let allValid = true;
     let firstInvalidQuestion = null;
     
@@ -2856,8 +2868,10 @@ function addTopic() {
         removeTopic(this);
     });
     
-    // Inicializar editor
-    initializeEditor(topicElement);
+    // CORREÇÃO: Inicializar editor com as correções
+    setTimeout(() => {
+        initializeEditor(topicElement);
+    }, 100);
     
     // Adicionar ao container
     topicsContainer.appendChild(newTopic);
@@ -2865,7 +2879,7 @@ function addTopic() {
     // Focar no título do novo tópico
     setTimeout(() => {
         titleInput.focus();
-    }, 100);
+    }, 200);
     
     showSaveIndicator('Novo tópico adicionado');
 }
@@ -2887,79 +2901,206 @@ function removeTopic(button) {
     showSaveIndicator('Tópico removido');
 }
 
+// CORREÇÃO: Função específica para inicializar o editor do tópico inicial
+function initializeFirstTopic() {
+    const firstTopic = document.querySelector('.topic-item[data-topic-index="0"]');
+    if (firstTopic) {
+        console.log('Inicializando tópico inicial...');
+        
+        // CORREÇÃO: Forçar uma reinicialização completa do primeiro tópico
+        const editor = firstTopic.querySelector('.topic-editor');
+        const toolbar = firstTopic.querySelector('.editor-toolbar');
+        
+        if (editor && toolbar) {
+            // Clonar e substituir para limpar event listeners antigos
+            const newEditor = editor.cloneNode(true);
+            const newToolbar = toolbar.cloneNode(true);
+            editor.parentNode.replaceChild(newEditor, editor);
+            toolbar.parentNode.replaceChild(newToolbar, toolbar);
+            
+            // Inicializar o editor limpo
+            initializeEditor(firstTopic);
+            console.log('Tópico inicial inicializado com sucesso');
+        }
+    }
+}
+
+// CORREÇÃO: Modificar a função initializeEditor para ser mais robusta
 function initializeEditor(topicElement) {
     const editor = topicElement.querySelector('.topic-editor');
     const toolbar = topicElement.querySelector('.editor-toolbar');
     
-    if (!editor || !toolbar) return;
+    if (!editor || !toolbar) {
+        console.error('Editor ou toolbar não encontrados no tópico');
+        return;
+    }
     
+    console.log('Inicializando editor...');
+
+    // CORREÇÃO: Configuração direta sem clonagem excessiva
     // Configurar Tab no editor
     editor.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
-            insertSpacesInEditor(this, 4);
+            document.execCommand('insertText', false, '    ');
         }
     });
-    
-    // Configurar eventos da barra de ferramentas
-    const formatSelect = toolbar.querySelector('.format-block');
-    const boldBtn = toolbar.querySelector('[data-command="bold"]');
-    const italicBtn = toolbar.querySelector('[data-command="italic"]');
-    const underlineBtn = toolbar.querySelector('[data-command="underline"]');
-    const bulletListBtn = toolbar.querySelector('[data-command="insertUnorderedList"]');
-    const numberListBtn = toolbar.querySelector('[data-command="insertOrderedList"]');
-    
-    // Evento de formatação de bloco
-    if (formatSelect) {
-        formatSelect.addEventListener('change', function() {
-            document.execCommand('formatBlock', false, this.value);
+
+    // CORREÇÃO: Configurar botões de forma direta
+    function setupButton(selector, command) {
+        const button = toolbar.querySelector(selector);
+        if (!button) {
+            console.warn('Botão não encontrado:', selector);
+            return;
+        }
+        
+        // Remover event listeners antigos
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        newButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Clicou no botão:', command);
+            editor.focus();
+            const success = document.execCommand(command, false, null);
+            console.log('Comando executado:', command, 'Sucesso:', success);
             editor.focus();
         });
+        
+        return newButton;
     }
-    
-    // Eventos dos botões de formatação
-    if (boldBtn) {
-        boldBtn.addEventListener('click', function() {
-            document.execCommand('bold', false, null);
-            editor.focus();
+
+    // Configurar botões básicos
+    setupButton('[data-command="bold"]', 'bold');
+    setupButton('[data-command="italic"]', 'italic');
+    setupButton('[data-command="underline"]', 'underline');
+    setupButton('[data-command="insertUnorderedList"]', 'insertUnorderedList');
+    setupButton('[data-command="insertOrderedList"]', 'insertOrderedList');
+
+    // CORREÇÃO: Botão de cor do texto
+    const textColorBtn = toolbar.querySelector('.text-color-button');
+    if (textColorBtn) {
+        const newColorBtn = textColorBtn.cloneNode(true);
+        textColorBtn.parentNode.replaceChild(newColorBtn, textColorBtn);
+        
+        newColorBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const colorOptions = this.nextElementSibling;
+            if (colorOptions) {
+                const isVisible = colorOptions.style.display === 'grid';
+                colorOptions.style.display = isVisible ? 'none' : 'grid';
+                console.log('Seletor de cores:', isVisible ? 'fechado' : 'aberto');
+            }
+        });
+        
+        // Configurar opções de cor
+        const colorOptions = newColorBtn.nextElementSibling;
+        if (colorOptions) {
+            colorOptions.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const color = this.getAttribute('data-color');
+                    console.log('Cor selecionada:', color);
+                    editor.focus();
+                    document.execCommand('styleWithCSS', true);
+                    document.execCommand('foreColor', false, color);
+                    colorOptions.style.display = 'none';
+                    editor.focus();
+                });
+            });
+        }
+    }
+
+    // CORREÇÃO: Botão de inserir código
+    const insertCodeBtn = toolbar.querySelector('.insert-code');
+    if (insertCodeBtn) {
+        const newCodeBtn = insertCodeBtn.cloneNode(true);
+        insertCodeBtn.parentNode.replaceChild(newCodeBtn, insertCodeBtn);
+        
+        newCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Inserindo bloco de código...');
+            insertCodeBlockSimple(editor);
         });
     }
-    
-    if (italicBtn) {
-        italicBtn.addEventListener('click', function() {
-            document.execCommand('italic', false, null);
-            editor.focus();
+
+    // Fechar seletor de cores ao clicar fora
+    document.addEventListener('click', function() {
+        toolbar.querySelectorAll('.color-options').forEach(option => {
+            option.style.display = 'none';
         });
-    }
-    
-    if (underlineBtn) {
-        underlineBtn.addEventListener('click', function() {
-            document.execCommand('underline', false, null);
-            editor.focus();
-        });
-    }
-    
-    if (bulletListBtn) {
-        bulletListBtn.addEventListener('click', function() {
-            document.execCommand('insertUnorderedList', false, null);
-            editor.focus();
-        });
-    }
-    
-    if (numberListBtn) {
-        numberListBtn.addEventListener('click', function() {
-            document.execCommand('insertOrderedList', false, null);
-            editor.focus();
-        });
-    }
-    
+    });
+
     // Evento para atualizar contador de palavras
     editor.addEventListener('input', function() {
         updateWordCount(topicElement);
     });
-    
+
     // Inicializar contador de palavras
     updateWordCount(topicElement);
+    
+    console.log('Editor inicializado com sucesso');
+}
+
+function insertCodeBlockSimple(editor) {
+    if (!editor) return;
+    
+    editor.focus();
+    
+    // Verificar se já existe seleção
+    const selection = window.getSelection();
+    let range;
+    
+    if (selection.rangeCount > 0) {
+        range = selection.getRangeAt(0);
+    } else {
+        range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false); // Ir para o final
+    }
+    
+    // Inserir bloco de código apenas uma vez
+    const codeHTML = `
+        <div style="margin: 12px 0;">
+            <pre style="
+                background: #f8f9fa;
+                border: 1px solid #e9ecef;
+                border-radius: 4px;
+                padding: 12px;
+                overflow-x: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                line-height: 1.4;
+                white-space: pre-wrap;
+                margin: 0;
+            "><code>// Digite seu código aqui</code></pre>
+        </div>
+    `;
+    
+    // Inserir usando range para controle preciso
+    range.deleteContents();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = codeHTML;
+    
+    const fragment = document.createDocumentFragment();
+    while (tempDiv.firstChild) {
+        fragment.appendChild(tempDiv.firstChild);
+    }
+    
+    range.insertNode(fragment);
+    
+    // Posicionar cursor dentro do bloco de código
+    const codeElement = editor.querySelector('code:last-child');
+    if (codeElement) {
+        const newRange = document.createRange();
+        newRange.setStart(codeElement, 0);
+        newRange.setEnd(codeElement, 0);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+    }
+    
+    editor.focus();
 }
 
 // Função para inserir espaços no editor
@@ -2969,17 +3110,105 @@ function insertSpacesInEditor(editor, spacesCount) {
     
     const range = selection.getRangeAt(0);
     const spaces = ' '.repeat(spacesCount);
-    const textNode = document.createTextNode(spaces);
     
-    range.insertNode(textNode);
-    range.setStartAfter(textNode);
-    range.setEndAfter(textNode);
+    // Verificar se estamos em um bloco de código
+    const isInCodeBlock = range.startContainer.closest('pre, code');
+    
+    if (isInCodeBlock) {
+        // Em blocos de código, inserir como texto simples
+        const textNode = document.createTextNode(spaces);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+    } else {
+        // Em conteúdo normal, usar tabulação CSS
+        document.execCommand('insertHTML', false, spaces);
+    }
+    
     selection.removeAllRanges();
     selection.addRange(range);
     
     // Disparar evento de input
     const inputEvent = new Event('input', { bubbles: true });
     editor.dispatchEvent(inputEvent);
+}
+
+function addEditorStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .toolbar-button.active {
+            background: #e8f0fe !important;
+            color: #1a73e8 !important;
+            border: 1px solid #1a73e8 !important;
+        }
+        
+        .color-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        
+        .color-option {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+        
+        .editor-content ul, .editor-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+        
+        .editor-content ul {
+            list-style-type: disc;
+        }
+        
+        .editor-content ol {
+            list-style-type: decimal;
+        }
+        
+        .editor-content li {
+            margin: 4px 0;
+        }
+        
+        .editor-content pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 12px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .editor-content code {
+            background: #f1f3f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 function updateWordCount(topicElement) {
@@ -4785,7 +5014,12 @@ function addBlankStyles() {
 
 // CORREÇÃO: Chamar a função para adicionar estilos quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
-    addBlankStyles();
+    addEditorStyles();
+    
+    // Re-inicializar todos os editores existentes
+    document.querySelectorAll('.topic-item').forEach(topic => {
+        initializeEditor(topic);
+    });
 });
 
 // ========== QUESTÕES DE CÓDIGO ==========

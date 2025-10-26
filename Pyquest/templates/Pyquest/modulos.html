@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="flex justify-between text-xs text-blue-700 mb-2">
           <span class="font-medium">
-            {{ mod_stat.aulas_concluidas }}/{{ mod_stat.total_aulas }} lições
+            {{ mod_stat.partes_concluidas }}/{{ mod_stat.total_partes }} lições
           </span>
           <span class="font-bold">
             {{ mod_stat.xp_total }} XP
@@ -311,6 +311,13 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endif %}
           </span>
         </div>
+
+        <!-- Botão para acessar o módulo -->
+        <div class="mt-3 pt-3 border-t border-blue-200">
+          <a href="{% url 'tarefas' %}?modulo_id={{ mod_stat.modulo.id }}" class="w-full bg-blue-600 text-white text-center py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors block">
+            Acessar Módulo
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -330,12 +337,14 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- BOTÃO DE CONTINUAR ESTUDANDO -->
+{% if modulos_com_stats %}
 <div class="mt-8 flex justify-center">
-  <a href="#" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-900 transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
+  <a href="{% url 'tarefas' %}?modulo_id={{ modulos_com_stats.0.modulo.id }}" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-900 transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
     Continuar Estudando
     <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5 ml-2">
   </a>
 </div>
+{% endif %}
 
 <script>
    // Marcar o item de conteúdo como ativo

@@ -12,6 +12,7 @@ urlpatterns = [
     path('modulos/', views.modulos, name='modulos'),
     path('tarefas/', views.tarefas, name='tarefas'),
     path('teoria/', views.teoria, name='teoria'),
+    path('marcar-aula-concluida/', views.marcar_aula_concluida, name='marcar_aula_concluida'),
     path('pratica/', views.pratica, name='pratica'),
     path('perfil/', views.perfil, name='perfil'),
     path('ranking/', views.ranking, name='ranking'),

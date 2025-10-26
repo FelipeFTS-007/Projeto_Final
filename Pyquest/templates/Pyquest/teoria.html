@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Teoria - Introdução ao Python{% endblock %}
+{% block title %}Teoria - {{ aula.titulo_teoria|default:aula.titulo_aula }}{% endblock %}
 
 {% block extra_css %}
 <style>
+    /* SEUS ESTILOS ORIGINAIS - MANTIDOS */
     .card-hover {
       transition: all 0.3s ease;
     }
@@ -128,6 +129,174 @@
     .interactive-card:active {
       transform: translateY(1px) scale(0.98);
     }
+
+    .content-hidden {
+      display: none;
+    }
+
+    /* ESTILOS PARA LISTAS E CÓDIGO - MELHORADOS */
+    .content-hidden ul,
+    .content-hidden ol {
+      margin: 0.75rem 0;
+      padding-left: 2rem;
+    }
+    
+    .content-hidden ul {
+      list-style-type: disc;
+    }
+    
+    .content-hidden ol {
+      list-style-type: decimal;
+      counter-reset: item;
+    }
+    
+    .content-hidden li {
+      margin: 0.5rem 0;
+      padding-left: 0.5rem;
+      line-height: 1.6;
+    }
+    
+    /* Listas aninhadas */
+    .content-hidden ul ul,
+    .content-hidden ol ul {
+      margin: 0.5rem 0;
+      list-style-type: circle;
+    }
+    
+    .content-hidden ol ol,
+    .content-hidden ul ol {
+      margin: 0.5rem 0;
+      list-style-type: lower-roman;
+    }
+    
+    /* Listas com múltiplos níveis */
+    .content-hidden ul ul ul {
+      list-style-type: square;
+    }
+    
+    .content-hidden ol ol ol {
+      list-style-type: lower-alpha;
+    }
+
+    /* Estilos para código */
+    .content-hidden code {
+      background-color: #f1f5f9;
+      color: #dc2626;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .content-hidden pre {
+      background-color: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    
+    .content-hidden pre code {
+      background-color: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+      font-size: inherit;
+      font-family: inherit;
+    }
+
+    /* Cores para syntax highlighting básico */
+    .content-hidden .keyword { color: #f472b6; } /* rosa */
+    .content-hidden .string { color: #86efac; } /* verde */
+    .content-hidden .comment { color: #94a3b8; font-style: italic; } /* cinza */
+    .content-hidden .function { color: #7dd3fc; } /* azul claro */
+    .content-hidden .number { color: #fbbf24; } /* amarelo */
+    .content-hidden .operator { color: #c7d2fe; } /* roxo claro */
+
+    /* Estilos para outros elementos de texto */
+    .content-hidden strong,
+    .content-hidden b {
+      font-weight: bold;
+      color: #1E40AF;
+    }
+    
+    .content-hidden em,
+    .content-hidden i {
+      font-style: italic;
+    }
+    
+    .content-hidden u {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+    
+    .content-hidden p {
+      margin: 0.75rem 0;
+      line-height: 1.6;
+    }
+    
+    .content-hidden h1,
+    .content-hidden h2,
+    .content-hidden h3,
+    .content-hidden h4,
+    .content-hidden h5,
+    .content-hidden h6 {
+      font-weight: bold;
+      margin: 1.5rem 0 0.75rem 0;
+      color: #3B82F6;
+      line-height: 1.3;
+    }
+    
+    .content-hidden h1 { font-size: 1.5rem; }
+    .content-hidden h2 { font-size: 1.375rem; }
+    .content-hidden h3 { font-size: 1.25rem; }
+    .content-hidden h4 { font-size: 1.125rem; }
+    .content-hidden h5 { font-size: 1rem; }
+    .content-hidden h6 { font-size: 0.875rem; }
+
+    /* Blocos de citação */
+    .content-hidden blockquote {
+      border-left: 4px solid #3B82F6;
+      background-color: #f8fafc;
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+      font-style: italic;
+      color: #475569;
+    }
+    
+    /* Tabelas */
+    .content-hidden table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      background-color: white;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .content-hidden th,
+    .content-hidden td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .content-hidden th {
+      background-color: #3B82F6;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .content-hidden tr:hover {
+      background-color: #f1f5f9;
+    }
 </style>
 {% endblock %}
 
@@ -137,12 +306,11 @@
   <!-- Topo: Botão voltar + Cronômetro -->
   <div class="flex items-center justify-between border-b border-blue-100 pb-4">
     <!-- Botão Voltar Interativo -->
-     <a href="{% url 'tarefas' %}">
-    <button onclick="window.history.back()" 
-      class="interactive-card flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-600 font-semibold rounded-xl hover:bg-blue-200 transition">
-      <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
-      Voltar
-    </button>
+    <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}">
+      <button class="interactive-card flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-600 font-semibold rounded-xl hover:bg-blue-200 transition">
+        <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
+        Voltar
+      </button>
     </a>
 
     <!-- Cronômetro com Progresso -->
@@ -155,22 +323,22 @@
         <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="w-4 h-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       </div>
       <span id="timer">00:00</span>
-      <span class="text-xs">/ 25:00</span>
+      <span class="text-xs">/ {{ aula.tempo_teoria }}:00</span>
     </div>
   </div>
 
   <!-- Cabeçalho da Tarefa com Animação -->
   <div class="flex items-center justify-between">
     <div>
-      <h2 class="text-2xl font-bold text-blue-600 typewriter">Introdução ao Python</h2>
+      <h2 class="text-2xl font-bold text-blue-600 typewriter">{{ aula.titulo_teoria|default:aula.titulo_aula }}</h2>
       <span class="text-sm text-blue-500 font-semibold bg-blue-100 px-2 py-1 rounded-lg mt-2 inline-block">Teoria</span>
     </div>
     <div class="flex gap-4">
       <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover">
-        <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="h-5 w-5 mx-1"> 25 min
+        <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="h-5 w-5 mx-1"> {{ aula.tempo_teoria }} min
       </div>
       <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover pulse-animation">
-        +25 XP
+        +{{ aula.xp_teoria }} XP
       </div>
     </div>
   </div>
@@ -179,88 +347,46 @@
   <div class="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-2xl p-6 shadow-lg module-card">
     <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center gap-2">
       <img src="{% static 'imagem/auto_awesome_mosaic_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Destaque" class="w-6 h-6">
-      Bem-vindo ao Python!
+      {{ aula.titulo_aula }}
     </h3>
     
     <div class="space-y-4">
+      {% if aula.descricao_breve %}
       <p class="text-gray-700 leading-relaxed">
-        Python é uma linguagem de programação de alto nível, interpretada e de propósito geral.
-        Foi criada por Guido van Rossum e lançada pela primeira vez em 1991.
+        {{ aula.descricao_breve }}
       </p>
+      {% endif %}
 
-      <!-- Características Interativas -->
+      <!-- Tópicos Dinâmicos -->
+      {% for topico in topicos %}
       <div class="bg-white rounded-xl p-4 border border-blue-100 interactive-card" onclick="toggleCard(this)">
         <h4 class="font-bold text-blue-600 mb-2 flex items-center justify-between">
-          <span>Características principais</span>
+          <span>{{ topico.titulo }}</span>
           <span class="text-blue-400">▼</span>
         </h4>
         <div class="content-hidden mt-2">
-          <ul class="list-disc list-inside text-gray-700 space-y-2">
-            <li><b>Sintaxe simples e legível</b>: fácil de ler e escrever</li>
-            <li><b>Interpretada</b>: não precisa ser compilada antes de executar</li>
-            <li><b>Multiplataforma</b>: funciona em Windows, Linux, Mac</li>
-            <li><b>Orientada a objetos</b>: suporta programação orientada a objetos</li>
-            <li><b>Biblioteca extensa</b>: vasta biblioteca padrão</li>
-            <li><b>Comunidade ativa</b>: grande comunidade de desenvolvedores</li>
-          </ul>
+          <div class="text-gray-700 rich-text-content">
+            {{ topico.conteudo|safe }}
+          </div>
         </div>
       </div>
-
-      <!-- Usos Comuns Interativos -->
-      <div class="bg-white rounded-xl p-4 border border-blue-100 interactive-card" onclick="toggleCard(this)">
-        <h4 class="font-bold text-blue-600 mb-2 flex items-center justify-between">
-          <span>Usos comuns do Python</span>
-          <span class="text-blue-400">▼</span>
-        </h4>
-        <div class="content-hidden mt-2">
-          <ul class="list-disc list-inside text-gray-700 space-y-2">
-            <li><b>Desenvolvimento web</b> (Django, Flask)</li>
-            <li><b>Ciência de dados</b> (Pandas, NumPy)</li>
-            <li><b>Inteligência artificial</b> (TensorFlow, PyTorch)</li>
-            <li><b>Automação</b> de tarefas repetitivas</li>
-            <li><b>Desenvolvimento de jogos</b> (Pygame)</li>
-            <li><b>Scripting</b> e automação de sistemas</li>
-          </ul>
-        </div>
+      {% empty %}
+      <!-- Mensagem quando não há tópicos -->
+      <div class="text-center py-8">
+        <img src="{% static 'imagem/menu_book_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem conteúdo" class="w-16 h-16 mx-auto mb-4 opacity-50">
+        <h3 class="text-lg font-bold text-blue-700 mb-2">Conteúdo em desenvolvimento</h3>
+        <p class="text-blue-600">O conteúdo teórico para esta aula está sendo preparado.</p>
       </div>
-
-      <!-- Exemplo de Código Interativo -->
-      <div class="bg-blue-900 rounded-xl p-4 text-white interactive-card" onclick="toggleCard(this)">
-        <h4 class="font-bold text-blue-300 mb-2 flex items-center justify-between">
-          <span>Exemplo de código Python</span>
-          <span class="text-blue-400">▼</span>
-        </h4>
-        <div class="content-hidden mt-2">
-          <pre class="bg-gray-800 p-3 rounded-lg overflow-x-auto">
-<code class="text-green-400 text-sm">
-# Meu primeiro programa em Python
-print("Olá, Mundo!")
-
-# Variáveis e operações
-nome = "Python"
-versao = 3.9
-print(f"Estou usando {nome} versão {versao}")
-
-# Estrutura condicional
-idade = 18
-if idade >= 18:
-    print("Você é maior de idade")
-else:
-    print("Você é menor de idade")
-</code>
-          </pre>
-          <button class="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
-                  onclick="runCode()">Executar código</button>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 
   <!-- Botão Continuar com Animações -->
   <div class="flex justify-end">
-    <button class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white rounded-xl shadow-lg font-bold transition transform hover:scale-105 flex items-center gap-2"
-            onclick="completeLesson()">
-      <span>Entendi e quero continuar</span>
+    <button class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white rounded-xl shadow-lg font-bold transition transform hover:scale-105 flex items-center gap-2 {% if aula_concluida %}opacity-50 cursor-not-allowed{% endif %}"
+            {% if aula_concluida %}disabled{% endif %}
+            onclick="{% if not aula_concluida %}completeLesson(){% endif %}">
+      <span>{% if aula_concluida %}Aula Concluída{% else %}Entendi e quero continuar{% endif %}</span>
       <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5">
     </button>
   </div>
@@ -272,14 +398,9 @@ else:
 <script>
   // Marcar o item de conteúdo como ativo
   document.addEventListener('DOMContentLoaded', function() {
-    // Encontrar o link de conteúdo na sidebar
     const conteudoLink = document.getElementById('nav-conteudo');
-    
-    // Adicionar a classe ativa ao link de conteúdo
     if (conteudoLink) {
       conteudoLink.classList.add('bg-blue-500', 'text-white');
-      
-      // Atualizar o ícone para a versão branca
       const conteudoIcon = conteudoLink.querySelector('.nav-icon');
       if (conteudoIcon) {
         const whiteIcon = conteudoIcon.getAttribute('data-white');
@@ -288,13 +409,18 @@ else:
         }
       }
     }
+
+    // Inicializar elementos ocultos
+    document.querySelectorAll('.content-hidden').forEach(el => {
+      el.style.display = 'none';
+    });
   });
 
   // Timer e progresso
   let seconds = 0;
   const timerElement = document.getElementById("timer");
   const progressCircle = document.querySelector('.progress-ring__circle');
-  const totalTime = 25 * 60; // 25 minutos em segundos
+  const totalTime = {{ aula.tempo_teoria }} * 60;
 
   function updateTimer() {
     seconds++;
@@ -303,9 +429,10 @@ else:
     timerElement.textContent = 
       String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
     
-    // Atualizar progresso do círculo
     const progress = (seconds / totalTime) * 88;
-    progressCircle.style.strokeDashoffset = 88 - progress;
+    if (progressCircle) {
+      progressCircle.style.strokeDashoffset = 88 - progress;
+    }
   }
 
   const timerInterval = setInterval(updateTimer, 1000);
@@ -324,24 +451,39 @@ else:
     }
   }
 
-  // Simular execução de código
-  function runCode() {
-    alert('Código executado com sucesso! 🎉\nResultado: "Olá, Mundo!"');
-  }
-
   // Completar lição
   function completeLesson() {
     clearInterval(timerInterval);
-    alert('🎉 Parabéns! Lição concluída com sucesso!\n+25 XP adicionados à sua conta.');
-    // Simular redirecionamento após 2 segundos
-    setTimeout(() => {
-      window.location.href = '#';
-    }, 2000);
+    
+    fetch("{% url 'marcar_aula_concluida' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({
+        aula_id: {{ aula.id }},
+        tipo: 'teoria'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('🎉 Parabéns! Lição teórica concluída com sucesso!\n+' + {{ aula.xp_teoria }} + ' XP adicionados à sua conta.');
+        
+        // Redirecionar para tarefas após 2 segundos
+        setTimeout(() => {
+          window.location.href = "{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}";
+        }, 2000);
+        
+      } else {
+        alert('Erro ao concluir aula: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao concluir aula.');
+    });
   }
-
-  // Inicializar elementos ocultos
-  document.querySelectorAll('.content-hidden').forEach(el => {
-    el.style.display = 'none';
-  });
 </script>
 {% endblock %}

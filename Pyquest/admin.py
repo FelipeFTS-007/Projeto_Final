@@ -1,9 +1,5 @@
 from django.contrib import admin
-from .models import (
-    Perfil, Progresso, Atividade, Conquista,
-    Capitulo, Modulo, Aula, Notificacao
-)
-
+from .models import *
 @admin.register(Atividade)
 class AtividadeAdmin(admin.ModelAdmin):
     list_display = ("titulo", "user", "xp_ganho", "data")

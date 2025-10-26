@@ -184,11 +184,14 @@ class Aula(models.Model):
     # Conteúdo teórico
     titulo_teoria = models.CharField(max_length=255, default="Conteúdo Teórico", verbose_name="Título do Conteúdo Teórico")
     
-    # Conteúdo prático
+    # Conteúdo prático - COM VALOR PADRÃO
     titulo_pratica = models.CharField(max_length=255, default="Exercícios Práticos", verbose_name="Título do Conteúdo Prático")
-    conteudo_pratico = models.TextField(blank=True, null=True, verbose_name="Conteúdo Prático")
+    conteudo_pratico = models.TextField(
+        default="Lista de exercícios para praticar os conceitos aprendidos.",
+        verbose_name="Descrição da Lista de Exercícios"
+    )
     
-    # TEMPOS SEPARADOS - NOVOS CAMPOS
+    # TEMPOS SEPARADOS
     tempo_teoria = models.IntegerField(default=30, verbose_name="Tempo Estimado para Teoria (minutos)")
     tempo_pratica = models.IntegerField(default=15, verbose_name="Tempo Estimado para Prática (minutos)")
     tempo_total = models.IntegerField(default=45, verbose_name="Tempo Total Estimado (minutos)")
@@ -265,8 +268,12 @@ class Aula(models.Model):
 class AulaConcluida(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     aula = models.ForeignKey(Aula, on_delete=models.CASCADE)
-    data_conclusao = models.DateTimeField(auto_now_add=True)
-    xp_ganho = models.IntegerField(default=0)
+    teoria_concluida = models.BooleanField(default=False)
+    pratica_concluida = models.BooleanField(default=False)
+    data_conclusao_teoria = models.DateTimeField(null=True, blank=True)
+    data_conclusao_pratica = models.DateTimeField(null=True, blank=True)
+    xp_teoria_ganho = models.IntegerField(default=0)
+    xp_pratica_ganho = models.IntegerField(default=0)
     
     class Meta:
         unique_together = ['usuario', 'aula']

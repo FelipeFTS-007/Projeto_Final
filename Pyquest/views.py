@@ -18,6 +18,8 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.db import models
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+from .conquistas_manager import ConquistaManager
+
 
 
 
@@ -101,34 +103,49 @@ def home(request):
     hoje = timezone.now().date()
     progresso_hoje, _ = Progresso.objects.get_or_create(user=request.user, data=hoje)
 
-    ontem = hoje - timedelta(days=1)
-    progresso_ontem = Progresso.objects.filter(user=request.user, data=ontem).first()
+    # CALCULAR TEMPO DE ESTUDO CORRETAMENTE
+    tempo_total_segundos = perfil.tempo_total_estudo
+    minutos_totais = tempo_total_segundos // 60
+    segundos_restantes = tempo_total_segundos % 60
+    horas = minutos_totais // 60
+    minutos = minutos_totais % 60
+    
+    if horas > 0:
+        tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos_restantes:02d}"
+    else:
+        tempo_formatado = f"{minutos:02d}:{segundos_restantes:02d}"
+
+    # Calcular progresso das vidas
+    progresso_vidas = int((perfil.vidas / perfil.max_vidas) * 100) if perfil.max_vidas > 0 else 0
 
     atividades = Atividade.objects.filter(user=request.user).order_by("-data")[:5]
 
-
+    # Calcular progresso do nível
+    progresso_nivel = perfil.get_progresso_nivel()
+    xp_necessario = perfil.calcular_xp_para_proximo_nivel()
 
     context = {
         "vidas": perfil.vidas,
         "max_vidas": perfil.max_vidas,
-        "proxima_vida": perfil.tempo_para_proxima_vida(),  # minutos para regenerar
+        "progresso_vidas": progresso_vidas,  # Adicionado para o gráfico circular
+        "proxima_vida": perfil.tempo_para_proxima_vida(),
         "nome": request.user.first_name or request.user.username,
         "xp": perfil.xp,
         "nivel": perfil.nivel,
-        "vidas": perfil.vidas,
-        "max_vidas": perfil.max_vidas,
+        "progresso_nivel": progresso_nivel,
+        "xp_necessario": xp_necessario,
         "conquistas": perfil.conquistas,
         "total_conquistas": perfil.total_conquistas,
         "sequencia": perfil.sequencia,
         "progresso": progresso_hoje.percentual,
-        "meta": 60,  # pode ser dinâmica depois
-        "tempo": progresso_hoje.tempo_estudo,
-        "dif_tempo": (progresso_hoje.tempo_estudo - progresso_ontem.tempo_estudo) if progresso_ontem else timedelta(),
+        "meta": 60,
+        "tempo": tempo_formatado,  # Usando o tempo formatado corretamente
+        "tempo_segundos": tempo_total_segundos,  # Para o JavaScript
         "xp_diario": progresso_hoje.xp_ganho,
         "atividades": atividades,
+        "perfil": perfil,  # Adicionado para acessar métodos do perfil
     }
     return render(request, "Pyquest/home.html", context)
-
 
 
 def logout_view(request):
@@ -141,14 +158,9 @@ def logout_view(request):
 def perfil(request):
     perfil, created = Perfil.objects.get_or_create(user=request.user)
 
-    XP_POR_NIVEL = 100
-
-    while perfil.xp >= XP_POR_NIVEL:
-        perfil.nivel += 1
-        perfil.xp -= XP_POR_NIVEL
-        perfil.save()
-
-    progresso_xp = (perfil.xp % XP_POR_NIVEL) / XP_POR_NIVEL * 100
+    # NOVO SISTEMA: Usar progresso do nível sem zerar XP
+    progresso_xp = perfil.get_progresso_nivel()
+    xp_necessario = perfil.calcular_xp_para_proximo_nivel()
 
     if request.method == "POST":
         if "avatar" in request.FILES:
@@ -162,45 +174,60 @@ def perfil(request):
         messages.success(request, "Perfil atualizado com sucesso!")
         return redirect("perfil")
 
-    # ========== FILTROS CORRIGIDOS ========== #
+     # ========== FILTROS E PAGINAÇÃO CORRIGIDOS ========== #
     raridade = request.GET.get('raridade', 'todas')
     categoria = request.GET.get('categoria', 'todas')
     
-    # Buscar TODAS as conquistas
-    conquistas_query = Conquista.objects.all()
+    # Buscar TODAS as conquistas com filtros
+    conquistas_query = Conquista.objects.filter(ativo=True)
     
-    # Aplicar filtros apenas se não for "todas"
+    # Aplicar filtros
     if raridade != 'todas':
         conquistas_query = conquistas_query.filter(raridade=raridade)
     
     if categoria != 'todas':
         conquistas_query = conquistas_query.filter(categoria=categoria)
     
-    # Paginação
-    itens_por_pagina = 2
-    paginator = Paginator(conquistas_query, itens_por_pagina)
+    # Calcular progresso para todas as conquistas filtradas
+    conquistas_com_progresso = []
+    for conquista in conquistas_query.order_by('categoria', 'ordem'):
+        progresso = conquista.calcular_progresso(request.user)
+        conquistas_com_progresso.append({
+            'conquista': conquista,
+            'progresso': progresso,
+            'desbloqueada': conquista.verificar_desbloqueio(request.user)
+        })
+    
+    # Separar conquistas desbloqueadas e bloqueadas
+    conquistas_desbloqueadas = [c for c in conquistas_com_progresso if c['desbloqueada']]
+    conquistas_bloqueadas = [c for c in conquistas_com_progresso if not c['desbloqueada']]
+    
+    # Paginação das conquistas DESBLOQUEADAS (ou você pode escolher qual paginar)
+    itens_por_pagina = 8  # Aumentei para 8 para melhor visualização
+    paginator = Paginator(conquistas_com_progresso, itens_por_pagina)  # Paginar todas
     
     page_number = request.GET.get('page')
     
     try:
         page_obj = paginator.get_page(page_number)
     except PageNotAnInteger:
-        page_obj = paginator.get_page(1)
+        page_obj = paginator.page(1)
     except EmptyPage:
-        page_obj = paginator.get_page(paginator.num_pages)
+        page_obj = paginator.page(paginator.num_pages)
     
-    # Separar conquistas da página atual
-    conquistas_pagina = page_obj.object_list
-    conquistas_desbloqueadas_pagina = [c for c in conquistas_pagina if c in request.user.conquistas.all()]
-    conquistas_bloqueadas_pagina = [c for c in conquistas_pagina if c not in request.user.conquistas.all()]
+    # Para a paginação funcionar, precisamos usar page_obj no template
+    conquistas_paginadas = list(page_obj)
+    conquistas_desbloqueadas_pagina = [c for c in conquistas_paginadas if c['desbloqueada']]
+    conquistas_bloqueadas_pagina = [c for c in conquistas_paginadas if not c['desbloqueada']]
 
     context = {
         "perfil": perfil,
         "conquistas_desbloqueadas": conquistas_desbloqueadas_pagina,
         "conquistas_bloqueadas": conquistas_bloqueadas_pagina,
         "progresso_xp": progresso_xp,
-        "desbloq_count": request.user.conquistas.count(),
-        "total_conquistas": Conquista.objects.count(),
+        "xp_necessario": xp_necessario,
+        "desbloq_count": len(conquistas_desbloqueadas),  # Total geral, não apenas da página
+        "total_conquistas": conquistas_query.count(),  # Total com filtros aplicados
         "page_obj": page_obj,
         "raridade_filtro": raridade,
         "categoria_filtro": categoria,
@@ -1549,6 +1576,8 @@ def tarefas(request):
             # Verificar conclusão separada
             aula_concluida_teoria = False
             aula_concluida_pratica = False
+            revisao_feita_teoria = False
+            revisao_feita_pratica = False
             
             conclusao = AulaConcluida.objects.filter(
                 usuario=request.user, 
@@ -1558,6 +1587,8 @@ def tarefas(request):
             if conclusao:
                 aula_concluida_teoria = conclusao.teoria_concluida
                 aula_concluida_pratica = conclusao.pratica_concluida
+                revisao_feita_teoria = conclusao.revisao_feita_teoria
+                revisao_feita_pratica = conclusao.revisao_feita_pratica
             
             # Contar tópicos e questões
             total_topicos = aula.topicos.count()
@@ -1578,8 +1609,10 @@ def tarefas(request):
             
             aulas_com_dados.append({
                 'aula': aula,
-                'concluida_teoria': aula_concluida_teoria,  # MUDOU AQUI
-                'concluida_pratica': aula_concluida_pratica,  # MUDOU AQUI
+                'concluida_teoria': aula_concluida_teoria,
+                'concluida_pratica': aula_concluida_pratica,
+                'revisao_feita_teoria': revisao_feita_teoria,
+                'revisao_feita_pratica': revisao_feita_pratica,
                 'total_topicos': total_topicos,
                 'total_questoes': total_questoes,
                 'xp_teoria': xp_teoria,
@@ -1598,7 +1631,7 @@ def tarefas(request):
         
         # Progresso geral do módulo
         total_aulas_geral = len(aulas_com_dados)
-        total_aulas_concluidas_geral = len([a for a in aulas_com_dados if a['concluida_teoria'] and a['concluida_pratica']])  # MUDOU AQUI
+        total_aulas_concluidas_geral = len([a for a in aulas_com_dados if a['concluida_teoria'] and a['concluida_pratica']])
         progresso_geral = int((total_aulas_concluidas_geral / total_aulas_geral * 100)) if total_aulas_geral > 0 else 0
         
         context = {
@@ -1641,7 +1674,7 @@ def teoria(request):
         # Buscar todos os tópicos teóricos da aula, ordenados
         topicos = TopicoTeorico.objects.filter(aula=aula).order_by('ordem')
         
-        # Verificar se o usuário já concluiu a parte teórica
+        # Verificar se o usuário já concluiu a parte teórica (apenas para mostrar botão diferente)
         aula_concluida = AulaConcluida.objects.filter(
             usuario=request.user,
             aula=aula,
@@ -1651,7 +1684,7 @@ def teoria(request):
         context = {
             'aula': aula,
             'topicos': topicos,
-            'aula_concluida': aula_concluida,
+            'aula_concluida': aula_concluida,  # Apenas para mostrar botão diferente
             'total_topicos': topicos.count(),
         }
         
@@ -1662,6 +1695,7 @@ def teoria(request):
         return redirect('tarefas')
 
 
+# No views.py, atualize a função marcar_aula_concluida
 @login_required
 @require_POST
 def marcar_aula_concluida(request):
@@ -1669,6 +1703,8 @@ def marcar_aula_concluida(request):
         data = json.loads(request.body)
         aula_id = data.get('aula_id')
         tipo = data.get('tipo')  # 'teoria' ou 'pratica'
+        is_revisao = data.get('is_revisao', False)
+        tempo_estudado = data.get('tempo_estudado', 0)  # Ainda recebe mas não mostra
         
         aula = Aula.objects.get(id=aula_id, ativo=True)
         
@@ -1680,44 +1716,73 @@ def marcar_aula_concluida(request):
         
         xp_ganho = 0
         redirect_url = ""
+        mensagem = ""
+        niveis_ganhos = 0
         
-        if tipo == 'teoria' and not aula_concluida.teoria_concluida:
-            # Concluir parte teórica
-            aula_concluida.teoria_concluida = True
-            aula_concluida.data_conclusao_teoria = timezone.now()
-            aula_concluida.xp_teoria_ganho = aula.xp_teoria
-            xp_ganho = aula.xp_teoria
-            redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
-            
-        elif tipo == 'pratica' and not aula_concluida.pratica_concluida:
-            # Concluir parte prática
-            aula_concluida.pratica_concluida = True
-            aula_concluida.data_conclusao_pratica = timezone.now()
-            aula_concluida.xp_pratica_ganho = aula.xp_pratica
-            xp_ganho = aula.xp_pratica
-            redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
+        if is_revisao:
+            # LÓGICA DE REVISÃO - XP REDUZIDO (SEMPRE DISPONÍVEL)
+            if tipo == 'teoria':
+                xp_ganho = 5
+                mensagem = "Revisão teórica concluída! +5 XP"  # REMOVIDO TEMPO
+                
+            elif tipo == 'pratica':
+                xp_ganho = 5
+                mensagem = "Revisão prática concluída! +5 XP"  # REMOVIDO TEMPO
+                
+        else:
+            # LÓGICA ORIGINAL (primeira conclusão)
+            if tipo == 'teoria' and not aula_concluida.teoria_concluida:
+                aula_concluida.teoria_concluida = True
+                aula_concluida.data_conclusao_teoria = timezone.now()
+                aula_concluida.xp_teoria_ganho = aula.xp_teoria
+                xp_ganho = aula.xp_teoria
+                mensagem = f"Aula teórica concluída! +{aula.xp_teoria} XP"  # REMOVIDO TEMPO
+                
+            elif tipo == 'pratica' and not aula_concluida.pratica_concluida:
+                aula_concluida.pratica_concluida = True
+                aula_concluida.data_conclusao_pratica = timezone.now()
+                aula_concluida.xp_pratica_ganho = aula.xp_pratica
+                xp_ganho = aula.xp_pratica
+                mensagem = f"Aula prática concluída! +{aula.xp_pratica} XP"  # REMOVIDO TEMPO
+        
+        redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
         
         if xp_ganho > 0:
-            aula_concluida.save()
+            # Para revisões, não precisamos salvar nada no modelo AulaConcluida
+            # pois queremos permitir revisões ilimitadas
+            if not is_revisao:
+                aula_concluida.save()
             
-            # Atualizar perfil do usuário
+            # NOVO SISTEMA: Usar o método adicionar_xp que não zera o XP
             perfil = request.user.perfil
-            perfil.xp += xp_ganho
-            perfil.save()
+            niveis_ganhos = perfil.adicionar_xp(xp_ganho)
             
-            # Registrar atividade
+            # Adicionar mensagem de nível se ganhou algum
+            if niveis_ganhos > 0:
+                mensagem += f" 🎉 Subiu para o nível {perfil.nivel}!"
+            
+            # Registrar atividade (aqui você pode manter o tempo se quiser no histórico)
             tipo_atividade = "teoria" if tipo == 'teoria' else "prática"
+            if is_revisao:
+                atividade_titulo = f"Revisão de {tipo_atividade}: {aula.titulo_aula}"
+            else:
+                atividade_titulo = f"Aula de {tipo_atividade} concluída: {aula.titulo_aula}"
+                
             Atividade.objects.create(
                 user=request.user,
                 aula=aula,
-                titulo=f"Aula de {tipo_atividade} concluída: {aula.titulo_aula}",
+                titulo=atividade_titulo,
                 xp_ganho=xp_ganho
             )
         
         return JsonResponse({
             'success': True, 
             'xp_ganho': xp_ganho,
-            'redirect_url': redirect_url
+            'niveis_ganhos': niveis_ganhos,
+            'nivel_atual': request.user.perfil.nivel,
+            'redirect_url': redirect_url,
+            'mensagem': mensagem,
+            'is_revisao': is_revisao
         })
         
     except Exception as e:
@@ -1728,14 +1793,761 @@ def marcar_aula_concluida(request):
 
 
 
+
+@receiver(post_save, sender=Perfil)
+def verificar_conquistas_perfil(sender, instance, **kwargs):
+    """Verifica conquistas relacionadas a XP e nível"""
+    ConquistaManager.verificar_conquistas_usuario(instance.user, 'xp_total')
+    ConquistaManager.verificar_conquistas_usuario(instance.user, 'nivel_atingido')
+
+@receiver(post_save, sender=AulaConcluida)
+def verificar_conquistas_aulas(sender, instance, created, **kwargs):
+    """Verifica conquistas relacionadas a aulas concluídas"""
+    if created and instance.teoria_concluida and instance.pratica_concluida:
+        ConquistaManager.verificar_conquistas_usuario(instance.usuario, 'aulas_concluidas')
+
+@receiver(post_save, sender=Post)
+def verificar_conquistas_posts(sender, instance, created, **kwargs):
+    """Verifica conquistas relacionadas a posts"""
+    if created:
+        ConquistaManager.verificar_conquistas_usuario(instance.autor, 'postagens_forum')
+
+@receiver(post_save, sender=Comentario)
+def verificar_conquistas_comentarios(sender, instance, created, **kwargs):
+    """Verifica conquistas relacionadas a comentários"""
+    if created:
+        ConquistaManager.verificar_conquistas_usuario(instance.autor, 'comentarios')
+
+@receiver(post_save, sender=Progresso)
+def verificar_conquistas_sequencia(sender, instance, **kwargs):
+    """Verifica conquistas relacionadas a sequência de dias"""
+    ConquistaManager.verificar_conquistas_usuario(instance.user, 'sequencia_dias')
+
+
+
+
+# ===== VIEWS DO SISTEMA DE STREAK =====
+
+@login_required
+@require_POST
+def registrar_atividade_streak(request):
+    """
+    Registra uma atividade do usuário e atualiza o streak
+    Mas evita aumentar streak múltiplas vezes no mesmo dia
+    """
+    try:
+        data = json.loads(request.body)
+        tipo_atividade = data.get('tipo', 'questao')
+        xp_base = data.get('xp_base', 0)
+        
+        print(f"🎯 Registrar atividade - Tipo: {tipo_atividade}, XP: {xp_base}")
+        
+        perfil = request.user.perfil
+        
+        # Verificar se JÁ TEVE ATIVIDADE HOJE
+        ja_teve_atividade_hoje = False
+        if perfil.ultima_atividade:
+            data_ultima = perfil.ultima_atividade.date()
+            data_hoje = timezone.now().date()
+            ja_teve_atividade_hoje = (data_ultima == data_hoje)
+        
+        print(f"📅 Já teve atividade hoje: {ja_teve_atividade_hoje}")
+        
+        # Se JÁ teve atividade hoje e está tentando registrar NOVAMENTE,
+        # apenas atualiza a hora mas NÃO aumenta o streak
+        if ja_teve_atividade_hoje:
+            print("🔄 Já teve atividade hoje - apenas atualizando hora")
+            perfil.ultima_atividade = timezone.now()
+            perfil.save()
+            
+            return JsonResponse({
+                'success': True,
+                'streak_anterior': perfil.sequencia,
+                'streak_atual': perfil.sequencia,
+                'streak_maximo': perfil.sequencia_maxima,
+                'streak_zerado': False,
+                'streak_aumentado': False,
+                'bonus_streak': f"+{int(perfil.get_bonus_streak() * 100)}%",
+                'xp_base': xp_base,
+                'xp_bonus': 0,  # Não ganha bônus em atividades extras no mesmo dia
+                'xp_total': xp_base,  # Apenas XP base
+                'level_up': False,
+                'nivel_atual': perfil.nivel,
+                'xp_atual': perfil.xp,
+                'conquistas_desbloqueadas': [],
+                'tempo_restante': perfil.get_tempo_restante_streak(),
+                'ja_teve_atividade_hoje': True
+            })
+        
+        # Se NÃO teve atividade hoje, processar normalmente
+        streak_anterior = perfil.sequencia
+        novo_streak, streak_zerado, streak_aumentado = perfil.verificar_e_atualizar_streak()
+        
+        # ... resto do código original ...
+        
+    except Exception as e:
+        print(f"❌ Erro em registrar_atividade_streak: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+def api_streak_usuario(request):
+    """API para obter dados de streak do usuário"""
+    try:
+        perfil = request.user.perfil
+        return JsonResponse({
+            'success': True,
+            'streak_atual': perfil.sequencia,
+            'streak_maximo': perfil.sequencia_maxima,
+            'bonus_streak': perfil.get_bonus_streak() * 100,
+            'ultima_atividade': perfil.ultima_atividade.isoformat() if perfil.ultima_atividade else None,
+            'tempo_restante': perfil.get_tempo_restante_streak(),
+            'streak_quebrado': perfil.verificar_streak_quebrado()
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+def verificar_conquistas_streak(usuario, streak_atual):
+    """Verifica e concede conquistas baseadas em streak"""
+    conquistas_streak = {
+        3: "🔥 Iniciante Consistente",
+        7: "🔥💪 Streak Semanal", 
+        14: "🔥🌟 Mestre da Constância",
+        30: "🔥💎 Lenda do Mês",
+        60: "🔥🚀 Mestre Supremo",
+        100: "🔥👑 Deus da Persistência"
+    }
+    
+    conquistas_desbloqueadas = []
+    
+    for dias, titulo in conquistas_streak.items():
+        if streak_atual >= dias:
+            try:
+                conquista, created = Conquista.objects.get_or_create(
+                    titulo=titulo,
+                    defaults={
+                        'descricao': f'Mantenha um streak de {dias} dias consecutivos',
+                        'raridade': 'raro' if dias <= 14 else 'épico' if dias <= 60 else 'lendário',
+                        'categoria': 'streak',
+                        'icone': f'conquistas/streak_{dias}.png'
+                    }
+                )
+                
+                if conquista not in usuario.conquistas.all():
+                    usuario.conquistas.add(conquista)
+                    conquistas_desbloqueadas.append(titulo)
+                    print(f"🏆 Conquista desbloqueada: {titulo}")
+                    
+            except Exception as e:
+                print(f"⚠️ Erro ao criar/conceder conquista {titulo}: {e}")
+    
+    return conquistas_desbloqueadas
+
+
+@csrf_exempt
+@require_POST
+def registrar_xp_revisao(request):
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        xp_revisao = data.get('xp_revisao', 5)
+        
+        # Buscar o perfil do usuário
+        perfil = request.user.perfil
+        
+        # Adicionar XP da revisão
+        perfil.xp += xp_revisao
+        perfil.save()
+        
+        # Registrar na tabela de atividades (opcional)
+        # Atividade.objects.create(
+        #     usuario=request.user,
+        #     tipo='revisao',
+        #     xp_ganho=xp_revisao,
+        #     aula_id=aula_id
+        # )
+        
+        return JsonResponse({
+            'success': True,
+            'xp_total': perfil.xp,
+            'xp_revisao': xp_revisao,
+            'message': f'XP de revisão registrado com sucesso!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+
+@csrf_exempt
+def salvar_tempo_pratica(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            aula_id = data.get('aula_id')
+            tempo_segundos = int(data.get('tempo_segundos', 0))
+            
+            print(f"📊 Salvando tempo prática: {tempo_segundos} segundos para aula {aula_id}")
+            
+            user = request.user
+            aula = Aula.objects.get(id=aula_id)
+            perfil = Perfil.objects.get(user=user)
+            
+            # Salvar no TempoEstudo
+            tempo_estudo, created = TempoEstudo.objects.get_or_create(
+                user=user,
+                aula=aula,
+                tipo='pratica',
+                data=timezone.now().date(),
+                defaults={'tempo_segundos': tempo_segundos}
+            )
+            
+            if not created:
+                tempo_estudo.tempo_segundos += tempo_segundos
+                tempo_estudo.save()
+            
+            # Atualizar perfil
+            tempo_anterior = perfil.tempo_total_estudo
+            perfil.tempo_total_estudo += tempo_segundos
+            perfil.save()
+            
+            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            
+            return JsonResponse({
+                'success': True, 
+                'tempo_salvo': tempo_segundos,
+                'tempo_total': perfil.tempo_total_estudo
+            })
+            
+        except Exception as e:
+            print(f"❌ Erro ao salvar tempo prática: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+@csrf_exempt
+def salvar_tempo_teoria(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            aula_id = data.get('aula_id')
+            tempo_segundos = int(data.get('tempo_segundos', 0))
+            
+            print(f"📊 Salvando tempo teoria: {tempo_segundos} segundos para aula {aula_id}")
+            
+            user = request.user
+            aula = Aula.objects.get(id=aula_id)
+            perfil = Perfil.objects.get(user=user)
+            
+            # Salvar no TempoEstudo
+            tempo_estudo, created = TempoEstudo.objects.get_or_create(
+                user=user,
+                aula=aula,
+                tipo='teoria',
+                data=timezone.now().date(),
+                defaults={'tempo_segundos': tempo_segundos}
+            )
+            
+            if not created:
+                tempo_estudo.tempo_segundos += tempo_segundos
+                tempo_estudo.save()
+            
+            # Atualizar perfil
+            tempo_anterior = perfil.tempo_total_estudo
+            perfil.tempo_total_estudo += tempo_segundos
+            perfil.save()
+            
+            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            
+            return JsonResponse({
+                'success': True, 
+                'tempo_salvo': tempo_segundos,
+                'tempo_total': perfil.tempo_total_estudo
+            })
+            
+        except Exception as e:
+            print(f"❌ Erro ao salvar tempo teoria: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+def api_tempo_estudo(request):
+    """API para obter dados de tempo de estudo para a home"""
+    if request.user.is_authenticated:
+        try:
+            perfil = Perfil.objects.get(user=request.user)
+            
+            # Tempo total formatado
+            tempo_total_segundos = perfil.tempo_total_estudo
+            horas = tempo_total_segundos // 3600
+            minutos = (tempo_total_segundos % 3600) // 60
+            tempo_formatado = f"{horas:02d}:{minutos:02d}"
+            
+            # Tempo de hoje
+            hoje = timezone.now().date()
+            tempo_hoje = TempoEstudo.objects.filter(
+                user=request.user, 
+                data=hoje
+            ).aggregate(total=Sum('tempo_segundos'))['total'] or 0
+            
+            # Tempo de ontem
+            ontem = hoje - timedelta(days=1)
+            tempo_ontem = TempoEstudo.objects.filter(
+                user=request.user, 
+                data=ontem
+            ).aggregate(total=Sum('tempo_segundos'))['total'] or 0
+            
+            # Diferença em relação a ontem
+            dif_tempo = tempo_hoje - tempo_ontem
+            dif_formatada = f"+{dif_tempo//60}min" if dif_tempo > 0 else f"{dif_tempo//60}min"
+            
+            return JsonResponse({
+                'success': True,
+                'tempo_total': tempo_formatado,
+                'tempo_hoje_minutos': tempo_hoje // 60,
+                'diferenca_ontem': dif_formatada,
+                'tempo_total_segundos': tempo_total_segundos
+            })
+            
+        except Perfil.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Perfil não encontrado'})
+    
+    return JsonResponse({'success': False, 'error': 'Usuário não autenticado'})
+@csrf_exempt
+def testar_tempo(request):
+    """View temporária para testar o salvamento de tempo"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            segundos = data.get('segundos', 60)
+            
+            perfil = Perfil.objects.get(user=request.user)
+            perfil.tempo_total_estudo += segundos
+            perfil.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'tempo_anterior': perfil.tempo_total_estudo - segundos,
+                'tempo_atual': perfil.tempo_total_estudo
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método POST requerido'})
+def debug_tempo(request):
+    """View para debug do sistema de tempo"""
+    if request.user.is_authenticated:
+        try:
+            perfil = Perfil.objects.get(user=request.user)
+            tempo_estudos = TempoEstudo.objects.filter(user=request.user)
+            
+            # CORREÇÃO: Formatação correta do tempo
+            tempo_total_segundos = perfil.tempo_total_estudo
+            minutos_totais = tempo_total_segundos // 60
+            segundos_restantes = tempo_total_segundos % 60
+            horas = minutos_totais // 60
+            minutos = minutos_totais % 60
+            
+            debug_info = {
+                'perfil_id': perfil.id,
+                'user': perfil.user.username,
+                'tempo_total_estudo': tempo_total_segundos,
+                'tempo_formatado_correto': f"{horas:02d}:{minutos:02d}:{segundos_restantes:02d}",
+                'tempo_formatado_minutos': f"{minutos_totais:02d}:{segundos_restantes:02d}",
+                'total_registros_tempo': tempo_estudos.count(),
+                'registros': list(tempo_estudos.values('aula__titulo_aula', 'tipo', 'tempo_segundos', 'data'))
+            }
+            
+            return JsonResponse({'success': True, 'debug': debug_info})
+            
+        except Perfil.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Perfil não encontrado'})
+    
+    return JsonResponse({'success': False, 'error': 'Usuário não autenticado'})
+
+@login_required
 def pratica(request):
-    return render(request, "Pyquest/pratica.html")
+    aula_id = request.GET.get('aula_id')
+    
+    if not aula_id:
+        messages.error(request, "Aula não especificada.")
+        return redirect('tarefas')
+    
+    try:
+        # Buscar a aula com todas as questões e relacionamentos
+        aula = Aula.objects.select_related('modulo', 'modulo__capitulo').prefetch_related(
+            'questoes__opcoes',
+            'questoes__dicas'
+        ).get(
+            id=aula_id, 
+            ativo=True
+        )
+        
+        # Verificar se o usuário já concluiu a parte prática
+        aula_concluida = AulaConcluida.objects.filter(
+            usuario=request.user,
+            aula=aula,
+            pratica_concluida=True
+        ).exists()
+        
+        # Atualizar vidas do perfil
+        perfil = request.user.perfil
+        perfil.regenerar_vidas()
+        
+        # Buscar ou criar tentativa atual
+        tentativa, created = TentativaPratica.objects.get_or_create(
+            usuario=request.user,
+            aula=aula,
+            defaults={
+                'vidas_restantes': perfil.vidas,
+                'vidas_usadas': 0
+            }
+        )
+        
+        # Sincronizar vidas com perfil
+        if tentativa.vidas_restantes != perfil.vidas:
+            tentativa.vidas_restantes = perfil.vidas
+            tentativa.save()
+        
+        # Preparar dados para o template
+        questions_data = []
+        for questao in aula.questoes.all().order_by('ordem'):
+            questao_data = {
+                'id': questao.id,
+                'tipo': questao.tipo,
+                'enunciado': questao.enunciado,
+                'descricao': questao.descricao,
+                'xp': questao.xp,
+                'codigo_inicial': questao.codigo_inicial,
+                'saida_esperada': questao.saida_esperada,
+                'opcoes': [],
+                'dicas': []
+            }
+            
+            # Adicionar opções para múltipla escolha
+            if questao.tipo == 'multiple-choice':
+                for opcao in questao.opcoes.all().order_by('ordem'):
+                    questao_data['opcoes'].append({
+                        'id': opcao.id,
+                        'texto': opcao.texto,
+                        'correta': opcao.correta
+                    })
+            
+            # Adicionar dicas
+            for dica in questao.dicas.all().order_by('ordem'):
+                questao_data['dicas'].append(dica.texto)
+            
+            questions_data.append(questao_data)
+        
+        context = {
+            'aula': aula,
+            'aula_concluida': aula_concluida,
+            'questions_data': questions_data,
+            'questoes_json': json.dumps(questions_data, ensure_ascii=False),
+            'vidas_restantes': tentativa.vidas_restantes,
+            'max_vidas': perfil.max_vidas,
+            'pratica_concluida': aula_concluida,  # Para controle de revisão
+        }
+        
+        return render(request, "Pyquest/pratica.html", context)
+        
+    except Aula.DoesNotExist:
+        messages.error(request, "Aula não encontrada.")
+        return redirect('tarefas')
+
+@login_required
+@require_POST
+def usar_vida_pratica(request):
+    """Usa uma vida durante a prática"""
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        
+        aula = get_object_or_404(Aula, id=aula_id)
+        perfil = request.user.perfil
+        
+        # Verificar se tem vidas disponíveis
+        if perfil.vidas <= 0:
+            return JsonResponse({
+                'success': False, 
+                'error': 'Sem vidas disponíveis',
+                'vidas_restantes': 0
+            })
+        
+        # Usar vida
+        perfil.usar_vida()
+        
+        # Atualizar tentativa
+        tentativa, created = TentativaPratica.objects.get_or_create(
+            usuario=request.user,
+            aula=aula
+        )
+        tentativa.vidas_usadas += 1
+        tentativa.vidas_restantes = perfil.vidas
+        tentativa.save()
+        
+        return JsonResponse({
+            'success': True,
+            'vidas_restantes': perfil.vidas,
+            'max_vidas': perfil.max_vidas
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def finalizar_pratica(request):
+    """Finaliza a prática e calcula recompensas"""
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        xp_total = data.get('xp_total', 0)
+        vidas_restantes = data.get('vidas_restantes', 0)
+        
+        aula = get_object_or_404(Aula, id=aula_id)
+        perfil = request.user.perfil
+        
+        # Buscar tentativa
+        tentativa = TentativaPratica.objects.get(
+            usuario=request.user,
+            aula=aula
+        )
+        
+        # Atualizar tentativa
+        tentativa.concluida = True
+        tentativa.xp_ganho = xp_total
+        tentativa.vidas_restantes = vidas_restantes
+        tentativa.save()
+        
+        # Bônus por vidas restantes
+        bonus_vidas = 0
+        if vidas_restantes > 0:
+            bonus_vidas = vidas_restantes * 5  # 5 XP por vida restante
+        
+        xp_final = xp_total + bonus_vidas
+        
+        # Marcar aula como concluída se não estava
+        aula_concluida, created = AulaConcluida.objects.get_or_create(
+            usuario=request.user,
+            aula=aula
+        )
+        
+        if not aula_concluida.pratica_concluida:
+            aula_concluida.pratica_concluida = True
+            aula_concluida.data_conclusao_pratica = timezone.now()
+            aula_concluida.xp_pratica_ganho = xp_final
+            aula_concluida.save()
+            
+            # Atualizar perfil
+            perfil.xp += xp_final
+            perfil.save()
+            
+            # Registrar atividade
+            Atividade.objects.create(
+                user=request.user,
+                aula=aula,
+                titulo=f"Prática concluída: {aula.titulo_aula}",
+                xp_ganho=xp_final
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'xp_total': xp_final,
+            'bonus_vidas': bonus_vidas,
+            'vidas_restantes': vidas_restantes,
+            'redirect_url': f"/tarefas/?modulo_id={aula.modulo.id}"
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def salvar_progresso_questao(request):
+    """Salva o progresso individual de cada questão"""
+    try:
+        data = json.loads(request.body)
+        questao_id = data.get('questao_id')
+        concluida = data.get('concluida', False)
+        xp_ganho = data.get('xp_ganho', 0)
+        tempo_gasto = data.get('tempo_gasto', 0)
+        
+        questao = get_object_or_404(Questao, id=questao_id)
+        
+        # Buscar ou criar registro de progresso da questão
+        # (Você pode criar um modelo ProgressoQuestao se quiser rastrear individualmente)
+        
+        # Atualizar perfil do usuário se ganhou XP
+        if concluida and xp_ganho > 0:
+            perfil = request.user.perfil
+            perfil.xp += xp_ganho
+            
+            # Verificar se subiu de nível
+            XP_POR_NIVEL = 100
+            while perfil.xp >= XP_POR_NIVEL:
+                perfil.nivel += 1
+                perfil.xp -= XP_POR_NIVEL
+            
+            perfil.save()
+            
+            # Registrar atividade
+            Atividade.objects.create(
+                user=request.user,
+                aula=questao.aula,
+                titulo=f"Questão concluída: {questao.enunciado[:50]}...",
+                xp_ganho=xp_ganho
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'xp_total': request.user.perfil.xp,
+            'nivel': request.user.perfil.nivel,
+            'xp_ganho': xp_ganho
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
+@csrf_exempt
+def iniciar_sessao_estudo(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        tipo = data.get('tipo', 'teoria')
+        
+        # Finalizar qualquer sessão ativa anterior
+        sessoes_ativas = SessaoEstudo.objects.filter(user=request.user, ativa=True)
+        for sessao in sessoes_ativas:
+            sessao.finalizar_sessao()
+        
+        # Iniciar nova sessão
+        from .models import Aula
+        aula = Aula.objects.get(id=aula_id) if aula_id else None
+        
+        sessao = SessaoEstudo.objects.create(
+            user=request.user,
+            aula=aula,
+            tipo=tipo
+        )
+        
+        return JsonResponse({'sessao_id': sessao.id, 'status': 'sessao_iniciada'})
+
+@csrf_exempt
+def finalizar_sessao_estudo(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        sessao_id = data.get('sessao_id')
+        
+        try:
+            sessao = SessaoEstudo.objects.get(id=sessao_id, user=request.user, ativa=True)
+            sessao.finalizar_sessao()
+            
+            perfil = request.user.perfil
+            return JsonResponse({
+                'status': 'sessao_finalizada',
+                'tempo_total': sessao.tempo_total,
+                'tempo_total_formatado': perfil.tempo_estudo_formatado()
+            })
+        except SessaoEstudo.DoesNotExist:
+            return JsonResponse({'status': 'sessao_nao_encontrada'})
+        
+def verificar_sessao_ativa(request):
+    sessao_ativa = SessaoEstudo.objects.filter(user=request.user, ativa=True).first()
+    
+    if sessao_ativa:
+        return JsonResponse({
+            'ativa': True,
+            'sessao_id': sessao_ativa.id,
+            'inicio': sessao_ativa.inicio.isoformat()
+        })
+    else:
+        return JsonResponse({'ativa': False})
 
 def dashboard(request):
     return render(request, "Pyquest/dashboard.html")
 
 
 
+@csrf_exempt
+@login_required
+def salvar_tempo_estudo(request):
+    """Salva o tempo de estudo do timer da home"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            tempo_segundos = int(data.get('tempo_segundos', 0))
+            tipo = data.get('tipo', 'estudo_geral')
+            
+            print(f"⏱️ Salvando tempo de estudo: {tempo_segundos} segundos")
+            
+            if tempo_segundos <= 0:
+                return JsonResponse({'success': False, 'error': 'Tempo inválido'})
+            
+            perfil = request.user.perfil
+            
+            # Salvar no perfil
+            tempo_anterior = perfil.tempo_total_estudo
+            perfil.tempo_total_estudo += tempo_segundos
+            perfil.save()
+            
+            # Registrar atividade
+            Atividade.objects.create(
+                user=request.user,
+                titulo=f"Estudo geral: {tempo_segundos // 60} minutos",
+                xp_ganho=0  # Ou calcule XP baseado no tempo
+            )
+            
+            # Formatar tempo para resposta
+            tempo_total_segundos = perfil.tempo_total_estudo
+            minutos_totais = tempo_total_segundos // 60
+            segundos_restantes = tempo_total_segundos % 60
+            horas = minutos_totais // 60
+            minutos = minutos_totais % 60
+            
+            if horas > 0:
+                tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos_restantes:02d}"
+            else:
+                tempo_formatado = f"{minutos:02d}:{segundos_restantes:02d}"
+            
+            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            
+            return JsonResponse({
+                'success': True, 
+                'tempo_salvo': tempo_segundos,
+                'tempo_total': perfil.tempo_total_estudo,
+                'tempo_total_formatado': tempo_formatado,
+                'message': f'Tempo de estudo registrado: {tempo_segundos // 60} minutos'
+            })
+            
+        except Exception as e:
+            print(f"❌ Erro ao salvar tempo estudo: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
 
+@csrf_exempt
+@login_required  
+def testar_tempo(request):
+    """View para testar o salvamento de tempo (apenas desenvolvimento)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            segundos = data.get('segundos', 60)
+            
+            perfil = Perfil.objects.get(user=request.user)
+            perfil.tempo_total_estudo += segundos
+            perfil.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'tempo_anterior': perfil.tempo_total_estudo - segundos,
+                'tempo_atual': perfil.tempo_total_estudo
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método POST requerido'})

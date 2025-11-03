@@ -186,14 +186,21 @@
           <div class="flex items-center gap-3">
             <div class="bg-blue-100 p-2 rounded-lg">
               {% if aula_data.concluida_teoria %}
-              <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+                <!-- Ícone de check quando concluída -->
+                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
               {% else %}
-              <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+                <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
               {% endif %}
             </div>
             <h3 class="font-semibold text-blue-800">{{ aula_data.aula.titulo_teoria|default:aula_data.aula.titulo_aula }}</h3>
           </div>
-          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+{{ aula_data.xp_teoria }} XP</div>
+          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {% if aula_data.concluida_teoria %}
+              +5 XP <!-- SEMPRE 5 XP depois da primeira vez -->
+            {% else %}
+              +{{ aula_data.xp_teoria }} XP <!-- XP normal na primeira vez -->
+            {% endif %}
+          </div>
         </div>
         
         {% if aula_data.aula.descricao_breve %}
@@ -206,7 +213,11 @@
           <span class="text-blue-500 text-xs">{{ aula_data.tempo_teoria }} min</span>
           <a href="{% url 'teoria' %}?aula_id={{ aula_data.aula.id }}">
             <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
-              {% if aula_data.concluida_teoria %}Revisar{% else %}Iniciar{% endif %}
+              {% if aula_data.concluida_teoria %}
+                Revisar
+              {% else %}
+                Iniciar
+              {% endif %}
             </button>
           </a>
         </div>
@@ -231,14 +242,21 @@
           <div class="flex items-center gap-3">
             <div class="bg-blue-100 p-2 rounded-lg">
               {% if aula_data.concluida_pratica %}
-              <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+                <!-- Ícone de check quando concluída -->
+                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
               {% else %}
-              <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+                <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
               {% endif %}
             </div>
             <h3 class="font-semibold text-blue-800">{{ aula_data.aula.titulo_pratica|default:"Exercícios Práticos" }}</h3>
           </div>
-          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">+{{ aula_data.xp_pratica }} XP</div>
+          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {% if aula_data.concluida_pratica %}
+              +5 XP <!-- SEMPRE 5 XP depois da primeira vez -->
+            {% else %}
+              +{{ aula_data.xp_pratica }} XP <!-- XP normal na primeira vez -->
+            {% endif %}
+          </div>
         </div>
         
         {% if aula_data.aula.conteudo_pratico %}
@@ -251,7 +269,11 @@
           <span class="text-blue-500 text-xs">{{ aula_data.tempo_pratica }} min</span>
           <a href="{% url 'pratica' %}?aula_id={{ aula_data.aula.id }}">
             <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
-              {% if aula_data.concluida_pratica %}Revisar{% else %}Iniciar{% endif %}
+              {% if aula_data.concluida_pratica %}
+                Revisar
+              {% else %}
+                Iniciar
+              {% endif %}
             </button>
           </a>
         </div>

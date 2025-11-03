@@ -1028,6 +1028,25 @@
     border: 1px solid #e2e8f0;
 }
 
+/* Adicione ao seu CSS existente */
+.editor-content ul, .editor-content ol {
+    margin: 8px 0;
+    padding-left: 24px;
+}
+
+.editor-content ul {
+    list-style-type: disc;
+}
+
+.editor-content ol {
+    list-style-type: decimal;
+}
+
+.editor-content li {
+    margin: 4px 0;
+    line-height: 1.5;
+}
+
 </style>
 {% endblock %}
 
@@ -1973,75 +1992,65 @@ const DJANGO_URLS = {
     getModulos: "{% url 'get_modulos_ajax' 0 %}".replace('/0/', '/'),
     criarCapitulo: "{% url 'criar_capitulo_ajax' %}",
     criarModulo: "{% url 'criar_modulo_ajax' %}",
-    editarConteudo: "{% url 'editar_conteudo' aula.id %}"
+    editarConteudo: "{% url 'editar_conteudo' aula.id %}"  // ATUALIZADO
 };
 
 // ========== ESTADO GLOBAL ==========
 let currentStep = 1;
-let selectedChapterId = '{{ aula.modulo.capitulo.id }}';
-let selectedChapterName = '{{ aula.modulo.capitulo.titulo|escapejs }}';
+let questions = [];
+let autoSaveEnabled = true;
+let autoSaveInterval;
+let selectedChapterId = '{{ aula.modulo.capitulo.id }}';  // PRÉ-CARREGADO
+let selectedChapterName = '{{ aula.modulo.capitulo.titulo|escapejs }}';  // PRÉ-CARREGADO
+let topicCounter = 1;
+let questionCounter = 0;
 
 // ========== INICIALIZAÇÃO PRINCIPAL ==========
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== INICIANDO EDIÇÃO DE CONTEÚDO ===');
-    console.log('Aula:', {
-        id: '{{ aula.id }}',
-        titulo: '{{ aula.titulo_aula|escapejs }}',
-        modulo: '{{ aula.modulo.titulo|escapejs }}',
-        capitulo: '{{ aula.modulo.capitulo.titulo|escapejs }}'
-    });
     
     // Inicializar dados básicos primeiro
     initializeBasicData();
-    initializeChapterAndModule();
     
     // Configurar event listeners
     setupEventListeners();
     
-    // CORREÇÃO: Carregar tópicos primeiro, depois questões
+    // Carregar dados existentes
     setTimeout(() => {
-        console.log('=== CARREGANDO TÓPICOS ===');
         loadExistingTopics();
-        
-        // Carregar questões após os tópicos
-        setTimeout(() => {
-            console.log('=== CARREGANDO QUESTÕES ===');
-            loadExistingQuestions();
-        }, 500);
-    }, 300);
+        loadExistingQuestions();
+    }, 500);
     
     updateProgressBar();
+    setupAutoSave();
+    setupDragAndDrop();
+    initializeSelects();
 });
 
-// ========== INICIALIZAR DADOS EXISTENTES ==========
 function initializeBasicData() {
-    console.log('Preenchendo dados básicos...');
+    console.log('Preenchendo dados básicos da aula existente...');
     
     // Título da aula
     const lessonTitle = document.getElementById('lesson-title');
     if (lessonTitle) {
         lessonTitle.value = '{{ aula.titulo_aula|escapejs }}';
-        console.log('Título preenchido:', lessonTitle.value);
     }
     
     // Tempos estimados
     const timeTheory = document.getElementById('estimated-time-theory');
     if (timeTheory) {
         timeTheory.value = '{{ aula.tempo_teoria|default:"30" }}';
-        console.log('Tempo teoria preenchido:', timeTheory.value);
     }
     
     const timePractice = document.getElementById('estimated-time-practice');
     if (timePractice) {
         timePractice.value = '{{ aula.tempo_pratica|default:"15" }}';
-        console.log('Tempo prática preenchido:', timePractice.value);
     }
     
     // XP teórico
     const theoryXp = document.getElementById('theory-xp');
     if (theoryXp) {
         theoryXp.value = '{{ aula.xp_teoria|default:"30" }}';
-        console.log('XP teórico preenchido:', theoryXp.value);
     }
     
     // Títulos de teoria e prática
@@ -2055,9 +2064,16 @@ function initializeBasicData() {
         tituloPratica.value = '{{ aula.titulo_pratica|default:"Exercícios Práticos"|escapejs }}';
     }
     
+    // Descrição prática
     const conteudoPratico = document.getElementById('conteudo-pratico');
     if (conteudoPratico && '{{ aula.conteudo_pratico|escapejs }}') {
         conteudoPratico.value = '{{ aula.conteudo_pratico|escapejs }}';
+    }
+    
+    // Descrição breve
+    const descricaoBreve = document.getElementById('descricao-breve');
+    if (descricaoBreve && '{{ aula.descricao_breve|escapejs }}') {
+        descricaoBreve.value = '{{ aula.descricao_breve|escapejs }}';
     }
 }
 
@@ -2109,80 +2125,55 @@ async function loadModulesForChapter(chapterId, moduleId) {
 
 // ========== CARREGAR TÓPICOS EXISTENTES - VERSÃO CORRIGIDA ==========
 function loadExistingTopics() {
-    console.log('=== CARREGANDO TÓPICOS EXISTENTES ===');
+    console.log('Carregando tópicos existentes...');
     
     try {
         const topicosJson = document.getElementById('topicos-json').value;
-        console.log('Tópicos JSON encontrado:', topicosJson ? 'Sim' : 'Não');
-        console.log('Conteúdo do JSON:', topicosJson);
         
-        // CORREÇÃO: Verificação mais robusta do JSON
-        if (topicosJson && topicosJson !== '[]' && topicosJson !== '' && topicosJson !== 'null' && topicosJson !== 'undefined') {
+        if (topicosJson && topicosJson !== '[]' && topicosJson !== '') {
             const topicos = JSON.parse(topicosJson);
-            console.log(`Encontrados ${topicos.length} tópicos para carregar:`, topicos);
+            console.log(`Encontrados ${topicos.length} tópicos para carregar`);
             
             const topicsContainer = document.getElementById('topics-container');
-            if (!topicsContainer) {
-                console.error('Container de tópicos não encontrado!');
-                return;
-            }
+            if (!topicsContainer) return;
             
-            // CORREÇÃO: Sempre limpar o container antes de adicionar
+            // Limpar container primeiro
             topicsContainer.innerHTML = '';
             
             // Adicionar cada tópico existente
             topicos.forEach((topico, index) => {
-                console.log(`Carregando tópico ${index + 1}:`, topico);
                 addTopicFromData(topico, index);
             });
-            
-            console.log('Tópicos carregados com sucesso!');
-        } else {
-            console.log('Nenhum tópico encontrado para carregar - usando conteúdo padrão');
-            // CORREÇÃO: Não carregar conteúdo padrão, manter o template inicial
-            initializeDefaultEditor();
         }
     } catch (error) {
         console.error('Erro ao carregar tópicos existentes:', error);
-        console.error('JSON problemático:', document.getElementById('topicos-json').value);
-        // CORREÇÃO: Manter o template inicial em caso de erro
-        initializeDefaultEditor();
     }
 }
 
 function addTopicFromData(topicoData, index) {
-    console.log(`Adicionando tópico ${index + 1} a partir dos dados:`, topicoData);
-    
     const template = document.getElementById('topic-template');
     const topicsContainer = document.getElementById('topics-container');
     
-    if (!template || !topicsContainer) {
-        console.error('Template ou container de tópicos não encontrado');
-        return;
-    }
+    if (!template || !topicsContainer) return;
     
     const topicEl = template.content.cloneNode(true);
     topicsContainer.appendChild(topicEl);
     
     const newTopic = topicsContainer.lastElementChild;
     
-    // CORREÇÃO: Preencher dados do tópico com verificações mais robustas
+    // Preencher dados do tópico
     const titleInput = newTopic.querySelector('.topic-title');
     const editor = newTopic.querySelector('.topic-editor');
     
     if (titleInput && topicoData.titulo) {
         titleInput.value = topicoData.titulo;
-        console.log(`Título do tópico ${index + 1} preenchido: "${titleInput.value}"`);
-    } else if (titleInput) {
-        titleInput.value = `Tópico ${index + 1}`;
     }
     
     if (editor && topicoData.conteudo) {
         editor.innerHTML = topicoData.conteudo;
-        console.log(`Conteúdo do tópico ${index + 1} preenchido: ${topicoData.conteudo.length} caracteres`);
     }
     
-    // Configurar eventos de remoção
+    // Configurar eventos
     const removeBtn = newTopic.querySelector('.remove-topic');
     if (removeBtn) {
         removeBtn.addEventListener('click', function() {
@@ -2190,17 +2181,8 @@ function addTopicFromData(topicoData, index) {
         });
     }
     
-    // Inicializar funcionalidades do editor
+    // Inicializar editor
     initializeEditor(newTopic);
-    
-    console.log(`Tópico ${index + 1} adicionado com sucesso`);
-}
-
-function initializeDefaultEditor() {
-    const defaultTopic = document.querySelector('.topic-item');
-    if (defaultTopic) {
-        initializeEditor(defaultTopic);
-    }
 }
 
 // ========== CARREGAR QUESTÕES EXISTENTES ==========
@@ -3850,30 +3832,44 @@ function initializeEditor(topicElement) {
     
     if (!editor || !toolbar) return;
 
-    // Configurar eventos dos botões básicos
+    // Garantir que o editor é editável
+    editor.setAttribute('contenteditable', 'true');
+
+    // Configurar eventos dos botões básicos - CORREÇÃO AQUI
     const toolbarButtons = toolbar.querySelectorAll('.toolbar-button[data-command]');
     toolbarButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const command = this.getAttribute('data-command');
+            
+            // Focar no editor primeiro
+            editor.focus();
             
             if (command === 'insertUnorderedList') {
                 insertUnorderedList(editor);
             } else if (command === 'insertOrderedList') {
                 insertOrderedList(editor);
             } else {
+                // Executar comando de formatação padrão
                 document.execCommand(command, false, null);
             }
             
-            editor.focus();
+            // Atualizar estado da toolbar
+            updateToolbarState(editor, toolbar);
             
-            // Destacar botão ativo
+            // Destacar botão ativo apenas para formatação de texto
             if (command === 'bold' || command === 'italic' || command === 'underline') {
                 toolbarButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
+                
+                // Verificar se o comando ainda está ativo na seleção atual
+                if (document.queryCommandState(command)) {
+                    this.classList.add('active');
+                }
             }
         });
     });
-
     // CORREÇÃO MELHORADA: Configurar o evento de Tab no editor
     editor.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
@@ -4072,27 +4068,41 @@ function insertUnorderedList(editor) {
     if (selectedText) {
         // Se há texto selecionado, transformar em lista
         const lines = selectedText.split('\n').filter(line => line.trim());
-        let listHTML = '<ul style="margin: 8px 0; padding-left: 24px; list-style-type: disc;">';
+        
+        // Criar elemento de lista
+        const listElement = document.createElement('ul');
+        listElement.style.margin = '8px 0';
+        listElement.style.paddingLeft = '24px';
+        listElement.style.listStyleType = 'disc';
         
         lines.forEach(line => {
-            listHTML += `<li>${line}</li>`;
+            const listItem = document.createElement('li');
+            listItem.textContent = line;
+            listElement.appendChild(listItem);
         });
-        
-        listHTML += '</ul>';
         
         // Substituir o texto selecionado pela lista
         range.deleteContents();
-        const listElement = document.createElement('div');
-        listElement.innerHTML = listHTML;
         range.insertNode(listElement);
     } else {
         // Se não há texto selecionado, inserir lista vazia
-        const listHTML = `
-            <ul style="margin: 8px 0; padding-left: 24px; list-style-type: disc;">
-                <li>• Item da lista</li>
-            </ul>
-        `;
-        document.execCommand('insertHTML', false, listHTML);
+        const listItem = document.createElement('li');
+        listItem.textContent = '• Item da lista';
+        
+        const listElement = document.createElement('ul');
+        listElement.style.margin = '8px 0';
+        listElement.style.paddingLeft = '24px';
+        listElement.style.listStyleType = 'disc';
+        listElement.appendChild(listItem);
+        
+        range.insertNode(listElement);
+        
+        // Mover cursor para dentro do item da lista
+        const newRange = document.createRange();
+        newRange.setStart(listItem.firstChild, listItem.textContent.length);
+        newRange.setEnd(listItem.firstChild, listItem.textContent.length);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
     }
     
     editor.focus();
@@ -4108,54 +4118,110 @@ function insertOrderedList(editor) {
     if (selectedText) {
         // Se há texto selecionado, transformar em lista numerada
         const lines = selectedText.split('\n').filter(line => line.trim());
-        let listHTML = '<ol style="margin: 8px 0; padding-left: 24px; list-style-type: decimal;">';
+        
+        // Criar elemento de lista numerada
+        const listElement = document.createElement('ol');
+        listElement.style.margin = '8px 0';
+        listElement.style.paddingLeft = '24px';
+        listElement.style.listStyleType = 'decimal';
         
         lines.forEach(line => {
-            listHTML += `<li>${line}</li>`;
+            const listItem = document.createElement('li');
+            listItem.textContent = line;
+            listElement.appendChild(listItem);
         });
         
-        listHTML += '</ol>';
-        
-        // Substituir o texto selecionado pela lista numerada
+        // Substituir o texto selecionado pela lista
         range.deleteContents();
-        const listElement = document.createElement('div');
-        listElement.innerHTML = listHTML;
         range.insertNode(listElement);
     } else {
         // Se não há texto selecionado, inserir lista numerada vazia
-        const listHTML = `
-            <ol style="margin: 8px 0; padding-left: 24px; list-style-type: decimal;">
-                <li>Primeiro item</li>
-            </ol>
-        `;
-        document.execCommand('insertHTML', false, listHTML);
+        const listItem = document.createElement('li');
+        listItem.textContent = 'Primeiro item';
+        
+        const listElement = document.createElement('ol');
+        listElement.style.margin = '8px 0';
+        listElement.style.paddingLeft = '24px';
+        listElement.style.listStyleType = 'decimal';
+        listElement.appendChild(listItem);
+        
+        range.insertNode(listElement);
+        
+        // Mover cursor para dentro do item da lista
+        const newRange = document.createRange();
+        newRange.setStart(listItem.firstChild, listItem.textContent.length);
+        newRange.setEnd(listItem.firstChild, listItem.textContent.length);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
     }
     
     editor.focus();
 }
 
 function insertCodeBlock(editor) {
-    const codeHTML = `
-        <pre style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px; margin: 12px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;">
-<code># Seu código aqui\nprint("Hello World")</code>
-        </pre>
-    `;
-    document.execCommand('insertHTML', false, codeHTML);
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    
+    // Criar elemento pre para o bloco de código
+    const preElement = document.createElement('pre');
+    preElement.style.background = '#f8f9fa';
+    preElement.style.border = '1px solid #e9ecef';
+    preElement.style.borderRadius = '4px';
+    preElement.style.padding = '12px';
+    preElement.style.margin = '12px 0';
+    preElement.style.overflowX = 'auto';
+    preElement.style.fontFamily = "'Courier New', monospace";
+    preElement.style.fontSize = '13px';
+    preElement.style.lineHeight = '1.4';
+    
+    // Criar elemento code
+    const codeElement = document.createElement('code');
+    codeElement.textContent = '// Digite seu código aqui';
+    preElement.appendChild(codeElement);
+    
+    // Inserir no editor
+    range.insertNode(preElement);
+    
+    // Mover cursor para depois do bloco de código
+    const newRange = document.createRange();
+    newRange.setStartAfter(preElement);
+    newRange.setEndAfter(preElement);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+    
     editor.focus();
 }
 
 function updateToolbarState(editor, toolbar) {
     const buttons = toolbar.querySelectorAll('.toolbar-button[data-command]');
-    buttons.forEach(button => {
-        const command = button.getAttribute('data-command');
-        if (command === 'bold' || command === 'italic' || command === 'underline') {
-            if (document.queryCommandState(command)) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
+    
+    // Só atualizar se há seleção no editor
+    const selection = window.getSelection();
+    if (!selection.toString() && selection.anchorNode) {
+        // Verificar formatação no ponto do cursor
+        buttons.forEach(button => {
+            const command = button.getAttribute('data-command');
+            if (command === 'bold' || command === 'italic' || command === 'underline') {
+                try {
+                    if (document.queryCommandState(command)) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                } catch (e) {
+                    // Ignorar erros de queryCommandState
+                    button.classList.remove('active');
+                }
             }
-        }
-    });
+        });
+    } else {
+        // Limpar estados ativos quando não há seleção
+        buttons.forEach(button => {
+            button.classList.remove('active');
+        });
+    }
 }
 
 function updateWordCount(editor) {

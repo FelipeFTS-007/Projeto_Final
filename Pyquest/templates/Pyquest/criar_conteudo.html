@@ -973,6 +973,70 @@
     tab-size: 4;
     -moz-tab-size: 4;
 }
+
+
+/* Estilos para a página de visualização da aula teórica */
+.aula-content .code-block-container {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.aula-content .code-block {
+    background: #1a1a1a !important;
+    color: #f8f8f2 !important;
+    padding: 1.5rem !important;
+    margin: 0 !important;
+    border: none !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    overflow-x: auto !important;
+    white-space: pre !important;
+}
+
+.aula-content .code-block code {
+    background: transparent !important;
+    color: inherit !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+}
+
+/* CORREÇÃO: Estilos para prevenir espaços extras em blocos de código */
+.code-block-container {
+    margin: 1rem 0 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8f9fa !important;
+}
+
+.code-block {
+    background: #f8f9fa !important;
+    color: #374151 !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    overflow-x: auto !important;
+    white-space: pre !important;
+    border-left: 4px solid #3b82f6 !important;
+}
+
+/* Remover margens/paddings extras */
+.editor-content > div:empty,
+.editor-content > br {
+    display: none !important;
+}
+
+/* Garantir que não haja espaços extras entre blocos */
+.code-block-container + .code-block-container {
+    margin-top: 0.5rem !important;
+}
 </style>
 {% endblock %}
 
@@ -1106,7 +1170,7 @@
                 
                 <!-- Descrição Breve -->
                 <div>
-                    <label for="descricao-breve" class="block text-sm font-medium text-gray-700 mb-2">Descrição Breve</label>
+                    <label for="descricao-breve" class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
                     <textarea id="descricao-breve" name="descricao_breve" rows="3" placeholder="Descreva brevemente o conteúdo desta aula..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-control"></textarea>
                 </div>
                 
@@ -2571,9 +2635,18 @@ function validateStep2() {
     
     // Usar o campo correto para tempo teórico
     const estimatedTimeTheory = document.getElementById('estimated-time-theory');
+    const descricaoBreve = document.getElementById('descricao-breve'); // NOVO
     
     console.log("Validando passo 2:");
     console.log("Tempo teórico estimado:", estimatedTimeTheory.value);
+    console.log("Descrição breve:", descricaoBreve.value); // NOVO
+    
+    // NOVO: Validar descrição breve (OBRIGATÓRIA)
+    if (!descricaoBreve.value.trim()) {
+        showError('descricao-breve-error', 'A descrição breve é obrigatória');
+        descricaoBreve.classList.add('error');
+        isValid = false;
+    }
     
     // Validar tempo teórico estimado
     if (!estimatedTimeTheory.value || estimatedTimeTheory.value < 1 || estimatedTimeTheory.value > 120) {
@@ -2925,182 +2998,360 @@ function initializeFirstTopic() {
     }
 }
 
-// CORREÇÃO: Modificar a função initializeEditor para ser mais robusta
+// SOLUÇÃO SIMPLES: Usando execCommand que funciona
 function initializeEditor(topicElement) {
     const editor = topicElement.querySelector('.topic-editor');
     const toolbar = topicElement.querySelector('.editor-toolbar');
     
-    if (!editor || !toolbar) {
-        console.error('Editor ou toolbar não encontrados no tópico');
+    if (!editor || !toolbar) return;
+
+    if (editor.hasAttribute('data-initialized')) {
         return;
     }
     
-    console.log('Inicializando editor...');
+    editor.setAttribute('data-initialized', 'true');
 
-    // CORREÇÃO: Configuração direta sem clonagem excessiva
-    // Configurar Tab no editor
+    // CORREÇÃO SIMPLES: Tab usando apenas execCommand
     editor.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
+            
+            // Método mais simples e confiável
             document.execCommand('insertText', false, '    ');
         }
     });
 
-    // CORREÇÃO: Configurar botões de forma direta
-    function setupButton(selector, command) {
-        const button = toolbar.querySelector(selector);
-        if (!button) {
-            console.warn('Botão não encontrado:', selector);
-            return;
-        }
-        
-        // Remover event listeners antigos
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
-        
-        newButton.addEventListener('click', function(e) {
+    // Resto do código permanece igual
+    initializeToolbarButtons(toolbar, editor);
+
+    editor.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text/plain');
+        document.execCommand('insertText', false, text);
+    });
+
+    editor.addEventListener('input', function() {
+        updateWordCount(topicElement);
+    });
+
+    updateWordCount(topicElement);
+}
+
+// CORREÇÃO: Função separada para inicializar todos os botões da toolbar
+function initializeToolbarButtons(toolbar, editor) {
+    if (!toolbar || !editor) return;
+    
+    // Configurar botão de código
+    const codeButton = toolbar.querySelector('.insert-code');
+    if (codeButton && !codeButton.hasAttribute('data-listener-added')) {
+        codeButton.setAttribute('data-listener-added', 'true');
+        codeButton.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Clicou no botão:', command);
-            editor.focus();
-            const success = document.execCommand(command, false, null);
-            console.log('Comando executado:', command, 'Sucesso:', success);
-            editor.focus();
+            e.stopPropagation();
+            insertCodeBlockSimple(editor);
         });
-        
-        return newButton;
     }
-
-    // Configurar botões básicos
-    setupButton('[data-command="bold"]', 'bold');
-    setupButton('[data-command="italic"]', 'italic');
-    setupButton('[data-command="underline"]', 'underline');
-    setupButton('[data-command="insertUnorderedList"]', 'insertUnorderedList');
-    setupButton('[data-command="insertOrderedList"]', 'insertOrderedList');
-
-    // CORREÇÃO: Botão de cor do texto
-    const textColorBtn = toolbar.querySelector('.text-color-button');
-    if (textColorBtn) {
-        const newColorBtn = textColorBtn.cloneNode(true);
-        textColorBtn.parentNode.replaceChild(newColorBtn, textColorBtn);
-        
-        newColorBtn.addEventListener('click', function(e) {
+    
+    // CORREÇÃO: Configurar botões de formatação básica
+    const boldButton = toolbar.querySelector('[data-command="bold"]');
+    if (boldButton && !boldButton.hasAttribute('data-listener-added')) {
+        boldButton.setAttribute('data-listener-added', 'true');
+        boldButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            editor.focus();
+            document.execCommand('bold', false, null);
+        });
+    }
+    
+    const italicButton = toolbar.querySelector('[data-command="italic"]');
+    if (italicButton && !italicButton.hasAttribute('data-listener-added')) {
+        italicButton.setAttribute('data-listener-added', 'true');
+        italicButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            editor.focus();
+            document.execCommand('italic', false, null);
+        });
+    }
+    
+    const underlineButton = toolbar.querySelector('[data-command="underline"]');
+    if (underlineButton && !underlineButton.hasAttribute('data-listener-added')) {
+        underlineButton.setAttribute('data-listener-added', 'true');
+        underlineButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            editor.focus();
+            document.execCommand('underline', false, null);
+        });
+    }
+    
+    // CORREÇÃO: Configurar botões de lista
+    const unorderedListButton = toolbar.querySelector('[data-command="insertUnorderedList"]');
+    if (unorderedListButton && !unorderedListButton.hasAttribute('data-listener-added')) {
+        unorderedListButton.setAttribute('data-listener-added', 'true');
+        unorderedListButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            editor.focus();
+            document.execCommand('insertUnorderedList', false, null);
+        });
+    }
+    
+    const orderedListButton = toolbar.querySelector('[data-command="insertOrderedList"]');
+    if (orderedListButton && !orderedListButton.hasAttribute('data-listener-added')) {
+        orderedListButton.setAttribute('data-listener-added', 'true');
+        orderedListButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            editor.focus();
+            document.execCommand('insertOrderedList', false, null);
+        });
+    }
+    
+    // CORREÇÃO: Configurar seletor de cores
+    const colorButton = toolbar.querySelector('.text-color-button');
+    if (colorButton && !colorButton.hasAttribute('data-listener-added')) {
+        colorButton.setAttribute('data-listener-added', 'true');
+        colorButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             const colorOptions = this.nextElementSibling;
             if (colorOptions) {
                 const isVisible = colorOptions.style.display === 'grid';
                 colorOptions.style.display = isVisible ? 'none' : 'grid';
-                console.log('Seletor de cores:', isVisible ? 'fechado' : 'aberto');
             }
         });
         
         // Configurar opções de cor
-        const colorOptions = newColorBtn.nextElementSibling;
+        const colorOptions = colorButton.nextElementSibling;
         if (colorOptions) {
             colorOptions.querySelectorAll('.color-option').forEach(option => {
-                option.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const color = this.getAttribute('data-color');
-                    console.log('Cor selecionada:', color);
-                    editor.focus();
-                    document.execCommand('styleWithCSS', true);
-                    document.execCommand('foreColor', false, color);
-                    colorOptions.style.display = 'none';
-                    editor.focus();
-                });
+                if (!option.hasAttribute('data-listener-added')) {
+                    option.setAttribute('data-listener-added', 'true');
+                    option.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const color = this.getAttribute('data-color');
+                        editor.focus();
+                        document.execCommand('styleWithCSS', true);
+                        document.execCommand('foreColor', false, color);
+                        colorOptions.style.display = 'none';
+                        editor.focus();
+                    });
+                }
             });
         }
     }
-
-    // CORREÇÃO: Botão de inserir código
-    const insertCodeBtn = toolbar.querySelector('.insert-code');
-    if (insertCodeBtn) {
-        const newCodeBtn = insertCodeBtn.cloneNode(true);
-        insertCodeBtn.parentNode.replaceChild(newCodeBtn, insertCodeBtn);
-        
-        newCodeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Inserindo bloco de código...');
-            insertCodeBlockSimple(editor);
-        });
-    }
-
+    
     // Fechar seletor de cores ao clicar fora
     document.addEventListener('click', function() {
         toolbar.querySelectorAll('.color-options').forEach(option => {
             option.style.display = 'none';
         });
     });
-
-    // Evento para atualizar contador de palavras
-    editor.addEventListener('input', function() {
-        updateWordCount(topicElement);
-    });
-
-    // Inicializar contador de palavras
-    updateWordCount(topicElement);
-    
-    console.log('Editor inicializado com sucesso');
 }
 
+
+// CORREÇÃO: Função para inserir bloco de código sem espaços extras
 function insertCodeBlockSimple(editor) {
     if (!editor) return;
     
     editor.focus();
     
-    // Verificar se já existe seleção
-    const selection = window.getSelection();
-    let range;
+    // Criar bloco de código limpo, sem espaços extras
+    const codeBlockId = 'code-block-' + Date.now();
+    const cleanCodeHTML = `<div class="code-block-container" data-code-block="${codeBlockId}"><pre class="code-block"><code>// Digite seu código aqui</code></pre></div>`;
     
-    if (selection.rangeCount > 0) {
-        range = selection.getRangeAt(0);
-    } else {
-        range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false); // Ir para o final
-    }
+    // Inserir usando execCommand
+    document.execCommand('insertHTML', false, cleanCodeHTML);
     
-    // Inserir bloco de código apenas uma vez
-    const codeHTML = `
-        <div style="margin: 12px 0;">
-            <pre style="
-                background: #f8f9fa;
-                border: 1px solid #e9ecef;
-                border-radius: 4px;
-                padding: 12px;
-                overflow-x: auto;
-                font-family: 'Courier New', monospace;
-                font-size: 13px;
-                line-height: 1.4;
-                white-space: pre-wrap;
-                margin: 0;
-            "><code>// Digite seu código aqui</code></pre>
-        </div>
+    // Focar no bloco de código
+    setTimeout(() => {
+        const newCodeBlock = editor.querySelector(`[data-code-block="${codeBlockId}"] code`);
+        if (newCodeBlock) {
+            const range = document.createRange();
+            range.selectNodeContents(newCodeBlock);
+            range.collapse(false);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        editor.focus();
+    }, 100);
+}
+
+// CORREÇÃO: Estilos para bloco de código com fundo cinza
+function addCodeBlockStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Estilos para blocos de código no editor - FUNDO CINZA */
+        .code-block-container {
+            margin: 1rem 0;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #f8f9fa;
+        }
+        
+        .code-block {
+            background: #f8f9fa !important;
+            color: #374151 !important;
+            padding: 1rem !important;
+            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            overflow-x: auto !important;
+            white-space: pre !important;
+            border-left: 4px solid #3b82f6 !important;
+        }
+        
+        .code-block code {
+            background: transparent !important;
+            color: inherit !important;
+            padding: 0 !important;
+            border: none !important;
+            font-family: inherit !important;
+            font-size: inherit !important;
+        }
+        
+        /* Destaque para sintaxe básica (opcional) */
+        .code-block .comment {
+            color: #6b7280 !important;
+            font-style: italic !important;
+        }
+        
+        .code-block .string {
+            color: #059669 !important;
+        }
+        
+        .code-block .keyword {
+            color: #dc2626 !important;
+            font-weight: bold !important;
+        }
+        
+        .code-block .function {
+            color: #7c3aed !important;
+        }
+        
+        /* Remover estilos conflitantes do editor */
+        .editor-content pre:not(.code-block),
+        .editor-content code:not(.code-block code) {
+            all: unset !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// CORREÇÃO DEFINITIVA: Estilos apenas com fundo cinza
+function addCodeBlockStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* REMOVER TODOS OS ESTILOS ANTERIORES E APLICAR APENAS CINZA */
+        .code-block-container {
+            margin: 1rem 0;
+        }
+        
+        .code-block {
+            background: #f8f9fa !important;
+            color: #1f2937 !important;
+            padding: 12px !important;
+            margin: 0 !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 6px !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            overflow-x: auto !important;
+            white-space: pre !important;
+            display: block !important;
+        }
+        
+        .code-block code {
+            background: transparent !important;
+            color: inherit !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            font-family: inherit !important;
+            font-size: inherit !important;
+            line-height: inherit !important;
+        }
+
+        /* FORÇAR remoção de qualquer estilo escuro */
+        pre[style*="background"],
+        pre[style*="background-color"] {
+            background: #f8f9fa !important;
+            color: #1f2937 !important;
+        }
+
+        /* Estilo específico para o editor */
+        .editor-content .code-block {
+            background: #f8f9fa !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db !important;
+        }
     `;
     
-    // Inserir usando range para controle preciso
-    range.deleteContents();
+    // Remover estilos anteriores se existirem
+    const oldStyle = document.getElementById('code-block-styles');
+    if (oldStyle) {
+        oldStyle.remove();
+    }
+    style.id = 'code-block-styles';
+    document.head.appendChild(style);
+}
+
+// CORREÇÃO: Função de sanitização que preserva blocos de código
+function sanitizeHTML(html) {
+    if (!html) return '';
+    
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = codeHTML;
+    tempDiv.innerHTML = html;
     
-    const fragment = document.createDocumentFragment();
-    while (tempDiv.firstChild) {
-        fragment.appendChild(tempDiv.firstChild);
-    }
+    // PRESERVAR blocos de código existentes
+    const codeBlocks = tempDiv.querySelectorAll('.code-block-container, pre.code-block');
     
-    range.insertNode(fragment);
+    // Processar cada bloco de código para manter sua estrutura
+    codeBlocks.forEach(block => {
+        // Manter a estrutura original do bloco de código
+        if (block.classList.contains('code-block-container')) {
+            const codeBlock = block.querySelector('.code-block');
+            if (codeBlock) {
+                // Preservar o conteúdo do código exatamente como está
+                const codeContent = codeBlock.innerHTML;
+                // Limpar apenas estilos indesejados, mas manter o conteúdo
+                codeBlock.innerHTML = codeContent
+                    .replace(/<br>/g, '\n')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/<div>/g, '')
+                    .replace(/<\/div>/g, '\n')
+                    .trim();
+            }
+        }
+    });
     
-    // Posicionar cursor dentro do bloco de código
-    const codeElement = editor.querySelector('code:last-child');
-    if (codeElement) {
-        const newRange = document.createRange();
-        newRange.setStart(codeElement, 0);
-        newRange.setEnd(codeElement, 0);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-    }
+    // REMOVER divs e brs extras que criam espaços indesejados
+    const allElements = tempDiv.querySelectorAll('*');
+    allElements.forEach(el => {
+        // Remover divs vazias ou com apenas espaços
+        if (el.tagName === 'DIV' && (!el.innerHTML.trim() || el.innerHTML === '<br>')) {
+            el.remove();
+        }
+        
+        // Remover múltiplos <br> consecutivos
+        if (el.tagName === 'BR') {
+            const nextSibling = el.nextElementSibling;
+            if (nextSibling && nextSibling.tagName === 'BR') {
+                el.remove();
+            }
+        }
+    });
     
-    editor.focus();
+    return tempDiv.innerHTML;
 }
 
 // Função para inserir espaços no editor
@@ -3935,7 +4186,13 @@ function collectTopicContent() {
     topicItems.forEach((topic, index) => {
         const titulo = topic.querySelector('.topic-title').value || `Tópico ${index + 1}`;
         const editor = topic.querySelector('.topic-editor');
-        const conteudo = editor ? editor.innerHTML : '';
+        let conteudo = editor ? editor.innerHTML : '';
+        
+        // CORREÇÃO: Aplicar sanitização melhorada
+        conteudo = sanitizeHTML(conteudo);
+        
+        // CORREÇÃO: Remover espaços extras no início e fim
+        conteudo = conteudo.trim();
         
         console.log(`Tópico ${index + 1}:`, {
             titulo: titulo,
@@ -3950,10 +4207,7 @@ function collectTopicContent() {
         });
     });
     
-    // Atualizar o campo hidden com os dados dos tópicos
     document.getElementById('topicos-json').value = JSON.stringify(topicosData);
-    
-    console.log("Dados dos tópicos coletados:", topicosData);
     return topicosData;
 }
 
@@ -4664,6 +4918,7 @@ function validateFinalForm() {
     console.log("=== VALIDAÇÃO FINAL ===");
     
     const hasTitle = document.getElementById('lesson-title').value.trim().length > 0;
+    const hasDescricaoBreve = document.getElementById('descricao-breve').value.trim().length > 0; // NOVO
     const hasQuestions = document.querySelectorAll('#questions-list .question-item').length > 0;
     const hasTimeTheory = document.getElementById('estimated-time-theory').value && 
                          parseInt(document.getElementById('estimated-time-theory').value) > 0;
@@ -4694,6 +4949,7 @@ function validateFinalForm() {
     
     console.log("Resultado da validação:", {
         hasTitle,
+        hasDescricaoBreve, // NOVO
         hasTopicsContent,
         hasQuestions,
         hasTimeTheory,
@@ -4702,11 +4958,12 @@ function validateFinalForm() {
         hasChapter,
         hasModule,
         allHintsValid,
-        todosValidos: hasTitle && hasTopicsContent && hasQuestions && hasTimeTheory && 
+        todosValidos: hasTitle && hasDescricaoBreve && hasTopicsContent && hasQuestions && hasTimeTheory && 
                      hasTimePractice && isConfirmed && hasChapter && hasModule && allHintsValid
     });
     
     return hasTitle && 
+           hasDescricaoBreve && // NOVO
            hasTopicsContent && 
            hasQuestions && 
            hasTimeTheory && 
@@ -5012,15 +5269,20 @@ function addBlankStyles() {
     document.head.appendChild(style);
 }
 
-// CORREÇÃO: Chamar a função para adicionar estilos quando a página carregar
+// CORREÇÃO: Adicionar ao DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
+    addCodeBlockStyles();
     addEditorStyles();
     
-    // Re-inicializar todos os editores existentes
+    // CORREÇÃO: Adicionar handler global para Tab
+    setupCodeBlockTabHandling();
+    
+    // Inicializar apenas os editores existentes
     document.querySelectorAll('.topic-item').forEach(topic => {
         initializeEditor(topic);
     });
 });
+
 
 // ========== QUESTÕES DE CÓDIGO ==========
 function initializeCodeQuestion(questionEl) {

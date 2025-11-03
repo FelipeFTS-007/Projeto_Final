@@ -372,6 +372,30 @@
     opacity: 1;
     transform: scale(1);
   }
+
+  /* Barras de progresso para conquistas bloqueadas */
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: #10b981;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+    text-align: center;
+  }
 </style>
 
 {% endblock %}
@@ -397,11 +421,9 @@
       <div class="flex items-center space-x-2 mt-1">
         <span class="text-sm font-semibold bg-blue-200 px-2 py-1 rounded-full">Nível {{ perfil.nivel }}</span>
         <div class="relative w-24 h-2 bg-blue-300 rounded-full">
-          <div class="absolute h-full bg-blue-600 rounded-full" style="width: '{{ progresso_xp }}%'"></div>
+          <div class="absolute h-full bg-blue-600 rounded-full transition-all duration-500" style="width: {{ progresso_xp }}%"></div>
         </div>
         <span class="text-xs text-blue-700">{{ progresso_xp|floatformat:0 }}%</span>
-
-
       </div>
     </div>
   </div>
@@ -417,7 +439,7 @@
       <p class="text-xs text-white">Lições</p>
     </div>
     <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
-      <p class="text-2xl font-bold text-white">{{ perfil.conquistas }}</p>
+      <p class="text-2xl font-bold text-white">{{ desbloq_count }}</p>
       <p class="text-xs text-white">Conquistas</p>
     </div>
   </div>
@@ -463,7 +485,6 @@
         <span id="contador-conquistas">
           {{ desbloq_count }} de {{ total_conquistas }} conquistas
         </span>
-
       </div>
     </div>
   </div>
@@ -475,31 +496,33 @@
       <img src="{% static 'imagem/filter_icon_136624.png' %}" alt="Filtro" class="w-5 h-5 object-contain" />
     </div>
 
-    <!-- Filtro de Raridade - ABORDAGEM ROBUSTA -->
+    <!-- Filtro de Raridade -->
     <form method="get" id="filtroForm" class="flex gap-2">
+      <!-- Manter página atual nos filtros -->
       {% if request.GET.page %}
       <input type="hidden" name="page" value="{{ request.GET.page }}">
       {% endif %}
 
       <select name="raridade" id="raridadeSelect" class="border rounded-md px-3 py-2 text-sm">
-        <option value="todas">Todas as Raridades</option>
-        <option value="comum">Comum</option>
-        <option value="rara">Rara</option>
-        <option value="epica">Épico</option>
-        <option value="lendaria">Lendário</option>
+        <option value="todas" {% if request.GET.raridade == 'todas' or not request.GET.raridade %}selected{% endif %}>Todas as Raridades</option>
+        <option value="comum" {% if request.GET.raridade == 'comum' %}selected{% endif %}>Comum</option>
+        <option value="rara" {% if request.GET.raridade == 'rara' %}selected{% endif %}>Rara</option>
+        <option value="epica" {% if request.GET.raridade == 'epica' %}selected{% endif %}>Épico</option>
+        <option value="lendaria" {% if request.GET.raridade == 'lendaria' %}selected{% endif %}>Lendário</option>
       </select>
 
       <select name="categoria" id="categoriaSelect" class="border rounded-md px-3 py-2 text-sm">
-        <option value="todas">Todas as Categorias</option>
-        <option value="progresso">Progresso</option>
-        <option value="habilidade">Habilidade</option>
-        <option value="precisao">Precisão</option>
-        <option value="dominio">Domínio</option>
-        <option value="especial">Especial</option>
+        <option value="todas" {% if request.GET.categoria == 'todas' or not request.GET.categoria %}selected{% endif %}>Todas as Categorias</option>
+        <option value="progresso" {% if request.GET.categoria == 'progresso' %}selected{% endif %}>Progresso</option>
+        <option value="habilidade" {% if request.GET.categoria == 'habilidade' %}selected{% endif %}>Habilidade</option>
+        <option value="precisao" {% if request.GET.categoria == 'precisao' %}selected{% endif %}>Precisão</option>
+        <option value="dominio" {% if request.GET.categoria == 'dominio' %}selected{% endif %}>Domínio</option>
+        <option value="especial" {% if request.GET.categoria == 'especial' %}selected{% endif %}>Especial</option>
       </select>
+      
+      <!-- Botão submit escondido para funcionar com JavaScript -->
+      <button type="submit" style="display: none;"></button>
     </form>
-
-
   </div>
 </div>
 
@@ -515,27 +538,37 @@
 
 <!-- Grid de Conquistas Desbloqueadas -->
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  {% for conquista in conquistas_desbloqueadas %}
-  <div class="conquista unlocked p-4 bg-white rounded-lg shadow shine-effect" data-titulo="{{ conquista.titulo }}"
-    data-descricao="{{ conquista.descricao }}" data-raridade="{{ conquista.raridade }}"
-    data-categoria="{{ conquista.categoria }}" data-icone="{% if conquista.icone %}{{ conquista.icone.url }}{% endif %}"
-    data-progresso="{{ conquista.progresso|default:100 }}"
-    data-objetivo="{{ conquista.objetivo|default:'Sem objetivo definido' }}" onclick="abrirConquista(this)">
-    <div class="badge-bg badge-bg-{{ conquista.raridade }}"></div>
+  {% for conquista_data in conquistas_desbloqueadas %}
+  <div class="conquista unlocked p-4 bg-white rounded-lg shadow shine-effect" 
+       data-titulo="{{ conquista_data.conquista.titulo }}"
+       data-descricao="{{ conquista_data.conquista.descricao }}" 
+       data-raridade="{{ conquista_data.conquista.raridade }}"
+       data-categoria="{{ conquista_data.conquista.categoria }}" 
+       data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
+       data-progresso="100"
+       data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
+       onclick="abrirConquista(this)">
+    <div class="badge-bg badge-bg-{{ conquista_data.conquista.raridade }}"></div>
     <div class="conquista-content relative z-10 flex flex-col items-center">
-      <div class="w-16 h-16 flex items-center justify-center rounded-full icon-{{ conquista.raridade }} text-3xl">
-        {% if conquista.icone %}
-        <img src="{{ conquista.icone.url }}" alt="{{ conquista.titulo }}" class="w-12 h-12 object-contain">
+      <div class="w-16 h-16 flex items-center justify-center rounded-full icon-{{ conquista_data.conquista.raridade }} text-3xl">
+        {% if conquista_data.conquista.icone %}
+        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-12 h-12 object-contain">
         {% else %}
-        <i class="fas fa-award text-gray-400"></i>
+        <i class="fas fa-award"></i>
         {% endif %}
       </div>
-      <h3 class="mt-3 font-bold text-{{ conquista.raridade }}">{{ conquista.titulo }}</h3>
+      <h3 class="mt-3 font-bold text-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.titulo }}</h3>
       <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
-        <span class="badge-pill badge-pill-{{ conquista.raridade }}">{{ conquista.raridade|capfirst }}</span>
-        <span class="badge-pill badge-pill-{{ conquista.categoria }}">{{ conquista.categoria|capfirst }}</span>
+        <span class="badge-pill badge-pill-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
+        <span class="badge-pill badge-pill-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
       </div>
-      <p class="mt-3 text-center text-sm">{{ conquista.descricao }}</p>
+      <p class="mt-3 text-center text-sm">{{ conquista_data.conquista.descricao }}</p>
+      <div class="mt-2 w-full">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%"></div>
+        </div>
+        <div class="progress-text">✅ Concluído</div>
+      </div>
     </div>
   </div>
   {% empty %}
@@ -544,7 +577,6 @@
   </div>
   {% endfor %}
 </div>
-
 
 <!-- Conquistas bloqueadas -->
 <div class="my-4 mt-8">
@@ -557,33 +589,83 @@
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  {% for conquista in conquistas_bloqueadas %}
-  <div class="conquista locked p-4 bg-white rounded-lg shadow achievement-locked" data-titulo="{{ conquista.titulo }}"
-    data-descricao="{{ conquista.descricao }}" data-raridade="{{ conquista.raridade }}"
-    data-categoria="{{ conquista.categoria }}" data-icone="{% if conquista.icone %}{{ conquista.icone.url }}{% endif %}"
-    data-progresso="{{ conquista.progresso|default:0 }}"
-    data-objetivo="{{ conquista.objetivo|default:'Sem objetivo definido' }}" onclick="abrirConquista(this)">
-    <div class="badge-bg badge-bg-{{ conquista.raridade }}"></div>
+  {% for conquista_data in conquistas_bloqueadas %}
+  <div class="conquista locked p-4 bg-white rounded-lg shadow achievement-locked" 
+       data-titulo="{{ conquista_data.conquista.titulo }}"
+       data-descricao="{{ conquista_data.conquista.descricao }}" 
+       data-raridade="{{ conquista_data.conquista.raridade }}"
+       data-categoria="{{ conquista_data.conquista.categoria }}" 
+       data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
+       data-progresso="{{ conquista_data.progresso.percentual }}"
+       data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
+       onclick="abrirConquista(this)">
+    <div class="badge-bg badge-bg-{{ conquista_data.conquista.raridade }}"></div>
     <div class="conquista-content relative z-10 flex flex-col items-center">
       <div class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-300 text-3xl">
-        {% if conquista.icone %}
-        <img src="{{ conquista.icone.url }}" alt="{{ conquista.titulo }}" class="w-12 h-12 object-contain">
+        {% if conquista_data.conquista.icone %}
+        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-12 h-12 object-contain">
         {% else %}
         <i class="fas fa-award text-gray-400"></i>
         {% endif %}
       </div>
-      <h3 class="mt-3 font-bold text-gray-500">{{ conquista.titulo }}</h3>
+      <h3 class="mt-3 font-bold text-gray-500">{{ conquista_data.conquista.titulo }}</h3>
       <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
-        <span class="badge-pill badge-pill-{{ conquista.raridade }}">{{ conquista.raridade|capfirst }}</span>
-        <span class="badge-pill badge-pill-{{ conquista.categoria }}">{{ conquista.categoria|capfirst }}</span>
+        <span class="badge-pill badge-pill-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
+        <span class="badge-pill badge-pill-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
       </div>
-      <p class="mt-3 text-center text-sm text-gray-400">{{ conquista.descricao }}</p>
+      <p class="mt-3 text-center text-sm text-gray-400">{{ conquista_data.conquista.descricao }}</p>
+      <div class="mt-2 w-full">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{ conquista_data.progresso.percentual }}%"></div>
+        </div>
+        <div class="progress-text">{{ conquista_data.progresso.progresso_atual }}/{{ conquista_data.progresso.meta }} ({{ conquista_data.progresso.percentual }}%)</div>
+      </div>
     </div>
   </div>
   {% empty %}
-  <p class="text-gray-400">Nenhuma conquista bloqueada.</p>
+  <div class="col-span-full">
+    <p class="text-gray-400 text-center py-4">Nenhuma conquista bloqueada.</p>
+  </div>
   {% endfor %}
 </div>
+
+<!-- PAGINAÇÃO -->
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
+  <div class="text-sm text-blue-600">
+    Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} conquistas
+  </div>
+
+  <div class="flex items-center gap-4">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+      ←
+    </a>
+    {% endif %}
+
+    <span class="text-blue-600 font-medium">
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
+      →
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Indicador de progresso sutil -->
+<div class="flex justify-center w-full mt-4">
+  <div class="w-64 bg-gray-200 rounded-full h-2">
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+      style="width: {% widthratio page_obj.number page_obj.paginator.num_pages 100 %}%">
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <!-- Modal Conquista -->
 <div id="modal-conquista"
@@ -618,7 +700,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Modal de Edição de Perfil -->
 <div id="edit-profile-modal"
@@ -686,9 +767,7 @@
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="https://github.com/seuusuario" pattern="https?://(www\.)?github\.com/[\w-]+/?"
             title="Digite uma URL válida do GitHub">
-        </div>
 
-        <div>
           <label for="linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
           <input type="url" name="linkedin" id="linkedin" value="{{ perfil.linkedin|default:'' }}"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -696,8 +775,6 @@
             title="Digite uma URL válida do LinkedIn">
         </div>
       </div>
-
-
 
       <div class="bg-blue-100 px-6 py-4 flex justify-end space-x-3">
         <button type="button" id="cancel-edit"
@@ -713,77 +790,9 @@
   </div>
 </div>
 
-<!-- PAGINAÇÃO PARA CONQUISTAS DESBLOQUEADAS -->
-{% if conquistas_desbloqueadas.paginator.num_pages > 1 %}
-<div class="mt-6 flex justify-between items-center border-t border-blue-200 pt-4">
-  <div class="text-sm text-blue-600">
-    Página {{ conquistas_desbloqueadas.number }} de {{ conquistas_desbloqueadas.paginator.num_pages }}
-  </div>
-
-  <div class="flex items-center gap-2">
-    {% if conquistas_desbloqueadas.has_previous %}
-    <a href="?page_desbloq={{ conquistas_desbloqueadas.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page_desbloq' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-200 transition text-sm">
-      ← Anterior
-    </a>
-    {% endif %}
-
-    {% if conquistas_desbloqueadas.has_next %}
-    <a href="?page_desbloq={{ conquistas_desbloqueadas.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page_desbloq' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-200 transition text-sm">
-      Próxima →
-    </a>
-    {% endif %}
-  </div>
-</div>
-{% endif %}
-
-<!-- PAGINAÇÃO ÚNICA - ESTILO TAREFAS -->
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
-  <div class="text-sm text-blue-600">
-    Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} conquistas
-  </div>
-
-  <div class="flex items-center gap-4">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
-      ←
-    </a>
-    {% endif %}
-
-    <span class="text-blue-600 font-medium">
-      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-    </span>
-
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
-      →
-    </a>
-    {% endif %}
-  </div>
-</div>
-
-<!-- Indicador de progresso sutil -->
-<div class="flex justify-center w-full mt-4">
-  <div class="w-64 bg-gray-200 rounded-full h-2">
-    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-      style="width: '{% widthratio page_obj.number page_obj.paginator.num_pages 100 %}'">
-    </div>
-  </div>
-</div>
-{% endif %}
-
-
-
-
 {% endblock %}
 
 {% block extra_js %}
-
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     // Setar valores dos selects
@@ -796,50 +805,67 @@
 
     // Submeter form quando select mudar
     document.getElementById('raridadeSelect').addEventListener('change', function () {
-      document.getElementById('filtroForm').submit();
+      submitFiltros();
     });
 
     document.getElementById('categoriaSelect').addEventListener('change', function () {
-      document.getElementById('filtroForm').submit();
+      submitFiltros();
     });
-  });
-</script>
-<script>
-  // Script para garantir que paginação mantenha filtros
-  document.addEventListener('DOMContentLoaded', function () {
+
+    // Função para submeter filtros mantendo outros parâmetros
+    function submitFiltros() {
+      const form = document.getElementById('filtroForm');
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // Manter página se existir
+      const page = urlParams.get('page');
+      if (page) {
+        if (!form.querySelector('input[name="page"]')) {
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'page';
+          hiddenInput.value = page;
+          form.appendChild(hiddenInput);
+        }
+      }
+      
+      form.submit();
+    }
+
+    // Garantir que paginação mantenha filtros
     const paginationLinks = document.querySelectorAll('a[href*="page="]');
-
+    
     paginationLinks.forEach(link => {
-      const url = new URL(link.href);
-      const params = url.searchParams;
-
-      // Adicionar raridade se estiver filtrada
-      const raridadeSelect = document.querySelector('select[name="raridade"]');
-      if (raridadeSelect && raridadeSelect.value !== 'todas') {
-        params.set('raridade', raridadeSelect.value);
+      const url = new URL(link.href, window.location.origin);
+      const params = new URLSearchParams(url.search);
+      
+      // Manter raridade
+      if (raridade !== 'todas') {
+        params.set('raridade', raridade);
       }
-
-      // Adicionar categoria se estiver filtrada
-      const categoriaSelect = document.querySelector('select[name="categoria"]');
-      if (categoriaSelect && categoriaSelect.value !== 'todas') {
-        params.set('categoria', categoriaSelect.value);
+      
+      // Manter categoria  
+      if (categoria !== 'todas') {
+        params.set('categoria', categoria);
       }
-
+      
+      // Atualizar href
+      url.search = params.toString();
       link.href = url.toString();
     });
   });
-</script>
-<script>
+
   function abrirConquista(el) {
     document.getElementById("conquista-titulo").textContent = el.dataset.titulo;
     document.getElementById("conquista-descricao").textContent = el.dataset.descricao;
-    document.getElementById("conquista-objetivo").textContent = el.dataset.objetivo;
-
+    document.getElementById("conquista-objetivo").textContent = "Objetivo: " + el.dataset.objetivo;
 
     const iconeDiv = document.getElementById("conquista-icone");
-    iconeDiv.innerHTML = el.dataset.icone
-      ? `<img src="${el.dataset.icone}" class="w-16 h-16 object-contain">`
-      : "🏆";
+    if (el.dataset.icone && el.dataset.icone !== "None") {
+      iconeDiv.innerHTML = `<img src="${el.dataset.icone}" class="w-16 h-16 object-contain">`;
+    } else {
+      iconeDiv.innerHTML = "🏆";
+    }
 
     const raridadeEl = document.getElementById("conquista-raridade");
     raridadeEl.textContent = el.dataset.raridade.charAt(0).toUpperCase() + el.dataset.raridade.slice(1);
@@ -856,109 +882,46 @@
     document.getElementById("modal-conquista").classList.remove("modal-hidden");
     document.getElementById("modal-conquista").classList.add("modal-visible");
   }
+
   function fecharConquista() {
     const modal = document.getElementById("modal-conquista");
     modal.classList.remove("modal-visible");
     modal.classList.add("modal-hidden");
   }
+
   document.getElementById("modal-conquista").addEventListener("click", function (e) {
     if (e.target === this) fecharConquista();
   });
 
+  // Modal de edição de perfil
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  const modal = document.getElementById('edit-profile-modal');
+  const closeModalBtn = document.getElementById('close-modal');
+  const cancelEditBtn = document.getElementById('cancel-edit');
+  const btnUploadFoto = document.getElementById('btnUploadFoto');
+  const uploadFoto = document.getElementById('uploadFoto');
 
-</script>
+  function openModal() {
+    modal.classList.remove('modal-hidden');
+    modal.classList.add('modal-visible');
+  }
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const editProfileBtn = document.getElementById('edit-profile-btn');
-    const modal = document.getElementById('edit-profile-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelEditBtn = document.getElementById('cancel-edit');
-    const btnUploadFoto = document.getElementById('btnUploadFoto');
-    const uploadFoto = document.getElementById('uploadFoto');
+  function closeModal() {
+    modal.classList.remove('modal-visible');
+    modal.classList.add('modal-hidden');
+  }
 
-    function openModal() {
-      modal.classList.remove('modal-hidden');
-      modal.classList.add('modal-visible');
-    }
-    function closeModal() {
-      modal.classList.remove('modal-visible');
-      modal.classList.add('modal-hidden');
-    }
+  editProfileBtn.addEventListener('click', openModal);
+  closeModalBtn.addEventListener('click', closeModal);
+  cancelEditBtn.addEventListener('click', closeModal);
 
-    editProfileBtn.addEventListener('click', openModal);
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelEditBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    // aciona input de upload ao clicar na camerazinha
-    btnUploadFoto.addEventListener('click', () => uploadFoto.click());
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
   });
-</script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // --- Modal ---
-    const editProfileBtn = document.getElementById('edit-profile-btn');
-    const modal = document.getElementById('edit-profile-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelEditBtn = document.getElementById('cancel-edit');
-    const btnUploadFoto = document.getElementById('btnUploadFoto');
-    const uploadFoto = document.getElementById('uploadFoto');
 
-    function openModal() {
-      modal.classList.remove('modal-hidden');
-      modal.classList.add('modal-visible');
-    }
-    function closeModal() {
-      modal.classList.remove('modal-visible');
-      modal.classList.add('modal-hidden');
-    }
+  btnUploadFoto.addEventListener('click', () => uploadFoto.click());
 
-    editProfileBtn.addEventListener('click', openModal);
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelEditBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-    btnUploadFoto.addEventListener('click', () => uploadFoto.click());
-
-    // Script simplificado - os selects já mantêm os valores via template
-
-    // Apenas para debug - verificar se os filtros estão sendo aplicados
-    console.log('Filtros atuais:', {
-      raridade: '{{ request.GET.raridade }}',
-      categoria: '{{ request.GET.categoria }}',
-      page: '{{ request.GET.page }}'
-    });
-
-    // Garantir que os links de paginação mantenham os filtros
-    const paginationLinks = document.querySelectorAll('a[href*="page="]');
-    const currentParams = new URLSearchParams(window.location.search);
-
-    paginationLinks.forEach(link => {
-      const linkUrl = new URL(link.href);
-      const linkParams = new URLSearchParams(linkUrl.search);
-
-      // Manter raridade se existir
-      if (currentParams.has('raridade') && !linkParams.has('raridade')) {
-        linkParams.set('raridade', currentParams.get('raridade'));
-      }
-
-      // Manter categoria se existir
-      if (currentParams.has('categoria') && !linkParams.has('categoria')) {
-        linkParams.set('categoria', currentParams.get('categoria'));
-      }
-
-      linkUrl.search = linkParams.toString();
-      link.href = linkUrl.toString();
-    });
-
-  });
-</script>
-<script>
+  // Preview do avatar
   document.getElementById('uploadFoto').addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -981,9 +944,8 @@
       reader.readAsDataURL(file);
     }
   });
-</script>
-<script>
-  // Apenas esta função já resolve
+
+  // Validação de URLs
   document.querySelector('form').addEventListener('submit', function (e) {
     const github = document.getElementById('github').value;
     const linkedin = document.getElementById('linkedin').value;
@@ -1000,7 +962,5 @@
       return;
     }
   });
-
 </script>
-
 {% endblock %}

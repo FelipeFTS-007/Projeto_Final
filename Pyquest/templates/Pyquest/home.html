@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+    /* Seus estilos CSS existentes permanecem aqui */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
     .card-hover {
@@ -30,11 +31,6 @@
       width: var(--progress);
       background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
       border-radius: 9999px;
-    }
-    
-    @keyframes progressAnimation {
-      0% { width: 0%; }
-      100% { width: 45%; }
     }
     
     .xp-badge {
@@ -118,7 +114,6 @@
       background: linear-gradient(135deg, #ffff 0%, #ffffff 100%);
     }
     
-
     .card-red {
       border-color: #EF4444;
       background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
@@ -145,8 +140,6 @@
       margin-bottom: 20px;
     }
     
-    
-    
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -158,6 +151,12 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+
+    /* Novo estilo para o timer */
+    .timer-active {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+      color: white !important;
     }
 </style>
 {% endblock %}
@@ -181,12 +180,12 @@
   <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Boas-vindas" class="w-16 h-16 relative z-10 floating-element">
   
   <!-- Elementos decorativos de fundo -->
-      <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-        <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
-        <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
-        <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
-      </div>
-    </div>
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+    <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
+    <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
+    <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
+  </div>
+</div>
 
 <!-- Cards de Estatísticas com layout melhorado -->
 <div class="stats-grid">
@@ -207,9 +206,9 @@
     </div>
     <div class="flex items-center mt-2 flex-grow">
       <img src="{% static 'imagem/local_cafe_100dp_10B981_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
-      <p class="text-green-600 font-bold text-2xl ml-3">{{ tempo }}</p>
+      <p id="tempo-estudo-display" class="text-green-600 font-bold text-2xl ml-3">{{ tempo }}</p>
     </div>
-    <p class="text-xs text-green-500 mt-2">+{{ dif_tempo }} em relação à ontem</p>
+    <p class="text-xs text-green-500 mt-2">Minutos</p>
   </div>
   
   <div class="p-5 activity-item rounded-2xl shadow-md card-hover border card-amber">
@@ -219,7 +218,7 @@
     </div>
     <div class="flex items-center mt-2 flex-grow">
       <img src="{% static 'imagem/mode_heat_100dp_F59E0B_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
-      <p class="text-amber-600 font-bold text-2xl ml-3">{{ sequencia }} Dias</p>
+      <p class="text-amber-600 font-bold text-2xl ml-3">{{ perfil.sequencia }} Dias</p>
     </div>
     <p class="text-xs text-amber-500 mt-2">Mantenha a sequência para ganhar bônus!</p>
   </div>
@@ -235,21 +234,21 @@
     <div class="flex items-center">
       <div class="relative">
         <div class="w-16 h-16">
-      <svg viewBox="0 0 36 36" class="circular-chart">
-        <path class="circle"
-          stroke-dasharray="{{ progresso_vidas }}, 100"
-          d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"/>
-        <text x="18" y="20.35" class="percentage">{{ vidas }}/{{ max_vidas }}</text>
-      </svg>
+          <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle"
+              stroke-dasharray="{{ progresso_vidas }}, 100"
+              d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <text x="18" y="20.35" class="percentage">{{ vidas }}/{{ max_vidas }}</text>
+          </svg>
         </div>
       </div>
       <p class="text-red-600 font-bold text-xl ml-4">{{ vidas }}</p>
     </div>
     <p class="text-xs text-red-500 mt-2">
-    {% if proxima_vida > 0 %}
-      Regeneração: {{ proxima_vida }} min
+    {% if perfil.vidas < 10 %}
+      Regeneração: {{ perfil.tempo_para_proxima_vida }} min
     {% else %}
       Vidas completas
     {% endif %}
@@ -263,9 +262,9 @@
     </div>
     <div class="flex items-center">
       <img src="{% static 'imagem/trophy_100dp_8B5CF6_FILL0_wght400_GRAD0_opsz48.png' %}" alt="trofeu" class="w-16 h-16">
-      <p class="text-purple-600 font-bold text-2xl ml-4">{{ xp }}</p>
+      <p class="text-purple-600 font-bold text-2xl ml-4">{{ perfil.xp }}</p>
     </div>
-    <p class="text-xs text-purple-500 mt-2">+{{ xp_diario }} XP hoje</p>
+    <p class="text-xs text-purple-500 mt-2">+{{ perfil.xp_hoje }} XP hoje</p>
   </div>
   
   <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-blue">
@@ -284,14 +283,210 @@
   </div>
 </div>
 
-
-<!-- Botão Continuar Estudando com destaque -->
+<!-- Botão Continuar Estudando com sistema de timer -->
 <div class="mt-6 flex justify-center">
-  <button class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-4 rounded-2xl font-semibold text-l transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
-    Continuar Estudando
+  <button id="btn-iniciar-estudo" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-4 rounded-2xl font-semibold text-l transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
+    <span id="btn-text">Continuar Estudando</span>
     <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
   </button>
+  
+  <div id="timer-display" class="hidden items-center ml-4">
+    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-mono text-lg">
+      <span id="timer-minutes">00</span>:<span id="timer-seconds">00</span>
+    </div>
+    <button id="btn-parar-estudo" class="ml-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">
+      Parar
+    </button>
+  </div>
 </div>
 
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class TimerEstudo {
+    constructor() {
+        this.tempoInicio = null;
+        this.intervalo = null;
+        this.tempoDecorrido = 0;
+        this.estaRodando = false;
+        
+        this.btnIniciar = document.getElementById('btn-iniciar-estudo');
+        this.btnParar = document.getElementById('btn-parar-estudo');
+        this.timerDisplay = document.getElementById('timer-display');
+        this.tempoEstudoDisplay = document.getElementById('tempo-estudo-display');
+        
+        this.inicializarEventos();
+    }
+    
+    inicializarEventos() {
+        this.btnIniciar.addEventListener('click', () => this.iniciarEstudo());
+        this.btnParar.addEventListener('click', () => this.pararEstudo());
+        
+        // Salvar tempo quando a página for fechada/recarregada
+        window.addEventListener('beforeunload', () => {
+            if (this.estaRodando) {
+                this.salvarTempoEstudo();
+            }
+        });
+    }
+    
+    iniciarEstudo() {
+        this.estaRodando = true;
+        this.tempoInicio = new Date();
+        
+        this.btnIniciar.classList.add('hidden');
+        this.timerDisplay.classList.remove('hidden');
+        this.btnIniciar.classList.remove('pulse-animation');
+        
+        this.intervalo = setInterval(() => {
+            this.atualizarTimer();
+        }, 1000);
+        
+        console.log("⏱️ Timer iniciado");
+    }
+    
+    atualizarTimer() {
+        const agora = new Date();
+        const diferenca = Math.floor((agora - this.tempoInicio) / 1000);
+        this.tempoDecorrido = diferenca;
+        
+        const minutos = Math.floor(diferenca / 60);
+        const segundos = diferenca % 60;
+        
+        document.getElementById('timer-minutes').textContent = minutos.toString().padStart(2, '0');
+        document.getElementById('timer-seconds').textContent = segundos.toString().padStart(2, '0');
+    }
+    
+    async pararEstudo() {
+        if (this.intervalo) {
+            clearInterval(this.intervalo);
+        }
+        
+        this.estaRodando = false;
+        
+        try {
+            await this.salvarTempoEstudo();
+            this.resetarTimer();
+        } catch (error) {
+            console.error('Erro ao salvar tempo:', error);
+            this.resetarTimer();
+        }
+    }
+    
+    async salvarTempoEstudo() {
+        if (this.tempoDecorrido > 0) {
+            try {
+                const response = await fetch('/salvar-tempo-estudo/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        tempo_segundos: this.tempoDecorrido,
+                        tipo: 'estudo_geral'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`✅ Tempo salvo: ${this.tempoDecorrido} segundos`);
+                    
+                    // Atualizar display do tempo total
+                    if (this.tempoEstudoDisplay && data.tempo_total_formatado) {
+                        this.tempoEstudoDisplay.textContent = data.tempo_total_formatado;
+                    }
+                    
+                    // Mostrar notificação
+                    this.mostrarNotificacao(`+${this.formatarTempo(this.tempoDecorrido)} de estudo registrado!`);
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.error('Erro ao salvar tempo:', error);
+            }
+        }
+        return false;
+    }
+    
+    resetarTimer() {
+        this.tempoInicio = null;
+        this.tempoDecorrido = 0;
+        
+        this.btnIniciar.classList.remove('hidden');
+        this.timerDisplay.classList.add('hidden');
+        this.btnIniciar.classList.add('pulse-animation');
+        
+        document.getElementById('timer-minutes').textContent = '00';
+        document.getElementById('timer-seconds').textContent = '00';
+        
+        console.log("⏱️ Timer resetado");
+    }
+    
+    formatarTempo(segundos) {
+        const minutos = Math.floor(segundos / 60);
+        const segs = segundos % 60;
+        
+        if (minutos > 0) {
+            return `${minutos}min ${segs}s`;
+        } else {
+            return `${segs}s`;
+        }
+    }
+    
+    mostrarNotificacao(mensagem) {
+        // Criar notificação simples
+        const notificacao = document.createElement('div');
+        notificacao.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        notificacao.textContent = mensagem;
+        
+        document.body.appendChild(notificacao);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            document.body.removeChild(notificacao);
+        }, 3000);
+    }
+}
+
+// Inicializar o timer quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    window.timerEstudo = new TimerEstudo();
+    
+    // Atualizar tempo de estudo a cada 30 segundos (opcional)
+    setInterval(() => {
+        if (window.timerEstudo.estaRodando) {
+            console.log("🔄 Atualizando tempo em background...");
+        }
+    }, 30000);
+});
+
+// Função para testar o salvamento de tempo (apenas para desenvolvimento)
+async function testarSalvamentoTempo() {
+    try {
+        const response = await fetch('/testar-tempo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                segundos: 120  // 2 minutos de teste
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`Tempo de teste salvo! Total: ${data.tempo_atual} segundos`);
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erro no teste:', error);
+    }
+}
+</script>
 {% endblock %}

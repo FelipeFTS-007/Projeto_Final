@@ -75,10 +75,15 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DJANGO_DB_NAME', 'pyquest_db'),
+        'USER': os.environ.get('DJANGO_DB_USER', 'pyquest_user'),
+        'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', 'pyquest_pass'),
+        'HOST': os.environ.get('DJANGO_DB_HOST', 'db'),
+        'PORT': 5432,
     }
 }
 

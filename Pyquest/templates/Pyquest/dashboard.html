@@ -1,342 +1,686 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - PyQuest{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Variáveis de cores para consistência com conteúdo */
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-dark-blue: #1E40AF;
+        --light-blue: #EFF6FF;
+        --text-blue: #1E40AF;
+        --light-bg: #F8FAFC;
+        --success-green: #10B981;
+        --warning-orange: #F59E0B;
+        --danger-red: #EF4444;
+        --purple: #8B5CF6;
+    }
+    
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    
+    /* Cards de estatísticas modernizados */
+    .stat-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.1);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color-1, #3B82F6), var(--card-color-2, #1E40AF));
+    }
+    
+    .stat-card-completed {
+        --card-color-1: #10B981;
+        --card-color-2: #059669;
+    }
+    
+    .stat-card-progress {
+        --card-color-1: #F59E0B;
+        --card-color-2: #D97706;
+    }
+    
+    .stat-card-locked {
+        --card-color-1: #6B7280;
+        --card-color-2: #4B5563;
+    }
+    
+    .stat-card-overall {
+        --card-color-1: #8B5CF6;
+        --card-color-2: #7C3AED;
+    }
+    
+    .stat-card-streak {
+        --card-color-1: #EF4444;
+        --card-color-2: #DC2626;
+    }
+    
+    .stat-card-vida {
+        --card-color-1: #3B82F6;
+        --card-color-2: #1E40AF;
+    }
+    
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: var(--light-blue);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-blue);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748B;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-subtext {
+        font-size: 0.75rem;
+        color: #94A3B8;
+    }
+    
+    /* Gráficos modernizados */
+    .chart-container {
+        position: relative;
+        height: 440px;
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Calendário Mini Compacto - Atualizado */
+    .mini-calendar {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 2px solid #E2E8F0;
+        height: 440px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .mini-calendar:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0 0.5rem;
+    }
+    
+    .calendar-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .calendar-nav-btn {
+        background: #f3f4f6;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #4b5563;
+        font-size: 0.8rem;
+    }
+    
+    .calendar-nav-btn:hover {
+        background: #e5e7eb;
+        color: #374151;
+        transform: scale(1.05);
+    }
+    
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+    
+    .weekday {
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #6b7280;
+        padding: 4px 0;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        flex: 1;
+        grid-template-rows: repeat(6, 1fr);
+        min-height: 0;
+    }
+    
+    .calendar-day {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        border: 2px solid transparent;
+        min-height: 0;
+        height: auto;
+    }
+    
+    .calendar-day::before {
+        content: '';
+        display: block;
+        padding-top: 100%;
+    }
+    
+    .calendar-day span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .calendar-day:hover {
+        transform: scale(1.1);
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .day-other-month {
+        color: #d1d5db;
+        background: #f9fafb;
+    }
+    
+    .day-today {
+        border-color: #ef4444;
+        background: #fef2f2;
+        color: #dc2626;
+        font-weight: 600;
+    }
+    
+    /* Cores de atividade - quadrado todo pintado */
+    .activity-none { 
+        background-color: #f8fafc; 
+        border-color: #e2e8f0;
+    }
+    .activity-low { 
+        background-color: #dbeafe; 
+        border-color: #93c5fd;
+    }
+    .activity-medium { 
+        background-color: #93c5fd; 
+        border-color: #60a5fa;
+    }
+    .activity-high { 
+        background-color: #3b82f6; 
+        border-color: #2563eb;
+        color: white;
+    }
+    .activity-very-high { 
+        background-color: #1e40af; 
+        border-color: #1e3a8a;
+        color: white;
+    }
+    
+    .calendar-stats {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f3f4f6;
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Legenda compacta */
+    .calendar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        border: 1px solid;
+    }
+    
+    /* Botões de período modernizados */
+    .time-btn {
+        position: relative;
+        z-index: 10;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        outline: none;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #64748B;
+    }
+    
+    .time-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+    
+    .time-btn.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+    
+    /* Barra de progresso para módulos */
+    .progress-bar-modules {
+        height: 0.5rem;
+        background: #E2E8F0;
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-fill-modules {
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+        transition: width 1s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Header modernizado */
+    .dashboard-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dashboard-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 400;
+    }
+    
+    /* Animações */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .stat-card, .chart-container, .mini-calendar {
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .stat-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-size: 1.75rem;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+        }
+        
+        .calendar-day {
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .dashboard-title {
+            font-size: 1.5rem;
+        }
+        
+        .stat-card {
+            padding: 1.25rem;
+        }
+        
+        .calendar-day {
+            font-size: 0.65rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="space-y-8">
-  <!-- Cards de resumo com design melhorado -->
-  <div class="grid md:grid-cols-6 gap-4">
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-clock text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">Tempo de estudo</h3>
-      <p class="text-lg font-bold text-white">1h 25m</p>
-      <div class="w-full bg-blue-400 rounded-full h-1 mt-2">
-        <div class="bg-white h-1 rounded-full" style="width: 75%"></div>
-      </div>
-    </div>
-    
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-star text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">XP total</h3>
-      <p class="text-lg font-bold text-white">2.450</p>
-      <div class="text-xs text-blue-200 mt-1">+120 hoje</div>
-    </div>
-    
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-cubes text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">Módulos</h3>
-      <p class="text-lg font-bold text-white">12/20</p>
-      <div class="w-full bg-blue-400 rounded-full h-1 mt-2">
-        <div class="bg-white h-1 rounded-full" style="width: 60%"></div>
-      </div>
-    </div>
-    
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-fire text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">Sequência</h3>
-      <p class="text-lg font-bold text-white">7 Dias</p>
-      <div class="text-xs text-blue-200 mt-1">Meta: 21 dias</div>
-    </div>
-    
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-bullseye text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">Precisão</h3>
-      <p class="text-lg font-bold text-white">89%</p>
-      <div class="text-xs text-blue-200 mt-1 flex items-center justify-center">
-        <i class="fas fa-arrow-up mr-1"></i> 5% desde ontem
-      </div>
-    </div>
-    
-    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-center shadow-lg transform transition-transform hover:scale-105 cursor-pointer">
-      <div class="flex justify-center mb-2">
-        <i class="fas fa-trophy text-white text-xl"></i>
-      </div>
-      <h3 class="text-xs font-semibold text-white mb-1">Acertos seguidos</h3>
-      <p class="text-lg font-bold text">
-
-
-                  <p class="text-lg font-bold text-white">14</p>
-            <div class="text-xs text-blue-200 mt-1">Recorde: 22</div>
+    <!-- Cabeçalho modernizado -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1 class="dashboard-title">Dashboard</h1>
+            <p class="dashboard-subtitle">Bem-vindo de volta, {{ request.user.first_name|default:request.user.username }}! 👋 Veja seu progresso e continue evoluindo.</p>
+            <div class="text-sm text-white/80 mt-2">
+                Atualizado em <span id="current-time">{{ current_time }}</span>
+            </div>
         </div>
     </div>
 
-    <!-- Gráficos lado a lado com design melhorado -->
-    <div class="grid md:grid-cols-2 gap-6">
-        <!-- Gráfico de Evolução de XP -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-blue-800 flex items-center">
-                    <i class="fas fa-chart-line mr-2"></i> Evolução do XP
-                </h2>
-                <div class="flex gap-2 bg-blue-100 p-1 rounded-lg">
-                    <button class="time-btn px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold transition-all duration-300" data-period="day">Dia</button>
-                    <button class="time-btn px-3 py-1 rounded-lg bg-transparent text-blue-700 font-semibold hover:bg-blue-200 transition-all duration-300" data-period="week">Semana</button>
-                    <button class="time-btn px-3 py-1 rounded-lg bg-transparent text-blue-700 font-semibold hover:bg-blue-200 transition-all duration-300" data-period="month">Mês</button>
-                </div>
+    <!-- Cards de Resumo Atualizados -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <!-- Tempo de Estudo -->
+        <div class="stat-card stat-card-vida fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-clock text-blue-600 text-xl"></i>
             </div>
-            <div class="relative h-72">
-                <canvas id="xpChart"></canvas>
-                <div class="absolute top-3 right-3 bg-white/80 py-1 px-2 rounded-lg shadow text-xs hidden" id="xpTooltip">
-                    <span class="font-bold" id="xpValue">0</span> XP
-                </div>
+            <h3 class="stat-label">Tempo de Estudo</h3>
+            <p class="stat-number" id="tempo-estudo">{{ perfil.tempo_estudo_formatado }}</p>
+            <div class="stat-subtext" id="tempo-hoje">Hoje</div>
+        </div>
+        
+        <!-- XP Total -->
+        <div class="stat-card stat-card-overall fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-star text-purple-600 text-xl"></i>
+            </div>
+            <h3 class="stat-label">XP Total</h3>
+            <p class="stat-number" id="xp-total">{{ perfil.xp|default:0 }}</p>
+            <div class="stat-subtext" id="xp-hoje">+{{ perfil.xp_hoje|default:0 }} hoje</div>
+        </div>
+        
+        <!-- Módulos -->
+        <div class="stat-card stat-card-progress fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-cubes text-orange-500 text-xl"></i>
+            </div>
+            <h3 class="stat-label">Módulos</h3>
+            <p class="stat-number" id="modulos-concluidos">{{ modulos_concluidos|default:0 }}/{{ total_modulos|default:0 }}</p>
+            <div class="progress-bar-modules">
+                <div class="progress-fill-modules" id="progresso-modulos" style="width: 0%"></div>
             </div>
         </div>
         
-        <!-- Gráfico de Progresso por Categoria -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-blue-800 flex items-center">
-                    <i class="fas fa-chart-pie mr-2"></i> Progresso por Categoria
+        <!-- Sequência -->
+        <div class="stat-card stat-card-streak fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-fire text-red-500 text-xl"></i>
+            </div>
+            <h3 class="stat-label">Sequência</h3>
+            <p class="stat-number" id="sequencia-atual">{{ perfil.sequencia|default:0 }} Dias</p>
+            <div class="stat-subtext" id="meta-sequencia">Meta: 7 dias</div>
+        </div>
+        
+        <!-- Tempo para Próxima Vida (NOVO) -->
+        <div class="stat-card stat-card-vida fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-heart text-blue-600 text-xl"></i>
+            </div>
+            <h3 class="stat-label">Próxima Vida</h3>
+            <p class="stat-number" id="tempo-proxima-vida">{{ perfil.tempo_para_proxima_vida }}min</p>
+            <div class="stat-subtext">{{ perfil.vidas }}/{{ perfil.max_vidas }} vidas</div>
+        </div>
+        
+        <!-- Recorde de Sequência -->
+        <div class="stat-card stat-card-completed fade-in">
+            <div class="stat-icon">
+                <i class="fas fa-trophy text-green-600 text-xl"></i>
+            </div>
+            <h3 class="stat-label">Recorde</h3>
+            <p class="stat-number" id="recorde-sequencia">{{ perfil.sequencia_maxima|default:0 }} Dias</p>
+            <div class="stat-subtext">Melhor sequência</div>
+        </div>
+    </div>
+
+    <!-- Primeira Linha de Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Gráfico de Evolução de XP -->
+        <div class="chart-container fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-blue-600"></i> Evolução do XP
                 </h2>
-                <button class="text-blue-600 hover:text-blue-800 transition-colors" id="toggleLegend">
-                    <i class="fas fa-layer-group"></i>
+                <div class="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                    <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300" data-period="day">Dia</button>
+                    <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300 active" data-period="week">Semana</button>
+                    <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300" data-period="month">Mês</button>
+                </div>
+            </div>
+            <div class="chart-container-inner">
+                <canvas id="xpChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Mini Calendário Compacto -->
+        <div class="mini-calendar fade-in">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn" id="calendar-prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="calendar-title" id="calendar-month-year">Carregando...</div>
+                <button class="calendar-nav-btn" id="calendar-next">
+                    <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="h-64">
-                    <canvas id="categoryChart"></canvas>
+            
+            <div class="calendar-weekdays">
+                <div class="weekday">D</div>
+                <div class="weekday">S</div>
+                <div class="weekday">T</div>
+                <div class="weekday">Q</div>
+                <div class="weekday">Q</div>
+                <div class="weekday">S</div>
+                <div class="weekday">S</div>
+            </div>
+            
+            <div class="calendar-grid" id="calendar-days">
+                <!-- Dias serão preenchidos via JavaScript -->
+            </div>
+            
+            <!-- Legenda Compacta -->
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <div class="legend-color activity-none border-gray-300"></div>
+                    <span>Nenhum</span>
                 </div>
-                <div class="flex flex-col justify-center space-y-3" id="categoryLegend">
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 rounded-full bg-blue-600 mr-2"></div>
-                        <span class="text-sm">Básico</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
-                        <span class="text-sm">Funções</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 rounded-full bg-blue-400 mr-2"></div>
-                        <span class="text-sm">Estruturas</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 rounded-full bg-blue-300 mr-2"></div>
-                        <span class="text-sm">POO</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 rounded-full bg-blue-200 mr-2"></div>
-                        <span class="text-sm">Projetos</span>
-                    </div>
+                <div class="legend-item">
+                    <div class="legend-color activity-low border-blue-300"></div>
+                    <span>Leve</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color activity-medium border-blue-400"></div>
+                    <span>Médio</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color activity-high border-blue-600"></div>
+                    <span>Alto</span>
+                </div>
+            </div>
+            
+            <div class="calendar-stats">
+                <div class="stat-item">
+                    <span>Dias ativos:</span>
+                    <span class="font-semibold text-blue-600" id="stats-active-days">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Sequência:</span>
+                    <span class="font-semibold text-green-600" id="stats-current-streak">0 dias</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Segunda linha de gráficos -->
-    <div class="grid md:grid-cols-2 gap-6">
-        <!-- Radar Chart -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-blue-800 flex items-center">
-                    <i class="fas fa-brain mr-2"></i> Habilidades Dominadas
+    <!-- Segunda Linha de Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Gráfico de Conquistas por Categoria -->
+        <div class="chart-container fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-trophy mr-3 text-blue-600"></i> Conquistas por Categoria
                 </h2>
-                <div class="flex items-center text-sm text-blue-600">
-                    <div class="w-3 h-3 rounded-full bg-blue-600 mr-1"></div>
-                    <span>Seu nível</span>
-                    <div class="w-3 h-3 rounded-full bg-blue-300 mx-2 ml-4"></div>
-                    <span>Média</span>
+                <div class="flex items-center text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1 text-blue-500"></i>
+                    <span class="text-xs">Progresso nas categorias</span>
                 </div>
             </div>
-            <div class="h-72">
-                <canvas id="radarChart"></canvas>
+            <div class="chart-container-inner">
+                <canvas id="conquistasChart"></canvas>
+            </div>
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs" id="conquistas-legenda">
+                <!-- Legenda será preenchida via JavaScript -->
             </div>
         </div>
         
         <!-- Ranking Chart -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-blue-800 flex items-center">
-                    <i class="fas fa-trophy mr-2"></i> Evolução no Ranking
+        <div class="chart-container fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-trophy mr-3 text-blue-600"></i> Evolução no Ranking
                 </h2>
                 <div class="relative inline-block text-left">
-                    <button id="rankingDropdownBtn" class="inline-flex justify-center w-full rounded-md border border-blue-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none transition-colors">
-                        Dia
+                    <button id="rankingDropdownBtn" class="inline-flex justify-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors">
+                        Semana
                         <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>
                     </button>
-                    <div id="rankingDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                    <div id="rankingDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-32 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10">
                         <div class="py-1">
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="day">Dia</a>
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="week">Semana</a>
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-period="month">Mês</a>
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="day">Dia</a>
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="week">Semana</a>
+                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="month">Mês</a>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="h-72">
+            <div class="chart-container-inner">
                 <canvas id="rankingChart"></canvas>
             </div>
-            <div class="flex justify-between items-center mt-3 text-sm text-blue-600">
-                <span>Posição atual: <strong>#42</strong></span>
-                <span class="flex items-center text-green-600">
-                    <i class="fas fa-arrow-up mr-1"></i> Subiu 8 posições
+            <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                <span>Posição atual: <strong id="posicao-atual">#{{ posicao_ranking|default:0 }}</strong></span>
+                <span class="flex items-center" id="variacao-ranking">
+                    <i class="fas fa-minus mr-1 text-gray-500"></i> <span class="text-gray-500">Sem variação</span>
                 </span>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Heatmap de atividade -->
-    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-blue-800 flex items-center">
-                <i class="fas fa-calendar-alt mr-2"></i> Atividade Anual
-            </h2>
-            <div class="relative inline-block text-left">
-                <button id="heatmapDropdownBtn" class="inline-flex justify-center w-full rounded-md border border-blue-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none transition-colors">
-                    2025
-                    <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>
-                </button>
-                <div id="heatmapDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10">
-                    <div class="py-1">
-                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2023">2023</a>
-                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2024">2024</a>
-                        <a href="#" class="heatmap-option block px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors" data-year="2025">2025</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Meses -->
-        <div id="heatmapMonths" class="flex justify-between text-xs text-gray-500 mb-1 px-1"></div>
-
-        <div id="heatmap" class="grid gap-1 w-full mb-4"></div>
-        
-        <div class="flex justify-between items-center">
-            <p class="text-xs text-gray-500">Cada quadrado representa um dia do ano</p>
-            <div class="flex gap-2 items-center text-xs text-gray-700">
-                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-gray-200"></div> Nenhuma</span>
-                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-100"></div> Pouco</span>
-                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-200"></div> Médio</span>
-                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-400"></div> Bastante</span>
-                <span class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-blue-600"></div> Muito</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estatísticas extras com design melhorado -->
-    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg border border-blue-100">
-        <h2 class="text-lg font-bold text-blue-800 mb-6 flex items-center">
-            <i class="fas fa-chart-bar mr-2"></i> Estatísticas Detalhadas
-        </h2>
-        
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-white p-4 rounded-xl shadow">
-                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
-                    <i class="fas fa-target mr-2 text-blue-500"></i> Desempenho
-                </h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Taxa de acertos</span>
-                            <span class="font-semibold">89%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 89%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Questões respondidas</span>
-                            <span class="font-semibold">342</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 68%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white p-4 rounded-xl shadow">
-                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
-                    <i class="fas fa-calendar-check mr-2 text-blue-500"></i> Frequência
-                </h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Dias ativos (mês)</span>
-                            <span class="font-semibold">18/30</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Melhor sequência</span>
-                            <span class="font-semibold">22 dias</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 73%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white p-4 rounded-xl shadow">
-                <h3 class="text-sm font-semibold text-blue-700 mb-3 flex items-center">
-                    <i class="fas fa-medal mr-2 text-blue-500"></i> Conquistas
-                </h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Ranking atual</span>
-                            <span class="font-semibold">Top 15%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 15%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Conquistas</span>
-                            <span class="font-semibold">8/20</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="mt-6 pt-4 border-t border-blue-100">
-            <h3 class="text-sm font-semibold text-blue-700 mb-3">Próximas metas</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-                <div class="flex items-center bg-white p-3 rounded-lg shadow">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <i class="fas fa-flag text-blue-600"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium">Alcançar 3.000 XP</p>
-                        <p class="text-xs text-gray-500">550 XP restantes</p>
-                    </div>
-                </div>
-                <div class="flex items-center bg-white p-3 rounded-lg shadow">
-
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                            <i class="fas fa-bolt text-blue-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Sequência de 14 dias</p>
-                            <p class="text-xs text-gray-500">7 dias completos</p>
-                        </div>
-                </div>
-            </div>
-        </div>
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white/80 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Carregando dashboard...</p>
     </div>
 </div>
 {% endblock %}
@@ -344,417 +688,1035 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Dados simulados ---
-    const xpData = { 
-        day: [200,450,300,600,350,700,500], 
-        week: [1500,1800,1600,1900,2000,2202,2100], 
-        month: [6000,7500,8000,7200,8500,9000,9500] 
-    };
+// Variáveis globais
+let charts = {};
+let currentCalendarDate = new Date();
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Inicializando Dashboard...');
     
-    const rankingData = { 
-        day: [50,35,25,15], 
-        week: [45,30,20,10], 
-        month: [40,25,15,5] 
-    };
+    const loadingOverlay = document.getElementById('loadingOverlay');
     
-    const categoryData = [25,20,30,15,10];
-    const radarData = [80,65,70,50,40];
-    const radarAvgData = [60,50,65,40,30];
-
-    // Primeiro: preparar os containers com opacidade 0
-    document.querySelectorAll('.bg-gradient-to-br').forEach((el, i) => {
-        el.style.opacity = 0;
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
-    });
-
-    // Inicializar os gráficos após um pequeno delay
-    setTimeout(() => {
-        // --- Inicializa gráficos ---
-        const xpChart = new Chart(document.getElementById('xpChart'), {
-            type: 'line', 
-            data: {
-                labels: ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'], 
-                datasets: [{
-                    label: 'XP ganho', 
-                    data: xpData.day, 
-                    borderColor: '#2563eb', 
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)', 
-                    fill: true, 
-                    tension: 0.4,
-                    pointBackgroundColor: '#2563eb',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        enabled: false
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                // Animação mais rápida para os gráficos
-                animation: {
-                    duration: 1200,
-                    easing: 'easeOutQuart'
-                }
-            }
-        });
-
-        // Adiciona interatividade ao gráfico de XP
-        const xpTooltip = document.getElementById('xpTooltip');
-        const xpValue = document.getElementById('xpValue');
-        const xpCanvas = document.getElementById('xpChart');
+    try {
+        // Inicializar dados básicos
+        await inicializarDadosBasicos();
         
-        xpCanvas.addEventListener('mousemove', (e) => {
-            const rect = xpCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        // Inicializar gráficos
+        await inicializarGraficos();
+        
+        // Inicializar calendário
+        await inicializarCalendario();
+        
+        // Configurar botões
+        configurarBotoesPeriodo();
+        configurarControlesCalendario();
+        
+        // Animar entrada dos elementos
+        animarEntrada();
+        
+        console.log('✅ Dashboard inicializado com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dashboard:', error);
+        mostrarNotificacao('Erro ao carregar dados do dashboard', 'error');
+    } finally {
+        setTimeout(() => {
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => loadingOverlay.remove(), 300);
+        }, 500);
+    }
+});
+
+// Funções de API
+async function fetchAPI(url) {
+    try {
+        console.log('📡 Fetching URL:', url);
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('✅ Dados recebidos de', url, data);
+        return data;
+    } catch (error) {
+        console.error('❌ Erro na requisição API:', error);
+        
+        // FALLBACK para diferentes APIs
+        if (url.includes('/calendar/')) {
+            return getFallbackCalendarData();
+        }
+        
+        if (url.includes('/xp/')) {
+            const period = url.includes('period=day') ? 'day' : 
+                          url.includes('period=month') ? 'month' : 'week';
             
-            const points = xpChart.getElementsAtEventForMode(e, 'index', { intersect: false });
-            
-            if (points.length > 0) {
-                const point = points[0];
-                const value = xpChart.data.datasets[0].data[point.index];
-                
-                xpValue.textContent = value;
-                xpTooltip.style.display = 'block';
-                xpTooltip.style.left = `${x + 10}px`;
-                xpTooltip.style.top = `${y - 10}px`;
+            if (period === 'day') {
+                return {
+                    labels: ['00h', '04h', '08h', '12h', '16h', '20h'],
+                    data: [50, 120, 80, 200, 150, 100],
+                    period: period
+                };
+            } else if (period === 'month') {
+                return {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    data: [1500, 1800, 1600, 2000],
+                    period: period
+                };
             } else {
-                xpTooltip.style.display = 'none';
+                return {
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    data: [200, 450, 300, 600, 350, 500, 400],
+                    period: 'week'
+                };
             }
-        });
+        }
         
-        xpCanvas.addEventListener('mouseleave', () => {
-            xpTooltip.style.display = 'none';
-        });
+        if (url.includes('/conquistas-categorias/')) {
+            return {
+                categorias: ['Progresso', 'Habilidade', 'Precisão', 'Domínio', 'Especial'],
+                percentuais: [75, 60, 45, 30, 20],
+                detalhes: [
+                    { categoria: 'Progresso', conquistas_desbloqueadas: 6, total_conquistas: 8, percentual: 75 },
+                    { categoria: 'Habilidade', conquistas_desbloqueadas: 3, total_conquistas: 5, percentual: 60 },
+                    { categoria: 'Precisão', conquistas_desbloqueadas: 2, total_conquistas: 4, percentual: 45 },
+                    { categoria: 'Domínio', conquistas_desbloqueadas: 1, total_conquistas: 3, percentual: 30 },
+                    { categoria: 'Especial', conquistas_desbloqueadas: 1, total_conquistas: 5, percentual: 20 }
+                ]
+            };
+        }
+        
+        return getFallbackData(url);
+    }
+}
 
-        const rankingChart = new Chart(document.getElementById('rankingChart'), {
-            type: 'line', 
+function getFallbackCalendarData() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const data = [];
+    
+    // Gerar dados mais realistas baseados no perfil do usuário
+    const hoje = new Date();
+    const monthStart = new Date(year, month, 1);
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(year, month, day);
+        const isPast = currentDate < hoje;
+        const isToday = currentDate.toDateString() === hoje.toDateString();
+        
+        // Simular atividade mais realista (menos aleatória)
+        let hasActivity = false;
+        let activityLevel = 0;
+        
+        if (isPast) {
+            // Dias passados têm maior chance de atividade
+            hasActivity = Math.random() > 0.3;
+            if (hasActivity) {
+                // Níveis baseados em probabilidade mais realista
+                const rand = Math.random();
+                if (rand < 0.4) activityLevel = 1;      // 40% leve
+                else if (rand < 0.7) activityLevel = 2; // 30% moderado
+                else if (rand < 0.9) activityLevel = 3; // 20% intenso
+                else activityLevel = 4;                 // 10% muito intenso
+            }
+        } else if (isToday) {
+            // Hoje tem alta chance de atividade
+            hasActivity = Math.random() > 0.2;
+            activityLevel = hasActivity ? 2 : 0;
+        }
+        
+        const activityCount = hasActivity ? Math.floor(Math.random() * 6) + 1 : 0;
+        const xp = hasActivity ? Math.floor(Math.random() * 80) + 10 : 0;
+        
+        data.push({
+            date: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+            activity_level: activityLevel,
+            activity_count: activityCount,
+            xp: xp,
+            is_today: isToday,
+            has_activity: hasActivity
+        });
+    }
+    
+    // Calcular estatísticas realistas
+    const dias_ativos = data.filter(d => d.activity_level > 0).length;
+    const total_atividades = data.reduce((sum, d) => sum + d.activity_count, 0);
+    const total_xp = data.reduce((sum, d) => sum + d.xp, 0);
+    
+    return {
+        year: year,
+        month: month,
+        data: data,
+        stats: {
+            dias_ativos: dias_ativos,
+            total_atividades: total_atividades,
+            total_xp: total_xp,
+            current_streak: calcularSequenciaFallback(data),
+            percentual_mes: Math.round((dias_ativos / daysInMonth) * 100)
+        }
+    };
+}
+
+function calcularSequenciaFallback(data) {
+    const hoje = new Date().toISOString().split('T')[0];
+    let streak = 0;
+    
+    // Encontrar dados de hoje
+    const todayData = data.find(d => d.date === hoje);
+    if (todayData && todayData.activity_level > 0) {
+        streak++;
+    }
+    
+    return streak;
+}
+
+function getFallbackData(url) {
+    console.log('🔄 Usando dados de fallback para:', url);
+    
+    if (url.includes('/basico/')) {
+        return {
+            tempo_estudo: '45:30',
+            xp_total: 1250,
+            xp_hoje: 85,
+            modulos_concluidos: 3,
+            total_modulos: 12,
+            sequencia_atual: 5,
+            precisao: 89,
+            acertos_seguidos: 8,
+            recorde_acertos: 15
+        };
+    }
+    
+    if (url.includes('/categorias/')) {
+        return {
+            labels: ['Python', 'Django', 'Banco Dados', 'Frontend', 'APIs'],
+            data: [75, 60, 45, 30, 20],
+            cores: ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']
+        };
+    }
+    
+    if (url.includes('/ranking/')) {
+        return {
+            labels: ['2 dias atrás', 'Ontem', 'Hoje'],
+            data: [45, 43, 42],
+            posicao_atual: 42,
+            variacao: 3,
+            period: 'week'
+        };
+    }
+    
+    return {};
+}
+
+async function inicializarDadosBasicos() {
+    try {
+        const data = await fetchAPI('/api/dashboard/basico/');
+        
+        // Atualizar cards de resumo
+        document.getElementById('tempo-estudo').textContent = data.tempo_estudo;
+        document.getElementById('xp-total').textContent = data.xp_total.toLocaleString();
+        document.getElementById('xp-hoje').textContent = `+${data.xp_hoje} hoje`;
+        document.getElementById('modulos-concluidos').textContent = `${data.modulos_concluidos}/${data.total_modulos}`;
+        document.getElementById('sequencia-atual').textContent = `${data.sequencia_atual} Dias`;
+        document.getElementById('precisao').textContent = `${data.precisao}%`;
+        document.getElementById('acertos-seguidos').textContent = data.acertos_seguidos;
+        document.getElementById('recorde-acertos').textContent = `Recorde: ${data.recorde_acertos}`;
+        
+        // Animar barras de progresso
+        setTimeout(() => {
+            document.getElementById('progresso-modulos').style.width = `${(data.modulos_concluidos / data.total_modulos) * 100}%`;
+        }, 500);
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados básicos:', error);
+    }
+}
+
+async function inicializarGraficos() {
+    await Promise.all([
+        inicializarGraficoXP(),
+        inicializarGraficoConquistas(),
+        inicializarGraficoRanking()
+    ]);
+}
+
+// Gráfico de Linha - Evolução do XP
+async function inicializarGraficoXP() {
+    try {
+        const data = await fetchAPI('/api/dashboard/xp/?period=week');
+        
+        const ctx = document.getElementById('xpChart').getContext('2d');
+        charts.xp = new Chart(ctx, {
+            type: 'line',
             data: {
-                labels: ['Semana 1','Semana 2','Semana 3','Semana 4'], 
+                labels: data.labels,
                 datasets: [{
-                    label: 'Posição no Ranking', 
-                    data: rankingData.day, 
-                    borderColor: '#1d4ed8', 
-                    backgroundColor: 'rgba(29, 78, 216, 0.1)', 
-                    fill: true, 
-                    tension: 0.3,
-                    pointBackgroundColor: '#1d4ed8',
+                    label: 'XP ganho',
+                    data: data.data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3b82f6',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
-                responsive: true, 
-                maintainAspectRatio: false, 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        reverse: true, 
-                        title: {
-                            display: true,
-                            text: 'Ranking'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { color: '#6b7280' }
                     },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#6b7280' }
                     }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                animation: {
-                    duration: 1200,
-                    easing: 'easeOutQuart'
                 }
             }
         });
+        
+        console.log('✅ Gráfico de XP inicializado (Semana)');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar gráfico XP:', error);
+    }
+}
 
-        const categoryChart = new Chart(document.getElementById('categoryChart'), {
-            type: 'doughnut', 
+// Gráfico de Conquistas por Categoria
+async function inicializarGraficoConquistas() {
+    try {
+        const data = await fetchAPI('/api/dashboard/conquistas-categorias/');
+        
+        const ctx = document.getElementById('conquistasChart').getContext('2d');
+        charts.conquistas = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Básico','Funções','Estruturas','POO','Projetos'], 
+                labels: data.categorias,
                 datasets: [{
-                    data: categoryData, 
-                    backgroundColor: ['#1e40af','#2563eb','#3b82f6','#60a5fa','#93c5fd'],
+                    label: 'Conclusão (%)',
+                    data: data.percentuais,
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(14, 165, 233, 0.8)'
+                    ],
+                    borderColor: [
+                        '#3b82f6',
+                        '#10b981',
+                        '#f59e0b',
+                        '#ef4444',
+                        '#8b5cf6',
+                        '#0ea5e9'
+                    ],
                     borderWidth: 2,
-                    borderColor: '#fff',
-                    hoverOffset: 10
+                    borderRadius: 6,
+                    borderSkipped: false,
                 }]
             },
             options: {
-                responsive: true, 
+                indexAxis: 'y',
+                responsive: true,
                 maintainAspectRatio: false,
-                cutout: '70%',
                 plugins: {
-                    legend: {
-                        display: false
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const detalhes = data.detalhes[context.dataIndex];
+                                return [
+                                    `Progresso: ${context.parsed.x}%`,
+                                    `Conquistas: ${detalhes.conquistas_desbloqueadas}/${detalhes.total_conquistas}`
+                                ];
+                            }
+                        }
                     }
                 },
-                animation: {
-                    duration: 1200,
-                    easing: 'easeOutQuart'
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { 
+                            color: '#6b7280',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#6b7280' }
+                    }
                 }
             }
         });
+        
+        // Atualizar legenda
+        atualizarLegendaConquistas(data.detalhes);
+        
+        console.log('✅ Gráfico de conquistas inicializado');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar gráfico de conquistas:', error);
+    }
+}
 
-        const radarChart = new Chart(document.getElementById('radarChart'), {
-            type: 'radar', 
+function atualizarLegendaConquistas(detalhes) {
+    const container = document.getElementById('conquistas-legenda');
+    container.innerHTML = '';
+    
+    detalhes.forEach((categoria, index) => {
+        const cores = [
+            'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 
+            'bg-red-500', 'bg-purple-500', 'bg-cyan-500'
+        ];
+        
+        const item = document.createElement('div');
+        item.className = 'flex items-center space-x-2 p-2 bg-gray-50 rounded-lg';
+        item.innerHTML = `
+            <div class="w-3 h-3 rounded-full ${cores[index]}"></div>
+            <div class="flex-1 min-w-0">
+                <div class="font-semibold text-gray-800 text-xs truncate">${categoria.categoria}</div>
+                <div class="text-gray-600 text-xs">${categoria.conquistas_desbloqueadas}/${categoria.total_conquistas}</div>
+            </div>
+            <div class="font-bold text-gray-800 text-xs">${categoria.percentual}%</div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// Gráfico de Ranking
+async function inicializarGraficoRanking() {
+    try {
+        const data = await fetchAPI('/api/dashboard/ranking/?period=week');
+        
+        charts.ranking = new Chart(document.getElementById('rankingChart'), {
+            type: 'line',
             data: {
-                labels: ['Lógica','Funções','Estruturas','OOP','Projetos'], 
-                datasets: [
-                    {
-                        label: 'Seu nível', 
-                        data: radarData, 
-                        borderColor: '#2563eb', 
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)', 
-                        pointBackgroundColor: '#2563eb',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'Média dos usuários', 
-                        data: radarAvgData, 
-                        borderColor: 'rgba(147, 197, 253, 0.8)', 
-                        backgroundColor: 'rgba(147, 197, 253, 0.2)', 
-                        pointBackgroundColor: 'rgba(147, 197, 253, 0.8)',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4
-                    }
-                ]
+                labels: data.labels,
+                datasets: [{
+                    label: 'Posição',
+                    data: data.data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
             },
             options: {
-                responsive: true, 
+                responsive: true,
                 maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    r: {
-                        angleLines: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        pointLabels: {
-                            font: {
-                                size: 11
-                            }
-                        },
-                        suggestedMin: 0,
-                        suggestedMax: 100
+                    y: { 
+                        reverse: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { color: '#6b7280' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#6b7280' }
                     }
-                },
-                animation: {
-                    duration: 1200,
-                    easing: 'easeOutQuart'
                 }
             }
         });
+        
+        // Atualizar informações de ranking
+        document.getElementById('posicao-atual').textContent = `#${data.posicao_atual}`;
+        atualizarVariacaoRanking(data.variacao);
+        
+        console.log('✅ Gráfico de ranking inicializado');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar gráfico ranking:', error);
+    }
+}
 
-        // Função para atualizar gráficos com animação
-        function updateChart(chart, newData) {
-            // Primeiro, escondemos o gráfico suavemente
-            chart.options.animation.duration = 400;
-            chart.data.datasets[0].data = new Array(newData.length).fill(0);
-            chart.update();
-            
-            // Depois de um pequeno delay, mostramos os novos dados com animação
-            setTimeout(() => {
-                chart.options.animation.duration = 800;
-                chart.data.datasets[0].data = newData;
-                chart.update();
-            }, 400);
+function atualizarVariacaoRanking(variacao) {
+    const elemento = document.getElementById('variacao-ranking');
+    
+    if (variacao > 0) {
+        elemento.innerHTML = `<i class="fas fa-arrow-up mr-1 text-green-500"></i> <span class="text-green-500">+${variacao}</span>`;
+    } else if (variacao < 0) {
+        elemento.innerHTML = `<i class="fas fa-arrow-down mr-1 text-red-500"></i> <span class="text-red-500">${variacao}</span>`;
+    } else {
+        elemento.innerHTML = `<i class="fas fa-minus mr-1 text-gray-500"></i> <span class="text-gray-500">Sem variação</span>`;
+    }
+}
+
+// Calendário Mini Compacto
+async function inicializarCalendario() {
+    try {
+        await renderCalendario();
+        console.log('✅ Calendário mini compacto inicializado');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar calendário:', error);
+    }
+}
+
+async function renderCalendario() {
+    const container = document.getElementById('calendar-days');
+    const monthYearElement = document.getElementById('calendar-month-year');
+    
+    // Obter dados do calendário
+    const data = await fetchAPI(`/api/dashboard/calendar/?year=${currentCalendarDate.getFullYear()}&month=${currentCalendarDate.getMonth() + 1}`);
+    
+    // Atualizar título
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
+                       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    monthYearElement.textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+    
+    // Limpar container
+    container.innerHTML = '';
+    
+    // Obter primeiro dia do mês e último dia do mês
+    const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1);
+    const lastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0);
+    
+    // Dias da semana (0 = Domingo, 1 = Segunda, ...)
+    const firstDayIndex = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    // Dias do mês anterior
+    const prevMonthLastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 0).getDate();
+    
+    // Gerar dias do mês anterior
+    for (let i = firstDayIndex; i > 0; i--) {
+        const day = prevMonthLastDay - i + 1;
+        const dayElement = createDayElement(day, true, false, 0, null);
+        container.appendChild(dayElement);
+    }
+    
+    // Gerar dias do mês atual
+    const today = new Date();
+    const isCurrentMonth = today.getMonth() === currentCalendarDate.getMonth() && 
+                          today.getFullYear() === currentCalendarDate.getFullYear();
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+        const isToday = isCurrentMonth && i === today.getDate();
+        
+        // Criar a data completa no formato YYYY-MM-DD
+        const fullDate = `${currentCalendarDate.getFullYear()}-${String(currentCalendarDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        
+        // Encontrar dados para este dia
+        const dayData = data.data.find(d => d.date === fullDate);
+        
+        const activityLevel = dayData ? dayData.activity_level : 0;
+        
+        const dayElement = createDayElement(i, false, isToday, activityLevel, fullDate);
+        container.appendChild(dayElement);
+    }
+    
+    // Calcular dias restantes para completar a grade (6 linhas)
+    const totalCells = 42; // 6 linhas x 7 colunas
+    const existingCells = firstDayIndex + daysInMonth;
+    const remainingCells = totalCells - existingCells;
+    
+    // Gerar dias do próximo mês
+    for (let i = 1; i <= remainingCells; i++) {
+        const dayElement = createDayElement(i, true, false, 0, null);
+        container.appendChild(dayElement);
+    }
+    
+    // Atualizar estatísticas
+    updateCalendarStats(data);
+}
+
+function createDayElement(dayNumber, isOtherMonth, isToday, activityLevel, fullDate) {
+    const dayElement = document.createElement('div');
+    
+    // Classes base
+    let classes = ['calendar-day'];
+    
+    if (isOtherMonth) {
+        classes.push('day-other-month');
+    }
+    if (isToday) {
+        classes.push('day-today');
+    }
+    
+    // Adicionar classe de atividade (quadrado todo pintado)
+    const activityClass = getActivityClass(activityLevel);
+    classes.push(activityClass);
+    
+    dayElement.className = classes.join(' ');
+    
+    // USAR SPAN para o número do dia
+    const daySpan = document.createElement('span');
+    daySpan.textContent = dayNumber;
+    dayElement.appendChild(daySpan);
+    
+    // Adicionar tooltip e clique se houver atividade e não for de outro mês
+    if (activityLevel > 0 && !isOtherMonth && fullDate) {
+        // Adicionar tooltip no hover
+        dayElement.addEventListener('mouseenter', function(e) {
+            showCalendarTooltip(e.target, dayNumber, activityLevel, fullDate);
+        });
+        
+        dayElement.addEventListener('mouseleave', hideCalendarTooltip);
+        
+        // Adicionar clique para ver detalhes
+        dayElement.addEventListener('click', async function() {
+            await mostrarDetalhesDia(fullDate);
+        });
+        
+        // Adicionar cursor pointer para indicar que é clicável
+        dayElement.style.cursor = 'pointer';
+    }
+    
+    return dayElement;
+}
+
+function getActivityClass(level) {
+    if (level === 1) return 'activity-low';
+    if (level === 2) return 'activity-medium';
+    if (level === 3) return 'activity-high';
+    if (level >= 4) return 'activity-very-high';
+    return 'activity-none';
+}
+
+function showCalendarTooltip(element, dayNumber, activityLevel, dateStr) {
+    // Remover tooltip existente
+    hideCalendarTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'calendar-tooltip';
+    
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    let activityText = 'Nenhuma atividade';
+    if (activityLevel === 1) activityText = 'Atividade leve';
+    else if (activityLevel === 2) activityText = 'Atividade moderada';
+    else if (activityLevel === 3) activityText = 'Atividade intensa';
+    else if (activityLevel >= 4) activityText = 'Atividade muito intensa';
+    
+    tooltip.innerHTML = `
+        <div class="font-semibold">${dayNumber} de ${monthNames[currentCalendarDate.getMonth()]}</div>
+        <div>${activityText}</div>
+        <div class="text-xs mt-1">Clique para ver detalhes</div>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // Posicionar tooltip
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = rect.left + rect.width / 2 + 'px';
+    tooltip.style.top = rect.top + 'px';
+    tooltip.style.opacity = '1';
+    
+    element.tooltip = tooltip;
+    
+    // Adicionar clique para ver detalhes
+    element.addEventListener('click', async function() {
+        await mostrarDetalhesDia(dateStr);
+    });
+}
+
+async function mostrarDetalhesDia(dateStr) {
+    console.log('📅 Buscando detalhes para:', dateStr);
+    
+    try {
+        // CORREÇÃO: Garantir que a data seja enviada corretamente
+        const response = await fetch(`/api/calendar/activity-detail/?date=${dateStr}`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
         
-        // Event listeners para botões de período
-        document.querySelectorAll('.time-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.time-btn').forEach(b => {
-                    b.classList.replace('bg-blue-600', 'bg-transparent');
-                    b.classList.replace('text-white', 'text-blue-700');
-                    b.classList.add('hover:bg-blue-200');
-                });
-                
-                btn.classList.replace('bg-transparent', 'bg-blue-600');
-                btn.classList.replace('text-blue-700', 'text-white');
-                btn.classList.remove('hover:bg-blue-200');
-                
-                updateChart(xpChart, xpData[btn.dataset.period]);
-            });
-        });
-
-        // Toggle legend para o gráfico de categorias
-        document.getElementById('toggleLegend').addEventListener('click', () => {
-            const legend = document.getElementById('categoryLegend');
-            legend.classList.toggle('hidden');
-        });
-
-        // Ranking dropdown
-        const rankingDropdownBtn = document.getElementById('rankingDropdownBtn');
-        const rankingDropdownMenu = document.getElementById('rankingDropdownMenu');
+        const data = await response.json();
         
-        rankingDropdownBtn.addEventListener('click', () => {
-            rankingDropdownMenu.classList.toggle('hidden');
-        });
-        
-        document.addEventListener('click', e => {
-            if (!rankingDropdownBtn.contains(e.target) && !rankingDropdownMenu.contains(e.target)) {
-                rankingDropdownMenu.classList.add('hidden');
-            }
-        });
-        
-        document.querySelectorAll('.ranking-option').forEach(option => {
-            option.addEventListener('click', e => {
-                e.preventDefault(); 
-                const period = option.dataset.period; 
-                rankingDropdownBtn.innerHTML = `${option.textContent} <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>`;
-                updateChart(rankingChart, rankingData[period]); 
-                rankingDropdownMenu.classList.add('hidden');
-            });
-        });
-
-        // Referências do heatmap
-        const heatmap = document.getElementById("heatmap");
-        const monthsDiv = document.getElementById("heatmapMonths");
-        const dropdownBtn = document.getElementById("heatmapDropdownBtn");
-        const dropdownMenu = document.getElementById("heatmapDropdownMenu");
-
-        // Função para gerar dados fictícios de um ano
-        function generateYearlyData(year) {
-            const data = [];
-            const startDate = new Date(year, 0, 1);
-            const totalDays = (new Date(year + 1, 0, 1) - startDate) / (1000 * 60 * 60 * 24);
-            
-            for (let i = 0; i < totalDays; i++) {
-                const date = new Date(year, 0, i + 1);
-                // Mais atividade durante os dias de semana
-                const dayOfWeek = date.getDay();
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                const baseLevel = isWeekend ? 0.3 : 0.7;
-                
-                // Aleatoriedade com viés para dias de semana
-                const level = Math.floor(Math.random() * 5 * baseLevel);
-                data.push({ level, date });
-            }
-            return data;
-        }
-
-        // Função para desenhar o heatmap
-        function drawYearlyHeatmap(year) {
-            heatmap.innerHTML = "";
-            monthsDiv.innerHTML = "";
-            const data = generateYearlyData(year);
-            const colors = ["bg-gray-200", "bg-blue-100", "bg-blue-200", "bg-blue-400", "bg-blue-600"];
-            
-            heatmap.style.display = "grid";
-            heatmap.style.gridTemplateColumns = "repeat(53, 1fr)";
-            heatmap.style.gridAutoRows = "1fr";
-            heatmap.style.gap = "2px";
-
-            // Adicionar quadrados vazios no início para alinhar os dias da semana
-            const firstDay = new Date(year, 0, 1).getDay();
-            for (let i = 0; i < firstDay; i++) {
-                const emptyDiv = document.createElement("div");
-                emptyDiv.className = "w-3 h-3 rounded";
-                heatmap.appendChild(emptyDiv);
-            }
-
-            data.forEach(d => {
-                const div = document.createElement("div");
-                div.className = `w-3 h-3 rounded ${colors[d.level]} transition-colors hover:scale-110`;
-                div.title = `${d.date.toLocaleDateString()}: Nível ${d.level + 1} de atividade`;
-                heatmap.appendChild(div);
-            });
-
-            const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            monthNames.forEach(m => {
-                const span = document.createElement('span');
-                span.textContent = m;
-                monthsDiv.appendChild(span);
+        if (data.success) {
+            console.log('✅ Dados recebidos para:', data.date_display || data.date);
+            // Criar modal com detalhes
+            criarModalDetalhesDia(data);
+        } else {
+            console.log('ℹ️ Nenhuma atividade detalhada para este dia');
+            // Mostrar modal mesmo sem atividades
+            criarModalDetalhesDia({
+                date: dateStr,
+                date_display: formatarDataParaExibicao(dateStr), // CORREÇÃO: Adicionar formatação
+                atividades: [],
+                total_atividades: 0,
+                total_xp: 0,
+                tempo_estudo_formatado: '00:00'
             });
         }
-
-        // Dropdown toggle
-        dropdownBtn.addEventListener('click', () => {
-            dropdownMenu.classList.toggle('hidden');
-        });
+    } catch (error) {
+        console.error('❌ Erro ao buscar detalhes:', error);
         
-        document.addEventListener('click', e => {
-            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
+        // Mostrar modal de erro
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-red-600">Erro</h3>
+                    <button class="text-gray-500 hover:text-gray-700" onclick="this.closest('.fixed').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p class="text-gray-600">Não foi possível carregar os detalhes deste dia.</p>
+                <div class="mt-4 flex justify-end">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="this.closest('.fixed').remove()">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Fechar modal ao clicar fora
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
             }
         });
+    }
+}
 
-        // Seleção de ano
-        document.querySelectorAll('.heatmap-option').forEach(option => {
-            option.addEventListener('click', e => {
-                e.preventDefault();
-                const year = parseInt(option.dataset.year);
-                dropdownBtn.innerHTML = `${year} <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>`;
-                dropdownMenu.classList.add('hidden');
-                drawYearlyHeatmap(year);
-            });
+// CORREÇÃO: Função para formatar data para exibição
+function formatarDataParaExibicao(dateStr) {
+    const data = new Date(dateStr);
+    return data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+function criarModalDetalhesDia(dados) {
+    // Remover modal existente se houver
+    const existingModal = document.querySelector('.modal-overlay');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // CORREÇÃO: Usar date_display se disponível, caso contrário formatar
+    let dataFormatada;
+    if (dados.date_display) {
+        dataFormatada = dados.date_display;
+    } else {
+        const dataObj = new Date(dados.date);
+        dataFormatada = dataObj.toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-
-        // Inicializa com 2025
-        drawYearlyHeatmap(2025);
-
-        // Agora que os gráficos estão inicializados, fazer a animação dos containers
-        document.querySelectorAll('.bg-gradient-to-br').forEach((el, i) => {
-            setTimeout(() => {
-                el.style.opacity = 1;
-                el.style.transform = 'translateY(0)';
-            }, 100 + (i * 100));
-        });
-
-    }, 100); // Pequeno delay para garantir que o DOM esteja pronto
-});
-
-// Adiciona tooltips para os cards de estatísticas
-document.querySelectorAll('.transform').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'scale(1.05)';
+    }
+    
+    console.log('📊 Exibindo modal para:', dataFormatada);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200 bg-white">
+                <h3 class="text-xl font-bold text-gray-800">Atividades do Dia</h3>
+                <button class="close-modal text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 bg-gray-50 border-b border-gray-200">
+                <p class="text-gray-700 font-medium text-lg capitalize">${dataFormatada}</p>
+            </div>
+            
+            <div class="p-6 max-h-64 overflow-y-auto">
+                ${dados.atividades && dados.atividades.length > 0 ? 
+                    dados.atividades.map(atividade => `
+                        <div class="mb-4 last:mb-0 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 text-sm">${atividade.titulo || 'Atividade'}</h4>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span class="inline-flex items-center">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            ${atividade.hora || '--:--'}
+                                        </span>
+                                        ${atividade.aula ? ` • ${atividade.aula}` : ''}
+                                    </div>
+                                </div>
+                                <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold ml-3">
+                                    +${atividade.xp_ganho || 0} XP
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') 
+                    : 
+                    '<div class="text-center py-8">' +
+                    '<i class="fas fa-calendar-plus text-gray-300 text-5xl mb-4"></i>' +
+                    '<p class="text-gray-500 font-medium text-lg">Nenhuma atividade</p>' +
+                    '<p class="text-gray-400 text-sm mt-1">Este dia não teve atividades registradas</p>' +
+                    '</div>'
+                }
+            </div>
+            
+            <div class="p-6 bg-gray-50 border-t border-gray-200">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-white p-3 rounded-lg border border-gray-200">
+                        <div class="text-2xl font-bold text-blue-600">${dados.total_atividades || 0}</div>
+                        <div class="text-xs text-gray-600 font-medium mt-1">Atividades</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-gray-200">
+                        <div class="text-2xl font-bold text-green-600">+${dados.total_xp || 0}</div>
+                        <div class="text-xs text-gray-600 font-medium mt-1">XP Total</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-gray-200">
+                        <div class="text-lg font-bold text-purple-600">${dados.tempo_estudo_formatado || '00:00'}</div>
+                        <div class="text-xs text-gray-600 font-medium mt-1">Tempo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 bg-white border-t border-gray-200">
+                <button class="close-modal w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Adicionar event listeners para fechar o modal
+    const closeModalHandler = function() {
+        modal.remove();
+    };
+    
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closeModalHandler);
     });
     
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'scale(1)';
+    // Fechar modal ao clicar no overlay
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModalHandler();
+        }
     });
+    
+    // Fechar modal com ESC
+    const keyHandler = function(e) {
+        if (e.key === 'Escape') {
+            closeModalHandler();
+            document.removeEventListener('keydown', keyHandler);
+        }
+    };
+    
+    document.addEventListener('keydown', keyHandler);
+    
+    // Limpar event listener quando modal for fechado
+    modal.addEventListener('click', function handler() {
+        document.removeEventListener('keydown', keyHandler);
+    });
+}
+
+function hideCalendarTooltip() {
+    const existingTooltip = document.querySelector('.calendar-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+}
+
+function updateCalendarStats(data) {
+    document.getElementById('stats-active-days').textContent = data.stats.dias_ativos;
+    
+    // Calcular sequência atual (simplificado)
+    const currentStreak = calcularSequenciaAtual(data.data);
+    document.getElementById('stats-current-streak').textContent = `${currentStreak} dias`;
+}
+
+function calcularSequenciaAtual(days) {
+    const today = new Date().toISOString().split('T')[0];
+    let streak = 0;
+    let currentDate = new Date(today);
+    
+    for (let i = 0; i < 30; i++) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayData = days.find(d => d.date === dateStr);
+        
+        if (dayData && dayData.activity_level > 0) {
+            streak++;
+        } else {
+            break;
+        }
+        
+        currentDate.setDate(currentDate.getDate() - 1);
+    }
+    
+    return streak;
+}
+
+// FUNÇÕES DE ATUALIZAÇÃO DOS GRÁFICOS
+async function atualizarGraficoXP(period) {
+    console.log('🔄 Atualizando gráfico XP para:', period);
+    try {
+        const data = await fetchAPI(`/api/dashboard/xp/?period=${period}`);
+        
+        if (charts.xp) {
+            charts.xp.data.labels = data.labels;
+            charts.xp.data.datasets[0].data = data.data;
+            charts.xp.update();
+            console.log('✅ Gráfico XP atualizado para:', period);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao atualizar gráfico XP:', error);
+    }
+}
+
+async function atualizarGraficoRanking(period) {
+    console.log('🔄 Atualizando gráfico ranking para:', period);
+    try {
+        const data = await fetchAPI(`/api/dashboard/ranking/?period=${period}`);
+        
+        if (charts.ranking) {
+            charts.ranking.data.labels = data.labels;
+            charts.ranking.data.datasets[0].data = data.data;
+            charts.ranking.update();
+            
+            document.getElementById('posicao-atual').textContent = `#${data.posicao_atual}`;
+            atualizarVariacaoRanking(data.variacao);
+            console.log('✅ Gráfico ranking atualizado para:', period);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao atualizar gráfico ranking:', error);
+    }
+}
+
+// FUNÇÕES AUXILIARES
+function animarEntrada() {
+    const elements = document.querySelectorAll('.fade-in');
+    elements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+function mostrarNotificacao(mensagem, tipo = 'info') {
+    const notification = document.createElement('div');
+    const bgColor = tipo === 'success' ? 'bg-green-500' : tipo === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    
+    notification.className = `fixed top-4 right-4 ${bgColor} text-white p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-full`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${tipo === 'success' ? 'check' : tipo === 'error' ? 'exclamation-triangle' : 'info'} mr-2"></i>
+            <span>${mensagem}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+function atualizarTempoAtual() {
+    const now = new Date();
+    const timeString = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    document.getElementById('current-time').textContent = timeString;
+}
+
+// SISTEMA DE BOTÕES
+function configurarBotoesPeriodo() {
+    console.log('🔧 Configurando botões de período...');
+    
+    // Botões do gráfico de linha (Evolução do XP)
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.dataset.period;
+            console.log('🎯 Botão time-btn clicado:', period);
+            
+            // Remover classe active de todos os botões do mesmo grupo
+            this.parentElement.querySelectorAll('.time-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            
+            // Adicionar classe active ao botão clicado
+            this.classList.add('active');
+            
+            // Atualizar gráfico
+            atualizarGraficoXP(period);
+        });
+    });
+    
+    // Dropdown do ranking
+    const rankingBtn = document.getElementById('rankingDropdownBtn');
+    const rankingMenu = document.getElementById('rankingDropdownMenu');
+    
+    if (rankingBtn) {
+        rankingBtn.addEventListener('click', () => {
+            rankingMenu.classList.toggle('hidden');
+        });
+        
+        // Opções do dropdown
+        document.querySelectorAll('.ranking-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const period = this.dataset.period;
+                rankingBtn.innerHTML = `${this.textContent} <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>`;
+                rankingMenu.classList.add('hidden');
+                atualizarGraficoRanking(period);
+            });
+        });
+    }
+    
+    console.log('✅ Sistema de botões configurado');
+}
+
+// Configurar controles do calendário
+function configurarControlesCalendario() {
+    // Botão mês anterior
+    document.getElementById('calendar-prev').addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendario();
+    });
+    
+    // Botão próximo mês
+    document.getElementById('calendar-next').addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        renderCalendario();
+    });
+}
+
+// Fechar dropdowns ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#rankingDropdownBtn') && !e.target.closest('#rankingDropdownMenu')) {
+        document.getElementById('rankingDropdownMenu')?.classList.add('hidden');
+    }
 });
+
+// Atualizar tempo a cada minuto
+setInterval(atualizarTempoAtual, 60000);
+atualizarTempoAtual();
 </script>
 {% endblock %}

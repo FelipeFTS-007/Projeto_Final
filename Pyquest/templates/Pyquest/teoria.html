@@ -5,521 +5,832 @@
 
 {% block extra_css %}
 <style>
-    /* SEUS ESTILOS ORIGINAIS - MANTIDOS */
-    .card-hover {
-      transition: all 0.3s ease;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    /* Variáveis de cores para consistência com a página de tarefas */
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-dark-blue: #1E40AF;
+        --light-blue: #EFF6FF;
+        --text-blue: #1E40AF;
+        --light-bg: #F8FAFC;
+        --primary-green: #10B981;
+        --dark-green: #059669;
     }
     
-    .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .floating-element {
-      animation: float 6s ease-in-out infinite;
+    /* Animações globais */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-    
-    .pulse-animation {
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    
-    .shine-effect {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .shine-effect::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -75%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-      transform: skewX(-25deg);
-      pointer-events: none;
-    }
-    
-    .shine-effect:hover::before {
-      animation: shine 1s forwards;
-    }
-    
-    @keyframes shine {
-      0% { left: -75%; }
-      100% { left: 125%; }
-    }
-    
-    .progress-ring {
-      transform: rotate(-90deg);
-    }
-    
-    .progress-ring__circle {
-      transition: stroke-dashoffset 0.5s ease;
-    }
-    
-    .typewriter {
-      overflow: hidden;
-      border-right: .15em solid #3B82F6;
-      white-space: nowrap;
-      animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
-    }
-    
-    @keyframes typing {
-      from { width: 0 }
-      to { width: 100% }
-    }
-    
-    @keyframes blink-caret {
-      from, to { border-color: transparent }
-      50% { border-color: #3B82F6; }
-    }
-    
-    .fade-in {
-      animation: fadeIn 1s ease-in;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .interactive-card {
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    
-    .interactive-card:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
-    }
-    
-    .interactive-card:active {
-      transform: translateY(1px) scale(0.98);
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
     }
 
-    .content-hidden {
-      display: none;
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Indicador de navegação ativa */
+    #nav-conteudo {
+        background-color: #3B82F6 !important;
+        color: white !important;
+    }
+    
+    #nav-conteudo .nav-icon {
+        filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%) !important;
     }
 
-    /* ESTILOS PARA LISTAS E CÓDIGO - MELHORADOS */
-    .content-hidden ul,
-    .content-hidden ol {
-      margin: 0.75rem 0;
-      padding-left: 2rem;
+    /* Cabeçalho modernizado - COMBINANDO COM TAREFAS */
+    .page-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
-    .content-hidden ul {
-      list-style-type: disc;
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: float 6s ease-in-out infinite;
     }
     
-    .content-hidden ol {
-      list-style-type: decimal;
-      counter-reset: item;
+    .header-content {
+        position: relative;
+        z-index: 2;
     }
     
-    .content-hidden li {
-      margin: 0.5rem 0;
-      padding-left: 0.5rem;
-      line-height: 1.6;
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
     }
     
-    /* Listas aninhadas */
-    .content-hidden ul ul,
-    .content-hidden ol ul {
-      margin: 0.5rem 0;
-      list-style-type: circle;
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 400;
+        max-width: 100%;
+        line-height: 1.5;
     }
     
-    .content-hidden ol ol,
-    .content-hidden ul ol {
-      margin: 0.5rem 0;
-      list-style-type: lower-roman;
+    /* Botão voltar - COMBINANDO COM TAREFAS */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748B;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+        text-decoration: none;
     }
     
-    /* Listas com múltiplos níveis */
-    .content-hidden ul ul ul {
-      list-style-type: square;
+    .back-button:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
     }
     
-    .content-hidden ol ol ol {
-      list-style-type: lower-alpha;
-    }
-
-    /* Estilos para código */
-    .content-hidden code {
-      background-color: #f1f5f9;
-      color: #dc2626;
-      padding: 0.2rem 0.4rem;
-      border-radius: 0.25rem;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.875rem;
-      border: 1px solid #e2e8f0;
+    /* Stats cards - COMBINANDO COM TAREFAS */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
     
-    .content-hidden pre {
-      background-color: #1e293b;
-      color: #e2e8f0;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin: 1rem 0;
-      overflow-x: auto;
-      border: 1px solid #334155;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.875rem;
-      line-height: 1.5;
+    .stat-card {
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
     }
     
-    .content-hidden pre code {
-      background-color: transparent;
-      color: inherit;
-      padding: 0;
-      border: none;
-      font-size: inherit;
-      font-family: inherit;
-    }
-
-    /* Cores para syntax highlighting básico */
-    .content-hidden .keyword { color: #f472b6; } /* rosa */
-    .content-hidden .string { color: #86efac; } /* verde */
-    .content-hidden .comment { color: #94a3b8; font-style: italic; } /* cinza */
-    .content-hidden .function { color: #7dd3fc; } /* azul claro */
-    .content-hidden .number { color: #fbbf24; } /* amarelo */
-    .content-hidden .operator { color: #c7d2fe; } /* roxo claro */
-
-    /* Estilos para outros elementos de texto */
-    .content-hidden strong,
-    .content-hidden b {
-      font-weight: bold;
-      color: #1E40AF;
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
     }
     
-    .content-hidden em,
-    .content-hidden i {
-      font-style: italic;
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.1);
     }
     
-    .content-hidden u {
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
+    .stat-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
     }
     
-    .content-hidden p {
-      margin: 0.75rem 0;
-      line-height: 1.6;
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.25rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     
-    .content-hidden h1,
-    .content-hidden h2,
-    .content-hidden h3,
-    .content-hidden h4,
-    .content-hidden h5,
-    .content-hidden h6 {
-      font-weight: bold;
-      margin: 1.5rem 0 0.75rem 0;
-      color: #3B82F6;
-      line-height: 1.3;
+    .stat-label {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
     }
     
-    .content-hidden h1 { font-size: 1.5rem; }
-    .content-hidden h2 { font-size: 1.375rem; }
-    .content-hidden h3 { font-size: 1.25rem; }
-    .content-hidden h4 { font-size: 1.125rem; }
-    .content-hidden h5 { font-size: 1rem; }
-    .content-hidden h6 { font-size: 0.875rem; }
-
-    /* Blocos de citação */
-    .content-hidden blockquote {
-      border-left: 4px solid #3B82F6;
-      background-color: #f8fafc;
-      padding: 1rem 1.5rem;
-      margin: 1rem 0;
-      font-style: italic;
-      color: #475569;
+    /* Card do Timer - SUBSTITUI DURAÇÃO ESTIMADA */
+    .timer-stat-card {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        --card-color-1: #10B981;
+        --card-color-2: #059669;
     }
     
-    /* Tabelas */
-    .content-hidden table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      background-color: white;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    .xp-stat-card {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        --card-color-1: #3B82F6;
+        --card-color-2: #1E40AF;
     }
     
-    .content-hidden th,
-    .content-hidden td {
-      padding: 0.75rem;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
+    .topics-stat-card {
+        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        --card-color-1: #8B5CF6;
+        --card-color-2: #7C3AED;
     }
     
-    .content-hidden th {
-      background-color: #3B82F6;
-      color: white;
-      font-weight: bold;
+    /* Cards de conteúdo interativos - ESTILO MODERNO */
+    .content-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        border: 2px solid #E2E8F0;
+        margin-bottom: 1rem;
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
     }
     
-    .content-hidden tr:hover {
-      background-color: #f1f5f9;
+    .content-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px -5px rgba(59, 130, 246, 0.2), 0 4px 8px -2px rgba(59, 130, 246, 0.1);
+        border-color: #3B82F6;
     }
-
-    /* Botão para revisão */
+    
+    .content-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .content-card-header:hover {
+        background: var(--light-blue);
+    }
+    
+    .content-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+    
+    .content-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: var(--light-blue);
+        flex-shrink: 0;
+    }
+    
+    .content-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-blue);
+        margin: 0;
+        line-height: 1.3;
+    }
+    
+    .content-toggle {
+        color: var(--primary-blue);
+        font-weight: bold;
+        transition: transform 0.3s ease;
+    }
+    
+    .content-card.expanded .content-toggle {
+        transform: rotate(180deg);
+    }
+    
+    .content-body {
+        padding: 0 1.25rem 1.25rem;
+        display: none;
+    }
+    
+    .content-card.expanded .content-body {
+        display: block;
+    }
+    
+    /* Estilos para conteúdo rico - MELHORADOS */
+    .rich-text-content {
+        color: #64748B;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .rich-text-content ul,
+    .rich-text-content ol {
+        margin: 0.75rem 0;
+        padding-left: 2rem;
+    }
+    
+    .rich-text-content ul {
+        list-style-type: disc;
+    }
+    
+    .rich-text-content ol {
+        list-style-type: decimal;
+    }
+    
+    .rich-text-content li {
+        margin: 0.5rem 0;
+        padding-left: 0.5rem;
+        line-height: 1.6;
+    }
+    
+    .rich-text-content code {
+        background-color: #f1f5f9;
+        color: #dc2626;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.875rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .rich-text-content pre {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+        border: 1px solid #334155;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    .rich-text-content pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+        border: none;
+        font-size: inherit;
+        font-family: inherit;
+    }
+    
+    .rich-text-content strong,
+    .rich-text-content b {
+        font-weight: bold;
+        color: #1E40AF;
+    }
+    
+    .rich-text-content h1,
+    .rich-text-content h2,
+    .rich-text-content h3,
+    .rich-text-content h4,
+    .rich-text-content h5,
+    .rich-text-content h6 {
+        font-weight: bold;
+        margin: 1.5rem 0 0.75rem 0;
+        color: #3B82F6;
+        line-height: 1.3;
+    }
+    
+    .rich-text-content h1 { font-size: 1.5rem; }
+    .rich-text-content h2 { font-size: 1.375rem; }
+    .rich-text-content h3 { font-size: 1.25rem; }
+    .rich-text-content h4 { font-size: 1.125rem; }
+    .rich-text-content h5 { font-size: 1rem; }
+    .rich-text-content h6 { font-size: 0.875rem; }
+    
+    /* Botões de ação - COMBINANDO COM TAREFAS */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: var(--primary-blue);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .action-btn:hover {
+        background: var(--primary-dark-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
     .btn-revisao {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+        background: var(--primary-green) !important;
     }
     
     .btn-revisao:hover {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        background: var(--dark-green) !important;
+    }
+    
+    /* Modal de conclusão estilizado */
+    .completion-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .completion-modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+        animation: slideUp 0.4s ease forwards;
+    }
+    
+    .completion-modal.active .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+    
+    .modal-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .modal-icon img {
+        width: 40px;
+        height: 40px;
+        filter: invert(100%);
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1E40AF;
+        margin-bottom: 0.75rem;
+    }
+    
+    .modal-message {
+        color: #64748B;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .modal-xp {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #EFF6FF;
+        color: #1E40AF;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .modal-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.9rem;
+    }
+    
+    .modal-btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .modal-btn-primary:hover {
+        background: var(--primary-dark-blue);
+        transform: translateY(-2px);
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #E2E8F0;
+        border-top: 5px solid #3B82F6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Animações de entrada para os cards */
+    .content-card:nth-child(1) { animation-delay: 0.1s; }
+    .content-card:nth-child(2) { animation-delay: 0.2s; }
+    .content-card:nth-child(3) { animation-delay: 0.3s; }
+    .content-card:nth-child(4) { animation-delay: 0.4s; }
+    .content-card:nth-child(5) { animation-delay: 0.5s; }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .content-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .modal-content {
+            padding: 2rem 1.5rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6 fade-in">
-
-  <!-- Topo: Botão voltar + Cronômetro -->
-  <div class="flex items-center justify-between border-b border-blue-100 pb-4">
-    <!-- Botão Voltar Interativo -->
-    <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}">
-      <button class="interactive-card flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-600 font-semibold rounded-xl hover:bg-blue-200 transition">
-        <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
-        Voltar
-      </button>
+<div class="space-y-6">
+    <!-- Botão Voltar - COMBINANDO COM TAREFAS -->
+    <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}" class="back-button">
+        <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-4 h-4">
+        <span>Voltar às Tarefas</span>
     </a>
 
-    <!-- Cronômetro com Progresso -->
-    <div class="flex items-center gap-3 bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold">
-      <div class="relative w-8 h-8">
-        <svg class="progress-ring w-8 h-8" width="32" height="32">
-          <circle class="progress-ring__circle" stroke="#3B82F6" stroke-width="3" fill="transparent" r="14" cx="16" cy="16"
-            stroke-dasharray="88" stroke-dashoffset="52.8"></circle>
-        </svg>
-        <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="w-4 h-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-      </div>
-      <span id="timer">00:00</span>
-      <span class="text-xs">/ {{ aula.tempo_teoria }}:00</span>
-    </div>
-  </div>
-
-  <!-- Cabeçalho da Tarefa com Animação -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-blue-600 typewriter">{{ aula.titulo_aula }}</h2>
-      <span class="text-sm text-blue-500 font-semibold bg-blue-100 px-2 py-1 rounded-lg mt-2 inline-block">Teoria</span>
-    </div>
-    <div class="flex gap-4">
-      <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover">
-        <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="h-5 w-5 mx-1"> {{ aula.tempo_teoria }} min
-      </div>
-      <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover pulse-animation">
-        {% if aula_concluida %}
-          +5 XP
-        {% else %}
-          +{{ aula.xp_teoria }} XP
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Conteúdo Interativo da Tarefa -->
-  <div class="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-2xl p-6 shadow-lg module-card">
-    <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center gap-2">
-      <img src="{% static 'imagem/auto_awesome_mosaic_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Destaque" class="w-6 h-6">
-      {{ aula.titulo_teoria|default:aula.titulo_aula }}
-    </h3>
-    
-    <div class="space-y-4">
-      {% if aula.descricao_breve %}
-      <p class="text-gray-700 leading-relaxed">
-        {{ aula.descricao_breve }}
-      </p>
-      {% endif %}
-
-      <!-- Tópicos Dinâmicos -->
-      {% for topico in topicos %}
-      <div class="bg-white rounded-xl p-4 border border-blue-100 interactive-card" onclick="toggleCard(this)">
-        <h4 class="font-bold text-blue-600 mb-2 flex items-center justify-between">
-          <span>{{ topico.titulo }}</span>
-          <span class="text-blue-400">▼</span>
-        </h4>
-        <div class="content-hidden mt-2">
-          <div class="text-gray-700 rich-text-content">
-            {{ topico.conteudo|safe }}
-          </div>
+    <!-- Cabeçalho da Aula - ESTILO MODERNO -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="flex items-center gap-4 mb-3">
+                <img src="{% static 'imagem/menu_book_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Teoria" class="w-12 h-12 floating-element">
+                <div>
+                    <h1 class="page-title">{{ aula.titulo_teoria|default:aula.titulo_aula }}</h1>
+                    <p class="page-subtitle">{{ aula.descricao_breve|default:"Aprenda os conceitos fundamentais através de explicações detalhadas e exemplos práticos." }}</p>
+                </div>
+            </div>
         </div>
-      </div>
-      {% empty %}
-      <!-- Mensagem quando não há tópicos -->
-      <div class="text-center py-8">
-        <img src="{% static 'imagem/menu_book_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem conteúdo" class="w-16 h-16 mx-auto mb-4 opacity-50">
-        <h3 class="text-lg font-bold text-blue-700 mb-2">Conteúdo em desenvolvimento</h3>
-        <p class="text-blue-600">O conteúdo teórico para esta aula está sendo preparado.</p>
-      </div>
-      {% endfor %}
     </div>
-  </div>
 
-  <!-- Botão Continuar com Animações -->
-  <div class="flex justify-end">
-    {% if aula_concluida %}
-      <!-- BOTÃO PARA REVISÃO (SEMPRE DISPONÍVEL) -->
-      <button class="px-8 py-3 btn-revisao text-white rounded-xl shadow-lg font-bold transition transform hover:scale-105 flex items-center gap-2"
-              onclick="completeLesson()">
-        <span>Concluir revisão</span>
-      </button>
-    {% else %}
-      <!-- BOTÃO NORMAL (PRIMEIRA VEZ) -->
-      <button class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white rounded-xl shadow-lg font-bold transition transform hover:scale-105 flex items-center gap-2"
-              onclick="completeLesson()">
-        <span>Entendi e quero continuar</span>
-        <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5">
-      </button>
-    {% endif %}
-  </div>
+    <!-- Stats Cards - COMBINANDO COM TAREFAS -->
+    <div class="stats-container">
+        <!-- Card de XP -->
+        <div class="stat-card xp-stat-card">
+            <div class="stat-icon">
+                <img src="{% static 'imagem/auto_awesome_mosaic_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP">
+            </div>
+            <div class="stat-number">
+                {% if aula_concluida %}
+                    +5 XP
+                {% else %}
+                    +{{ aula.xp_teoria }} XP
+                {% endif %}
+            </div>
+            <div class="stat-label">Experiência</div>
+        </div>
 
+        <!-- Card de Tópicos -->
+        <div class="stat-card topics-stat-card">
+            <div class="stat-icon">
+                <img src="{% static 'imagem/collections_bookmark_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tópicos">
+            </div>
+            <div class="stat-number">{{ topicos|length }}</div>
+            <div class="stat-label">Tópicos</div>
+        </div>
+
+        <!-- Card do Timer - SUBSTITUI DURAÇÃO ESTIMADA -->
+        <div class="stat-card timer-stat-card">
+            <div class="stat-icon">
+                <img src="{% static 'imagem/timer_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Timer">
+            </div>
+            <div class="stat-number" id="timer">00:00</div>
+            <div class="stat-label">Tempo de Estudo</div>
+        </div>
+    </div>
+
+    <!-- Conteúdo Interativo - ESTILO MODERNO -->
+    <div class="space-y-4">
+        {% for topico in topicos %}
+        <div class="content-card" id="card-{{ forloop.counter }}">
+            <div class="content-card-header" onclick="toggleContent('card-{{ forloop.counter }}')">
+                <div class="content-card-title">
+                    <div class="content-icon">
+                        <img src="{% static 'imagem/description_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tópico" class="w-5 h-5">
+                    </div>
+                    <h3 class="content-title">{{ topico.titulo }}</h3>
+                </div>
+                <div class="content-toggle">▼</div>
+            </div>
+            <div class="content-body">
+                <div class="rich-text-content">
+                    {{ topico.conteudo|safe }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Mensagem quando não há tópicos -->
+        <div class="text-center py-8 bg-white rounded-xl border-2 border-dashed border-blue-200">
+            <img src="{% static 'imagem/menu_book_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem conteúdo" class="w-16 h-16 mx-auto mb-4 opacity-50">
+            <h3 class="text-lg font-bold text-blue-700 mb-2">Conteúdo em desenvolvimento</h3>
+            <p class="text-blue-600">O conteúdo teórico para esta aula está sendo preparado.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Botão de Ação - COMBINANDO COM TAREFAS -->
+    <div class="flex justify-end pt-4">
+        {% if aula_concluida %}
+        <button class="action-btn btn-revisao" onclick="completeLesson()">
+            <span>Concluir Revisão</span>
+            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Concluir" class="w-4 h-4">
+        </button>
+        {% else %}
+        <button class="action-btn" onclick="completeLesson()">
+            <span>Entendi e Quero Continuar</span>
+            <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-4 h-4">
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Conclusão -->
+<div class="completion-modal" id="completionModal">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Concluído">
+        </div>
+        <h2 class="modal-title" id="modalTitle">Parabéns!</h2>
+        <p class="modal-message" id="modalMessage">Você concluiu a aula com sucesso!</p>
+        <div class="modal-xp">
+            <img src="{% static 'imagem/auto_awesome_mosaic_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-4 h-4">
+            <span id="modalXp">+{{ aula.xp_teoria }} XP</span>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-primary" onclick="redirectToTasks()">Voltar às Tarefas</button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Timer e progresso
-  let seconds = 0;
-  const timerElement = document.getElementById("timer");
-  const progressCircle = document.querySelector('.progress-ring__circle');
-  const totalTime = {{ aula.tempo_teoria }} * 60;
+    // Timer e progresso
+    let seconds = 0;
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
 
-  function updateTimer() {
-    seconds++;
-    let minutes = Math.floor(seconds / 60);
-    let secs = seconds % 60;
-    timerElement.textContent = 
-      String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
-    
-    const progress = (seconds / totalTime) * 88;
-    if (progressCircle) {
-      progressCircle.style.strokeDashoffset = 88 - progress;
+    function updateTimer() {
+        seconds++;
+        let minutes = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        timerElement.textContent = 
+            String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
     }
-  }
 
-  const timerInterval = setInterval(updateTimer, 1000);
-
-  // Completar lição - ATUALIZADO PARA SALVAR TEMPO
-  function completeLesson() {
-    clearInterval(timerInterval);
-    
-    // SEMPRE é revisão se a aula já foi concluída antes
-    const isRevisao = {% if aula_concluida %}true{% else %}false{% endif %};
-    
-    // Calcular minutos estudados
-    const minutosEstudados = Math.ceil(seconds / 60);
-    
-    // Primeiro salvar o tempo de estudo
-    fetch("{% url 'salvar_tempo_teoria' %}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
-      },
-      body: JSON.stringify({
-        aula_id: {{ aula.id }},
-        tempo_segundos: seconds
-      })
-    })
-    .then(response => response.json())
-    .then(tempoData => {
-      if (tempoData.success) {
-        console.log('⏱️ Tempo salvo:', tempoData.tempo_salvo, 'segundos');
+    // Iniciar timer quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        timerInterval = setInterval(updateTimer, 1000);
         
-        // Depois marcar a aula como concluída
-        return fetch("{% url 'marcar_aula_concluida' %}", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-          },
-          body: JSON.stringify({
-            aula_id: {{ aula.id }},
-            tipo: 'teoria',
-            is_revisao: isRevisao,
-            tempo_estudado: minutosEstudados  // Enviar tempo estudado
-          })
-        });
-      } else {
-        throw new Error('Erro ao salvar tempo: ' + tempoData.error);
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Mensagem dinâmica baseada se é revisão ou primeira vez
-        if (data.is_revisao) {
-          alert('📚 Revisão concluída! ' + data.mensagem);
+        // Auto-expandir primeiro card
+        const firstCard = document.querySelector('.content-card');
+        if (firstCard) {
+            firstCard.classList.add('expanded');
+        }
+    });
+
+    // Toggle conteúdo interativo
+    function toggleContent(cardId) {
+        const card = document.getElementById(cardId);
+        card.classList.toggle('expanded');
+    }
+
+    // Mostrar modal de conclusão
+    function showCompletionModal(isRevisao, xpGanho) {
+        const modal = document.getElementById('completionModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalXp = document.getElementById('modalXp');
+        
+        if (isRevisao) {
+            modalTitle.textContent = 'Revisão Concluída!';
+            modalMessage.textContent = 'Você revisou esta aula com sucesso!';
         } else {
-          alert('🎉 ' + data.mensagem);
+            modalTitle.textContent = 'Parabéns!';
+            modalMessage.textContent = 'Você concluiu a aula com sucesso!';
         }
         
-        // Redirecionar para tarefas após 2 segundos
-        setTimeout(() => {
-          window.location.href = data.redirect_url;
-        }, 2000);
-        
-      } else {
-        alert('Erro ao concluir aula: ' + data.error);
-      }
-    })
-    .catch(error => {
-      console.error('Erro:', error);
-      alert('Erro ao concluir aula.');
-    });
-  }
-
-  // Toggle cards interativos
-  function toggleCard(element) {
-    const content = element.querySelector('.content-hidden');
-    const arrow = element.querySelector('span:last-child');
-    
-    if (content.style.display === 'none' || !content.style.display) {
-      content.style.display = 'block';
-      arrow.textContent = '▲';
-    } else {
-      content.style.display = 'none';
-      arrow.textContent = '▼';
+        modalXp.textContent = `+${xpGanho} XP`;
+        modal.classList.add('active');
     }
-  }
+
+    // Redirecionar para página de tarefas
+    function redirectToTasks() {
+        window.location.href = "{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}";
+    }
+
+    // Mostrar loading
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    // Esconder loading
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    // Completar lição - VERSÃO MELHORADA
+    async function completeLesson() {
+        clearInterval(timerInterval);
+        showLoading();
+        
+        const isRevisao = "{{ aula_concluida }}" === "True";
+        const minutosEstudados = Math.ceil(seconds / 60);
+        const xpGanho = isRevisao ? 5 : "{{ aula.xp_teoria }}";
+        
+        try {
+            // Primeiro salvar o tempo de estudo
+            const tempoResponse = await fetch("{% url 'salvar_tempo_teoria' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    aula_id: "{{ aula.id }}",
+                    tempo_segundos: seconds
+                })
+            });
+            
+            const tempoData = await tempoResponse.json();
+            
+            if (tempoData.success) {
+                console.log('⏱️ Tempo salvo:', tempoData.tempo_salvo, 'segundos');
+                
+                // Depois marcar a aula como concluída
+                const conclusaoResponse = await fetch("{% url 'marcar_aula_concluida' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        aula_id: "{{ aula.id }}",
+                        tipo: 'teoria',
+                        is_revisao: isRevisao,
+                        tempo_estudado: minutosEstudados
+                    })
+                });
+                
+                const conclusaoData = await conclusaoResponse.json();
+                
+                if (conclusaoData.success) {
+                    hideLoading();
+                    showCompletionModal(isRevisao, xpGanho);
+                    
+                    // Desabilitar o botão para evitar cliques repetidos
+                    const actionBtn = document.querySelector('.action-btn');
+                    if (actionBtn) {
+                        actionBtn.disabled = true;
+                        actionBtn.style.opacity = '0.6';
+                        actionBtn.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    throw new Error('Erro ao concluir aula: ' + conclusaoData.error);
+                }
+            } else {
+                throw new Error('Erro ao salvar tempo: ' + tempoData.error);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            hideLoading();
+            alert('Erro ao concluir aula. Por favor, tente novamente.');
+        }
+    }
 </script>
 {% endblock %}

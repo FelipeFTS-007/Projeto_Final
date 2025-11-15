@@ -31,6 +31,16 @@ class Perfil(models.Model):
     linkedin = models.URLField(max_length=200, blank=True, null=True)
     tempo_total_estudo = models.IntegerField(default=0)  # em segundos
     xp_hoje = models.IntegerField(default=0)
+    acertos_seguidos = models.IntegerField(default=0)
+    recorde_acertos = models.IntegerField(default=0)
+    precisao_geral = models.IntegerField(default=0)  # Em porcentagem
+    ja_fez_atividade_hoje = models.BooleanField(default=False)
+    ultima_verificacao_diaria = models.DateTimeField(auto_now_add=True)
+    
+    def atualizar_estatisticas_dashboard(self):
+        """Atualiza estatísticas para o dashboard"""
+        # Implemente a lógica para calcular precisão, acertos seguidos, etc.
+        pass
 
     def calcular_xp_para_proximo_nivel(self):
         """Calcula o XP total necessário para o próximo nível"""
@@ -99,7 +109,7 @@ class Perfil(models.Model):
     
     def verificar_e_atualizar_streak(self):
         """
-        Lógica SIMPLES: Aumenta streak apenas se a última atividade foi ONTEM
+        Lógica CORRIGIDA: Só aumenta streak quando há atividade
         Retorna: (novo_streak, streak_zerado, streak_aumentado)
         """
         agora = timezone.now()
@@ -109,16 +119,15 @@ class Perfil(models.Model):
         print(f"🕒 Última atividade: {self.ultima_atividade}")
         print(f"🕒 Agora: {agora}")
         
-        # Se nunca teve atividade, iniciar streak
-        if not self.ultima_atividade:
+        # Se nunca teve atividade OU streak é 0, iniciar streak em 1
+        if not self.ultima_atividade or self.sequencia == 0:
             self.sequencia = 1
             self.ultima_atividade = agora
             self.save()
             print("🎯 Primeira atividade - Streak iniciado: 1")
             return 1, False, True
         
-        # Verificar se a última atividade foi ONTEM (para aumentar streak)
-        # ou se foi HOJE (apenas manter) ou se foi ANTES de ONTEM (zerar)
+        # Verificar diferença em dias
         data_ultima = self.ultima_atividade.date()
         data_hoje = agora.date()
         dias_diferenca = (data_hoje - data_ultima).days
@@ -126,6 +135,8 @@ class Perfil(models.Model):
         print(f"📅 Última atividade: {data_ultima}")
         print(f"📅 Hoje: {data_hoje}")
         print(f"📅 Diferença em dias: {dias_diferenca}")
+        
+        streak_anterior = self.sequencia
         
         if dias_diferenca == 0:
             # Já teve atividade HOJE - apenas atualiza hora, NÃO aumenta streak
@@ -137,7 +148,6 @@ class Perfil(models.Model):
         elif dias_diferenca == 1:
             # Última atividade foi ONTEM - AUMENTAR STREAK
             print("🎯 Última atividade foi ontem - AUMENTANDO STREAK")
-            streak_anterior = self.sequencia
             self.sequencia += 1
             self.ultima_atividade = agora
             streak_aumentado = True
@@ -146,17 +156,17 @@ class Perfil(models.Model):
             
         else:
             # Última atividade foi ANTES de ontem - ZERAR STREAK
-            print("💀 Última atividade foi antes de ontem - ZERANDO STREAK")
-            streak_anterior = self.sequencia
+            print(f"💀 Última atividade foi há {dias_diferenca} dias - ZERANDO STREAK")
             
             # Atualizar streak máximo antes de zerar
             if streak_anterior > self.sequencia_maxima:
                 self.sequencia_maxima = streak_anterior
             
-            self.sequencia = 1
-            self.ultima_atividade = agora
+            # Zerar streak - COMEÇAR EM 0, não em 1
+            self.sequencia = 0
+            self.ultima_atividade = None  # Resetar para forçar nova atividade
             streak_zerado = True
-            print(f"🔄 Streak zerado: {streak_anterior} → 1")
+            print(f"🔄 Streak zerado: {streak_anterior} → 0")
             self.save()
         
         # Atualizar streak máximo se necessário
@@ -166,6 +176,43 @@ class Perfil(models.Model):
         
         return self.sequencia, streak_zerado, streak_aumentado
     
+    def verificar_streak_automatico(self):
+        """
+        Verifica e corrige o streak automaticamente quando o perfil é acessado
+        Zera se passou mais de 1 dia desde a última atividade
+        """
+        if not self.ultima_atividade:
+            # Se nunca teve atividade, streak é 0
+            if self.sequencia > 0:
+                self.sequencia = 0
+                self.save()
+            return False
+        
+        agora = timezone.now()
+        data_ultima = self.ultima_atividade.date()
+        data_hoje = agora.date()
+        dias_diferenca = (data_hoje - data_ultima).days
+        
+        print(f"🔍 Verificação automática do streak: {dias_diferenca} dias desde a última atividade")
+        
+        # Se passou mais de 1 dia, zerar o streak
+        if dias_diferenca > 1:
+            print(f"💀 Streak quebrado: {dias_diferenca} dias sem atividade")
+            streak_anterior = self.sequencia
+            
+            # Atualizar streak máximo antes de zerar
+            if streak_anterior > self.sequencia_maxima:
+                self.sequencia_maxima = streak_anterior
+            
+            # Zerar completamente - COMEÇAR EM 0, não em 1
+            self.sequencia = 0
+            self.ultima_atividade = None  # Resetar para forçar nova atividade
+            self.save()
+            
+            print(f"🔄 Streak automático zerado: {streak_anterior} → 0")
+            return True
+        
+        return False
     def verificar_streak_quebrado(self):
         """Verifica se o streak foi quebrado (mais de 24h sem atividade)"""
         if not self.ultima_atividade:
@@ -241,9 +288,27 @@ class Perfil(models.Model):
             return True
         return False
 
-    # ... SEUS OUTROS MÉTODOS EXISTENTES ...
 
-
+    def verificar_reset_diario(self):
+            """Verifica e reseta automaticamente se passou um dia"""
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            agora = timezone.now()
+            
+            # Se a última verificação foi há mais de 12 horas, resetar
+            if agora - self.ultima_verificacao_diaria > timedelta(hours=12):
+                # Verificar se mudou o dia
+                if self.ultima_verificacao_diaria.date() < agora.date():
+                    self.ja_fez_atividade_hoje = False
+                
+                self.ultima_verificacao_diaria = agora
+                self.save()
+    
+    def save(self, *args, **kwargs):
+        # Sempre verificar reset diário ao salvar
+        self.verificar_reset_diario()
+        super().save(*args, **kwargs)
     
 
     def __str__(self):
@@ -274,6 +339,8 @@ class Atividade(models.Model):
         return f"{self.titulo} ({self.user.username})"
 
 
+
+# models.py - ATUALIZE a classe Conquista
 
 class Conquista(models.Model):
     RARIDADES = [
@@ -319,7 +386,7 @@ class Conquista(models.Model):
     
     # Para conquistas progressivas
     progressivo = models.BooleanField(default=False)
-    multiplos = models.IntegerField(default=1)  # Para conquistas como "Alcance 100, 500, 1000 XP"
+    multiplos = models.IntegerField(default=1)
     
     # Ordem de exibição
     ordem = models.IntegerField(default=0)
@@ -342,66 +409,130 @@ class Conquista(models.Model):
         progresso = self.calcular_progresso(usuario)
         return progresso['atingiu_meta']
 
+    # models.py - ATUALIZE o método calcular_progresso na classe Conquista
+
+    # models.py - ATUALIZE o método calcular_progresso
+
     def calcular_progresso(self, usuario):
-        """Calcula o progresso do usuário em relação a esta conquista"""
-        from django.db.models import Sum, Count
-        from datetime import date, timedelta
+        """Calcula o progresso do usuário em relação a esta conquista - VERSÃO CORRIGIDA"""
+        from django.db.models import Count, Q
+        from datetime import timedelta
         
         progresso_atual = 0
         meta = self.valor_requerido
         
-        if self.tipo_evento == 'xp_total':
-            progresso_atual = usuario.perfil.xp
-            
-        elif self.tipo_evento == 'nivel_atingido':
-            progresso_atual = usuario.perfil.nivel
-            
-        elif self.tipo_evento == 'aulas_concluidas':
-            progresso_atual = AulaConcluida.objects.filter(
-                usuario=usuario, 
-                teoria_concluida=True, 
-                pratica_concluida=True
-            ).count()
-            
-        elif self.tipo_evento == 'modulos_concluidos':
-            # Implementar lógica para módulos concluídos
-            modulos_concluidos = ModuloConcluido.objects.filter(usuario=usuario).count()
-            progresso_atual = modulos_concluidos
-            
-        elif self.tipo_evento == 'sequencia_dias':
-            progresso_atual = usuario.perfil.sequencia
-            
-        elif self.tipo_evento == 'questoes_corretas':
-            # Implementar quando tiver sistema de respostas
-            progresso_atual = 0  # Placeholder
-            
-        elif self.tipo_evento == 'tempo_estudo':
-            # Soma do tempo de estudo do Progresso
-            tempo_total = Progresso.objects.filter(user=usuario).aggregate(
-                total=Sum('tempo_estudo')
-            )['total'] or timedelta()
-            progresso_atual = int(tempo_total.total_seconds() / 3600)  # Horas
-            
-        elif self.tipo_evento == 'postagens_forum':
-            progresso_atual = Post.objects.filter(autor=usuario).count()
-            
-        elif self.tipo_evento == 'comentarios':
-            progresso_atual = Comentario.objects.filter(autor=usuario).count()
-            
-        elif self.tipo_evento == 'likes_recebidos':
-            posts_likes = Post.objects.filter(autor=usuario).aggregate(
-                total=Count('likes')
-            )['total'] or 0
-            comentarios_likes = Comentario.objects.filter(autor=usuario).aggregate(
-                total=Count('likes')
-            )['total'] or 0
-            progresso_atual = posts_likes + comentarios_likes
-            
-        elif self.tipo_evento == 'conquistas_desbloqueadas':
-            progresso_atual = usuario.conquistas.count()
+        # CORREÇÃO: Converter tipo_evento se for numérico
+        tipo_evento = self.tipo_evento
+        if tipo_evento.isdigit():
+            # Mapear número para código
+            tipo_map = {
+                '0': 'xp_total',
+                '1': 'nivel_atingido', 
+                '2': 'aulas_concluidas',
+                '3': 'modulos_concluidos',
+                '4': 'sequencia_dias',
+                '5': 'questoes_corretas',
+                '6': 'tempo_estudo',
+                '7': 'postagens_forum',
+                '8': 'comentarios',
+                '9': 'likes_recebidos',
+                '10': 'conquistas_desbloqueadas',
+            }
+            tipo_evento = tipo_map.get(tipo_evento, 'xp_total')
+        
+        print(f"🔍 Calculando progresso: {self.titulo}")
+        print(f"   Tipo: {tipo_evento}, Meta: {meta}")
+        
+        try:
+            if tipo_evento == 'xp_total':
+                progresso_atual = usuario.perfil.xp
+                print(f"   XP do usuário: {progresso_atual}")
+                
+            elif tipo_evento == 'nivel_atingido':
+                progresso_atual = usuario.perfil.nivel
+                print(f"   Nível do usuário: {progresso_atual}")
+                
+            elif tipo_evento == 'aulas_concluidas':
+                progresso_atual = AulaConcluida.objects.filter(
+                    usuario=usuario, 
+                    teoria_concluida=True, 
+                    pratica_concluida=True
+                ).count()
+                print(f"   Aulas totalmente concluídas: {progresso_atual}")
+                
+            elif tipo_evento == 'modulos_concluidos':
+                modulos_concluidos = 0
+                modulos = Modulo.objects.filter(ativo=True).prefetch_related('aulas')
+                
+                for modulo in modulos:
+                    total_aulas = modulo.aulas.filter(ativo=True).count()
+                    if total_aulas > 0:
+                        aulas_concluidas = AulaConcluida.objects.filter(
+                            usuario=usuario,
+                            aula__in=modulo.aulas.all(),
+                            teoria_concluida=True,
+                            pratica_concluida=True
+                        ).count()
+                        
+                        if aulas_concluidas == total_aulas:
+                            modulos_concluidos += 1
+                
+                progresso_atual = modulos_concluidos
+                print(f"   Módulos totalmente concluídos: {progresso_atual}")
+                
+            elif tipo_evento == 'sequencia_dias':
+                progresso_atual = usuario.perfil.sequencia
+                print(f"   Sequência atual: {progresso_atual}")
+                
+            elif tipo_evento == 'questoes_corretas':
+                progresso_atual = 0  # Placeholder
+                print(f"   Questões corretas: {progresso_atual} (não implementado)")
+                
+            elif tipo_evento == 'tempo_estudo':
+                progresso_atual = usuario.perfil.tempo_total_estudo // 3600
+                print(f"   Tempo de estudo (horas): {progresso_atual}")
+                
+            elif tipo_evento == 'postagens_forum':
+                progresso_atual = Post.objects.filter(autor=usuario).count()
+                print(f"   Postagens no fórum: {progresso_atual}")
+                
+            elif tipo_evento == 'comentarios':
+                progresso_atual = Comentario.objects.filter(autor=usuario).count()
+                print(f"   Comentários: {progresso_atual}")
+                
+            elif tipo_evento == 'likes_recebidos':
+                posts_likes = Post.objects.filter(autor=usuario).aggregate(
+                    total=Count('likes')
+                )['total'] or 0
+                
+                comentarios_likes = Comentario.objects.filter(autor=usuario).aggregate(
+                    total=Count('likes')
+                )['total'] or 0
+                
+                progresso_atual = posts_likes + comentarios_likes
+                print(f"   Likes recebidos: {progresso_atual}")
+                
+            elif tipo_evento == 'conquistas_desbloqueadas':
+                # CORREÇÃO: Contar conquistas que o usuário realmente desbloqueou
+                from django.db.models import Count
+                progresso_atual = Conquista.objects.filter(usuarios=usuario, ativo=True).count()
+                print(f"   Conquistas desbloqueadas: {progresso_atual}")
 
-        percentual = min(100, int((progresso_atual / meta) * 100)) if meta > 0 else 100
+        except Exception as e:
+            print(f"❌ ERRO ao calcular progresso para {self.titulo}: {str(e)}")
+            progresso_atual = 0
+
+        # CÁLCULO DO PERCENTUAL
+        if meta > 0:
+            percentual = min(100, int((progresso_atual / meta) * 100))
+        else:
+            percentual = 100 if progresso_atual > 0 else 0
+        
         atingiu_meta = progresso_atual >= meta
+        
+        print(f"   📊 RESULTADO: {progresso_atual}/{meta} = {percentual}%")
+        print(f"   🎯 Meta atingida: {atingiu_meta}")
+        print("-" * 40)
         
         return {
             'progresso_atual': progresso_atual,
@@ -841,3 +972,30 @@ class SessaoEstudo(models.Model):
             if not created:
                 tempo_estudo.tempo_segundos += self.tempo_total
                 tempo_estudo.save()
+
+class TempoEstudoDiario(models.Model):
+    """Armazena o tempo de estudo por dia"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    data = models.DateField(default=timezone.now)
+    tempo_segundos = models.IntegerField(default=0)  # Tempo em segundos
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['user', 'data']
+        verbose_name = "Tempo de Estudo Diário"
+        verbose_name_plural = "Tempos de Estudo Diários"
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.data}: {self.tempo_formatado()}"
+    
+    def tempo_formatado(self):
+        """Retorna o tempo formatado como HH:MM:SS ou MM:SS"""
+        horas = self.tempo_segundos // 3600
+        minutos = (self.tempo_segundos % 3600) // 60
+        segundos = self.tempo_segundos % 60
+        
+        if horas > 0:
+            return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+        else:
+            return f"{minutos:02d}:{segundos:02d}"

@@ -7,140 +7,436 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
-    .card-hover {
-      transition: all 0.3s ease;
+    /* Variáveis de cores para consistência */
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-dark-blue: #1E40AF;
+        --light-blue: #EFF6FF;
+        --text-blue: #1E40AF;
+        --light-bg: #F8FAFC;
     }
     
-    .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .progress-bar-container {
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-      border-radius: 9999px;
-      transition: width 1.5s ease-in-out;
-      width: 0%;
-    }
-    
-    .module-card {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .floating-element {
-      animation: float 6s ease-in-out infinite;
+    /* Animações globais */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-    
-    .pulse-animation {
-      animation: pulse 2s infinite;
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
     }
     
     @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    
-    .circular-chart {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
-    }
-    
-    .circle-bg {
-      fill: none;
-      stroke: #EFF6FF;
-      stroke-width: 3.8;
-    }
-    
-    .circle {
-      fill: none;
-      stroke-width: 2.8;
-      stroke-linecap: round;
-      stroke: #3B82F6;
-      animation: progress 1.5s ease-out forwards;
-    }
-    
-    @keyframes progress {
-      0% { stroke-dasharray: 0 100; }
-    }
-    
-    .percentage {
-      fill: #1E40AF;
-      font-size: 0.5em;
-      text-anchor: middle;
-      font-weight: bold;
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
 
-    /* Estilos para a descrição expansível dos módulos */
-    .descricao-modulo-container {
+/* Forçar ativação do menu Conteúdo */
+    #nav-conteudo {
+        background-color: #3B82F6 !important;
+        color: white !important;
+    }
+    
+    #nav-conteudo img {
+        content: url("{% static 'imagem/book_ribbon_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}");
+    }
+    
+    /* Cabeçalho modernizado - GRADIENTE AZUL IGUAL À HOME */
+    .page-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+    
+    .header-text {
+        flex: 1;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+    
+    .page-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 400;
+        line-height: 1.5;
+        max-width: none;
+    }
+    
+    .header-icon {
+        width: 6rem;
+        height: 6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        animation: float 6s ease-in-out infinite;
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Botão voltar */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748B;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    
+    .back-button:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Progresso do capítulo - COM BARRA LATERAL AZUL */
+    .chapter-progress {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      border: 2px solid #E2E8F0; /* Borda cinza suave */
+      /* Remover borda lateral e estilos relacionados */
+      border-left: none;
       position: relative;
-      margin-bottom: 1rem;
-    }
-    
-    .descricao-modulo-resumida {
       overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      line-height: 1.4;
-    }
+  }
     
-    .descricao-modulo-completa {
+    /* Remover o pseudo-elemento da borda lateral */
+  .chapter-progress::before {
       display: none;
-      line-height: 1.4;
-    }
-    
-    .descricao-modulo-expandir {
-      color: #3B82F6;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      margin-top: 8px;
-      transition: color 0.2s ease;
-    }
-    
-    .descricao-modulo-expandir:hover {
-      color: #1E40AF;
-      text-decoration: underline;
-    }
+  }
 
-    .stats-modulo {
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 12px;
+    
+    .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+    
+    .progress-label {
+        font-weight: 600;
+        color: var(--text-blue);
+        font-size: 1rem;
+    }
+    
+  .progress-percentage {
+    font-weight: 700;
+    color: var(--primary-blue);
+    font-size: 1.125rem;
+}
+    
+.progress-bar {
+    height: 0.5rem;
+    background: #E2E8F0;
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+    transition: width 1s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+    
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+.progress-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #64748B;
+    margin-top: 0.5rem;
+}
+    .progress-details span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .progress-details span:first-child {
+        color: var(--primary-dark-blue);
+    }
+    
+    .progress-details span:last-child {
+        color: #059669;
+    }
+    
+    /* Cartões de módulos */
+    .module-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
+        border: 2px solid var(--primary-blue);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.1);
+    }
+    
+    .module-header {
+        padding: 1.5rem 1.5rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .module-icon {
+        width: 4rem;
+        height: 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        background: var(--light-blue);
+        flex-shrink: 0;
+    }
+    
+    .module-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-blue);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .module-content {
+        padding: 0 1.5rem 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .module-description {
+        color: #64748B;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        position: relative;
+        flex: 1;
+    }
+    
+    .module-stats {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        margin-top: auto;
+    }
+    
+    .progress-container {
+        margin-bottom: 1rem;
+    }
+    
+    .progress-text {
+        font-size: 0.75rem;
+        color: var(--primary-blue);
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .module-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    
+    .status-completed {
+        color: #10B981;
+    }
+    
+    .status-progress {
+        color: #F59E0B;
+    }
+    
+    .status-not-started {
+        color: #64748B;
+    }
+    
+    .time-badge {
+        background: rgba(16, 185, 129, 0.1);
+        color: rgb(5, 150, 105);
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .action-btn {
+        display: block;
+        width: 100%;
+        background: var(--primary-blue);
+        color: white;
+        text-align: center;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .action-btn:hover {
+        background: var(--primary-dark-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Dica de aprendizado */
+    .learning-tip {
+        background: linear-gradient(135deg, var(--light-blue) 0%, #EDF2FF 100%);
+        border-left: 4px solid var(--primary-blue);
+        border-radius: 0 1rem 1rem 0;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .tip-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .tip-text {
+        color: var(--text-blue);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    /* Animações de entrada para os cards */
+    .module-card:nth-child(1) { animation-delay: 0.1s; }
+    .module-card:nth-child(2) { animation-delay: 0.2s; }
+    .module-card:nth-child(3) { animation-delay: 0.3s; }
+    .module-card:nth-child(4) { animation-delay: 0.4s; }
+    .module-card:nth-child(5) { animation-delay: 0.5s; }
+    .module-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.125rem;
+        }
+        
+        .header-icon {
+            width: 5rem;
+            height: 5rem;
+        }
+        
+        .progress-info {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .progress-details {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
     }
 </style>
 {% endblock %}
@@ -148,223 +444,192 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Função para expandir/recolher a descrição dos módulos
-    function toggleDescricaoModulo(button) {
-        const container = button.closest('.descricao-modulo-container');
-        const resumida = container.querySelector('.descricao-modulo-resumida');
-        const completa = container.querySelector('.descricao-modulo-completa');
-        
-        if (resumida.style.display === 'none') {
-            // Recolher
-            resumida.style.display = '-webkit-box';
-            completa.style.display = 'none';
-            button.innerHTML = 'Mostrar Mais <img src="{% static "imagem/arrow_drop_down_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png" %}" alt="Expandir" class="w-4 h-4 ml-1">';
-        } else {
-            // Expandir
-            resumida.style.display = 'none';
-            completa.style.display = 'block';
-            button.innerHTML = 'Mostrar Menos <img src="{% static "imagem/unfold_less_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png" %}" alt="Recolher" class="w-4 h-4 ml-1">';
-        }
+    // Animação das barras de progresso
+    function animateProgressBars() {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            const progress = bar.getAttribute('data-progress') || bar.style.width.replace('%', '');
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.width = `${progress}%`;
+            }, 300);
+        });
     }
     
-    // Adicionar evento de clique a todos os botões de expandir dos módulos
-    document.querySelectorAll('.descricao-modulo-expandir').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleDescricaoModulo(this);
-        });
-    });
+    // Inicializar animações
+    animateProgressBars();
     
-    // Verificar se a descrição dos módulos precisa ser truncada
-    document.querySelectorAll('.descricao-modulo-container').forEach(container => {
-        const textoCompleto = container.querySelector('.descricao-modulo-completa').textContent;
+    // Efeito de digitação para o título
+    const title = document.querySelector('.page-title');
+    if (title) {
+        const text = title.textContent;
+        title.textContent = '';
         
-        // Se o texto tiver mais de 20 palavras, mostra o botão de expandir
-        const palavras = textoCompleto.trim().split(/\s+/).length;
-        if (palavras > 20) {
-            container.querySelector('.descricao-modulo-expandir').style.display = 'inline-flex';
-        }
+        let i = 0;
+        const typeWriter = () => {
+            if (i < text.length) {
+                title.textContent += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        };
+        
+        // Iniciar efeito após um breve delay
+        setTimeout(typeWriter, 500);
+    }
+    
+    // Interação com cards - efeito de clique
+    document.querySelectorAll('.module-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Evitar ação se clicar em um elemento filho que já tem seu próprio evento
+            if (e.target.tagName === 'A' || e.target.closest('a')) return;
+            
+            // Adicionar efeito visual de clique
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Navegar para a página do módulo após um breve delay
+            setTimeout(() => {
+                const link = this.querySelector('a.action-btn');
+                if (link) {
+                    window.location.href = link.href;
+                }
+            }, 200);
+        });
     });
 });
 </script>
 {% endblock %}
 
 {% block content %}
-<!-- BOTÃO VOLTAR FIXO NO TOPO -->
-<div class="mb-6">
-  <a href="{% url 'conteudo' %}" class="text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-2 transition-colors">
-    <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
-    <span class="text-sm">Voltar aos capítulos</span>
-  </a>
+<!-- Botão Voltar -->
+<a href="{% url 'conteudo' %}" class="back-button">
+    <img src="{% static 'imagem/arrow_back_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Voltar" class="w-4 h-4">
+    <span>Voltar aos Capítulos</span>
+</a>
+
+<!-- Cabeçalho do Capítulo -->
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1 class="page-title">{{ capitulo.titulo|default:"Fundamentos do Python" }}</h1>
+            <p class="page-subtitle">{{ capitulo.descricao|default:"Aprenda os Conceitos Básicos e essenciais da linguagem Python" }}</p>
+        </div>
+        <div class="header-icon">
+            <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Capítulo" class="w-12 h-12">
+        </div>
+    </div>
 </div>
 
-<!-- BANNER DO CAPÍTULO -->
-<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-2xl p-6 mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg relative overflow-hidden">
-  <div class="flex items-center gap-6 z-10">
-    <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="w-16 h-16 floating-element">
+<!-- Progresso do Capítulo - COM BARRA LATERAL AZUL -->
+<div class="chapter-progress">
+    <div class="progress-info">
+        <span class="progress-label">Progresso do Capítulo</span>
+        <span class="progress-percentage">{{ progresso_capitulo }}%</span>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" data-progress="{{ progresso_capitulo }}"></div>
+    </div>
+    <div class="progress-details">
+        <span>
+            <img src="{% static 'imagem/check_circle_16dp_1E40AF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Módulos" class="w-4 h-4">
+            {{ modulos_concluidos_capitulo }} de {{ total_modulos_capitulo }} módulos concluídos
+        </span>
+        <span>
+            <img src="{% static 'imagem/trending_up_16dp_059669_FILL0_wght400_GRAD0_opsz20.png' %}" alt="XP" class="w-4 h-4">
+            {{ xp_total_capitulo }} XP Total
+        </span>
+    </div>
+</div>
+
+<!-- Dica de Aprendizado -->
+<div class="learning-tip">
+    <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="tip-icon">
     <div>
-      <h2 class="text-2xl font-bold">{{ capitulo.titulo|default:"Fundamentos do Python" }}</h2>
-      <p class="text-sm text-blue-100">{{ capitulo.descricao|default:"Aprenda os Conceitos Básicos e essenciais da linguagem Python" }}</p>
+        <p class="font-semibold">Dica de Estudo</p>
+        <p class="tip-text">Complete os módulos em ordem sequencial para um aprendizado mais eficiente. Cada módulo concluído desbloqueia novos conceitos!</p>
     </div>
-  </div>
-  
-  <!-- Elementos decorativos de fundo -->
-  <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-    <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
-    <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
-    <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
-  </div>
 </div>
 
-<!-- PROGRESSO DO CAPÍTULO DINÂMICO -->
-<div class="bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-2xl p-6 mb-6 shadow-md">
-  <div class="flex justify-between items-center mb-4">
-    <span class="font-bold text-blue-800">Progresso do Capítulo</span>
-    <span class="font-bold text-blue-600">{{ progresso_capitulo }}%</span>
-  </div>
-  <div class="w-full bg-blue-200 rounded-full h-3 mb-2 progress-bar-container">
-    <div class="progress-bar-fill" style="width: {{ progresso_capitulo }}%"></div>
-  </div>
-  <div class="text-xs text-blue-600 flex justify-between">
-    <span>{{ modulos_concluidos_capitulo }} de {{ total_modulos_capitulo }} módulos concluídos</span>
-    <span>{{ xp_total_capitulo }} XP Total</span>
-  </div>
-</div>
-
-<!-- DICA DE ESTUDO -->
-<div class="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-6 shadow flex items-start">
-  <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-6 h-6 mr-3 flex-shrink-0">
-  <div>
-    <p class="font-semibold">Dica de Estudo</p>
-    <p>Complete os módulos em ordem sequencial para um aprendizado mais eficiente. Cada módulo concluído desbloqueia novos conceitos!</p>
-  </div>
-</div>
-
-<!-- CARDS DE MÓDULOS COM DADOS DINÂMICOS -->
+<!-- Grid de Módulos -->
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {% for mod_stat in modulos_com_stats %}
-  <!-- Módulo {{ forloop.counter }} -->
-  <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow-lg overflow-hidden h-full flex flex-col">
-    <div class="w-full h-2 bg-blue-600"></div>
-    <div class="p-6 flex-1 flex flex-col">
-      <div class="flex items-center gap-4 mb-4">
-        <div class="bg-blue-100 p-3 rounded-xl flex-shrink-0">
-          <!-- Ícone dinâmico baseado no módulo -->
-          {% if forloop.counter == 1 %}
-          <img src="{% static 'imagem/python1.png' %}" alt="Introdução" class="w-10 h-10">
-          {% elif forloop.counter == 2 %}
-          <img src="{% static 'imagem/variaveis2.png' %}" alt="Variáveis" class="w-10 h-10">
-          {% else %}
-          <img src="{% static 'imagem/calculate_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Operadores" class="w-10 h-10">
-          {% endif %}
-        </div>
-        <h3 class="font-bold text-blue-800 text-lg leading-tight">{{ mod_stat.modulo.titulo }}</h3>
-      </div>
-      
-      <!-- Descrição com botão "Mostrar Mais" -->
-      <div class="descricao-modulo-container flex-1">
-        <p class="text-sm text-blue-700 mb-2 descricao-modulo-resumida">{{ mod_stat.modulo.descricao }}</p>
-        <p class="text-sm text-blue-700 mb-2 descricao-modulo-completa">{{ mod_stat.modulo.descricao }}</p>
-        <button class="descricao-modulo-expandir" style="display: none;">
-          Mostrar Mais <img src="{% static 'imagem/arrow_drop_down_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Expandir" class="w-4 h-4 ml-1">
-        </button>
-      </div>
-
-      <!-- Estatísticas do Módulo DINÂMICAS -->
-      <div class="stats-modulo mt-auto">
-        <!-- Barra de progresso dinâmica CORRIGIDA -->
-        <div class="w-full bg-blue-200 h-2 rounded-full mb-3 progress-bar-container">
-          <div class="progress-bar-fill" style="width: {{ mod_stat.progresso_percentual }}%"></div>
+    {% for mod_stat in modulos_com_stats %}
+    <div class="module-card">
+        <div class="module-header">
+            <div class="module-icon">
+                <!-- Ícone dinâmico baseado no módulo -->
+                {% if forloop.counter == 1 %}
+                <img src="{% static 'imagem/python1.png' %}" alt="Introdução" class="w-8 h-8">
+                {% elif forloop.counter == 2 %}
+                <img src="{% static 'imagem/variaveis2.png' %}" alt="Variáveis" class="w-8 h-8">
+                {% else %}
+                <img src="{% static 'imagem/calculate_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Operadores" class="w-8 h-8">
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="module-title">{{ mod_stat.modulo.titulo }}</h3>
+            </div>
         </div>
         
-        <div class="flex justify-between text-xs text-blue-700 mb-2">
-          <span class="font-medium">
-            {{ mod_stat.partes_concluidas }}/{{ mod_stat.total_partes }} lições
-          </span>
-          <span class="font-bold">
-            {{ mod_stat.xp_total }} XP
-          </span>
+        <div class="module-content">
+            <p class="module-description">{{ mod_stat.modulo.descricao }}</p>
+            
+            <div class="module-stats">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" data-progress="{{ mod_stat.progresso_percentual }}"></div>
+                    </div>
+                    <p class="progress-text">{{ mod_stat.partes_concluidas }}/{{ mod_stat.total_partes }} lições ({{ mod_stat.progresso_percentual }}%)</p>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="module-status {% if mod_stat.progresso_percentual == 100 %}status-completed{% elif mod_stat.progresso_percentual > 0 %}status-progress{% else %}status-not-started{% endif %}">
+                        {% if mod_stat.progresso_percentual == 100 %}
+                        <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
+                        <span>Concluído</span>
+                        {% elif mod_stat.progresso_percentual > 0 %}
+                        <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-4 h-4">
+                        <span>Em progresso</span>
+                        {% else %}
+                        <img src="{% static 'imagem/play_circle_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Não iniciado" class="w-4 h-4">
+                        <span>Não iniciado</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-blue-600">{{ mod_stat.xp_total }} XP</span>
+                        <span class="time-badge">
+                            {% if mod_stat.tempo_total_modulo %}
+                                {{ mod_stat.tempo_total_modulo }}min
+                            {% else %}
+                                0min
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'tarefas' %}?modulo_id={{ mod_stat.modulo.id }}" class="action-btn">
+                    Acessar Módulo
+                </a>
+            </div>
         </div>
-        
-        <!-- Status do módulo dinâmico -->
-        <div class="flex justify-between items-center mt-2">
-          <div class="text-xs text-blue-800 flex items-center font-semibold">
-            {% if mod_stat.progresso_percentual == 100 %}
-            <span class="mr-1">Concluído</span>
-            <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-4 h-4">
-            {% elif mod_stat.progresso_percentual > 0 %}
-            <span class="mr-1">Em progresso</span>
-            <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-4 h-4">
-            {% else %}
-            <span class="mr-1">Não iniciado</span>
-            <img src="{% static 'imagem/play_circle_16dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Não iniciado" class="w-4 h-4">
-            {% endif %}
-          </div>
-          
-          <!-- Tempo estimado -->
-          <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
-            {% if mod_stat.tempo_total_modulo %}
-              {{ mod_stat.tempo_total_modulo }}min
-            {% else %}
-              0min
-            {% endif %}
-          </span>
-        </div>
-
-        <!-- Botão para acessar o módulo -->
-        <div class="mt-3 pt-3 border-t border-blue-200">
-          <a href="{% url 'tarefas' %}?modulo_id={{ mod_stat.modulo.id }}" class="w-full bg-blue-600 text-white text-center py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors block">
-            Acessar Módulo
-          </a>
-        </div>
-      </div>
     </div>
-  </div>
-  {% empty %}
-  <!-- Mensagem quando não há módulos -->
-  <div class="col-span-3 text-center py-12">
-    <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem módulos" class="w-24 h-24 mx-auto mb-4 opacity-50">
-    <h3 class="text-xl font-bold text-blue-700 mb-2">Nenhum módulo disponível</h3>
-    <p class="text-blue-600 mb-4">Este capítulo ainda não possui módulos configurados.</p>
-    {% if user.groups.filter.name == 'professores' or user.is_staff %}
-    <a href="{% url 'criar_conteudo' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-      Criar Primeiro Módulo
-    </a>
-    {% endif %}
-  </div>
-  {% endfor %}
+    {% empty %}
+    <!-- Mensagem quando não há módulos -->
+    <div class="col-span-3 text-center py-12">
+        <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem módulos" class="w-24 h-24 mx-auto mb-4 opacity-50">
+        <h3 class="text-xl font-bold text-blue-700 mb-2">Nenhum módulo disponível</h3>
+        <p class="text-blue-600 mb-4">Este capítulo ainda não possui módulos configurados.</p>
+        {% if user.groups.filter.name == 'professores' or user.is_staff %}
+        <a href="{% url 'criar_conteudo' %}" class="action-btn inline-block w-auto px-6">
+            Criar Primeiro Módulo
+        </a>
+        {% endif %}
+    </div>
+    {% endfor %}
 </div>
 
-<!-- BOTÃO DE CONTINUAR ESTUDANDO -->
-{% if modulos_com_stats %}
-<div class="mt-8 flex justify-center">
-  <a href="{% url 'tarefas' %}?modulo_id={{ modulos_com_stats.0.modulo.id }}" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-900 transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
-    Continuar Estudando
-    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Continuar" class="w-5 h-5 ml-2">
-  </a>
-</div>
-{% endif %}
-
-<script>
-   // Marcar o item de conteúdo como ativo
-  document.addEventListener('DOMContentLoaded', function() {
-    // Encontrar o link de conteúdo na sidebar
-    const conteudoLink = document.getElementById('nav-conteudo');
-    
-    // Adicionar a classe ativa ao link de conteúdo
-    if (conteudoLink) {
-      conteudoLink.classList.add('bg-blue-500', 'text-white');
-      
-      // Atualizar o ícone para a versão branca
-      const conteudoIcon = conteudoLink.querySelector('.nav-icon');
-      if (conteudoIcon) {
-        const whiteIcon = conteudoIcon.getAttribute('data-white');
-        if (whiteIcon) {
-          conteudoIcon.src = whiteIcon;
-        }
-      }
-    }
-  });
-</script>
+<!-- BOTÃO CONTINUAR ESTUDANDO REMOVIDO -->
 {% endblock %}

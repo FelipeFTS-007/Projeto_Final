@@ -5,235 +5,9 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos para o sistema de sequência de dicas */
-    .hint-sequence-counter {
-        border-left: 4px solid #3B82F6;
-        animation: fadeIn 0.5s ease-in;
-    }
-
-    .hint-sequence-step {
-        display: inline-block;
-        background: #3B82F6;
-        color: white;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 24px;
-        font-weight: bold;
-        margin: 0 2px;
-        animation: bounceIn 0.5s ease-out;
-    }
-
-    @keyframes bounceIn {
-        0% { transform: scale(0.3); opacity: 0; }
-        50% { transform: scale(1.1); opacity: 1; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    .hint-progress-bar {
-        height: 4px;
-        background: #e5e7eb;
-        border-radius: 2px;
-        margin: 8px 0;
-        overflow: hidden;
-    }
-
-    .hint-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #3B82F6, #1E40AF);
-        transition: width 0.5s ease;
-    }
-    /* SEUS ESTILOS ORIGINAIS - MANTIDOS E MELHORADOS */
-    /* ESTILOS MELHORADOS PARA NOTIFICAÇÃO DE XP */
-    .xp-gain-notification {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.8);
-        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .xp-gain-notification.show {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-    .xp-gain-notification.hide {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.9);
-    }
-
-    .xp-gain-content {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 16px;
-        box-shadow: 
-            0 10px 25px -5px rgba(245, 158, 11, 0.4),
-            0 0 15px rgba(255, 255, 255, 0.3) inset;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .xp-gain-content::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            45deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-        );
-        transform: rotate(45deg);
-        animation: shine 3s infinite;
-    }
-
-    @keyframes shine {
-        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-    }
-
-    .xp-icon {
-        animation: float 2s ease-in-out infinite;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-    }
-
-    .xp-icon svg {
-        width: 24px;
-        height: 24px;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-4px); }
-    }
-
-    .xp-text {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        line-height: 1;
-    }
-
-    .xp-amount {
-        font-size: 1.5rem;
-        font-weight: 800;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .xp-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        opacity: 0.9;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Efeito de partículas (opcional) */
-    .xp-gain-content::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            circle at center,
-            transparent 0%,
-            rgba(255, 255, 255, 0.1) 100%
-        );
-        opacity: 0;
-        animation: pulse 2s ease-in-out;
-    }
-
-    @keyframes pulse {
-        0% { opacity: 0; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.05); }
-        100% { opacity: 0; transform: scale(1.1); }
-    }
-    .card-hover {
-        transition: all 0.3s ease;
-    }
-    
-    .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card {
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .module-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .floating-element {
-        animation: float 6s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-    }
-    
-    .pulse-animation {
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-    
-    .progress-ring {
-        transform: rotate(-90deg);
-    }
-    
-    .progress-ring__circle {
-        transition: stroke-dashoffset 0.5s ease;
-    }
-    
-    .typewriter {
-        overflow: hidden;
-        border-right: .15em solid #3B82F6;
-        white-space: nowrap;
-        animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
-    }
-    
-    @keyframes typing {
-        from { width: 0 }
-        to { width: 100 }
-    }
-    
-    @keyframes blink-caret {
-        from, to { border-color: transparent }
-        50% { border-color: #3B82F6; }
-    }
-    
+    /* ESTILOS OTIMIZADOS E FLUIDOS */
     .fade-in {
-        animation: fadeIn 1s ease-in;
+        animation: fadeIn 0.5s ease-in;
     }
     
     @keyframes fadeIn {
@@ -241,30 +15,37 @@
         to { opacity: 1; transform: translateY(0); }
     }
     
-    .interactive-card {
-        transition: all 0.3s ease;
-        cursor: pointer;
+    .slide-in {
+        animation: slideIn 0.4s ease-out;
     }
     
-    .interactive-card:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
     }
     
-    .interactive-card:active {
-        transform: translateY(1px) scale(0.98);
+    .bounce-in {
+        animation: bounceIn 0.6s ease-out;
     }
-
-    /* ESTILOS ESPECÍFICOS PARA PRÁTICA */
-    .question-container {
-        display: none;
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 1; }
+        70% { transform: scale(0.95); }
+        100% { transform: scale(1); opacity: 1; }
     }
-
-    .question-container.active {
-        display: block;
-        animation: fadeIn 0.5s ease-in;
+    
+    .shake {
+        animation: shake 0.5s ease-in-out;
     }
-
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-8px); }
+        75% { transform: translateX(8px); }
+    }
+    
+    /* Sistema de dicas */
     .hint-container {
         display: none;
         background-color: #f0f9ff;
@@ -273,77 +54,46 @@
         margin-top: 1rem;
         border-radius: 0.5rem;
     }
-
+    
     .hint-container.active {
         display: block;
     }
-
-    .life-indicator {
-        display: flex;
-        gap: 4px;
-        align-items: center;
-    }
-
-    .life {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: #10B981;
-        transition: all 0.3s ease;
-    }
-
-    .life.lost {
-        background-color: #EF4444;
-        transform: scale(0.8);
-    }
-
+    
     .correct-answer {
         background-color: #d1fae5 !important;
         border-color: #10b981 !important;
         color: #065f46 !important;
     }
-
+    
     .wrong-answer {
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #7f1d1d !important;
     }
-
-    .blank-preview {
-        display: inline-block;
-        min-width: 80px;
+    
+    .blank-input {
+        border-bottom: 2px solid #3B82F6;
         text-align: center;
+        padding: 4px 8px;
+        margin: 0 4px;
+        background: transparent;
+        outline: none;
+        min-width: 80px;
         font-weight: 500;
-        background: #fef3c7;
-        border: 2px dashed #f59e0b;
-        border-radius: 6px;
-        padding: 2px 8px;
-        margin: 0 2px;
-        transition: all 0.2s ease;
-        color: #92400e;
     }
-
+    
+    .blank-input:focus {
+        border-color: #1E40AF;
+        background: #f0f9ff;
+    }
+    
     .blank-filled {
         background: #d1fae5;
-        border: 2px solid #10b981;
+        border-color: #10b981;
         color: #065f46;
         font-weight: 600;
     }
-
-    .code-editor {
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-        line-height: 1.5;
-        background: #1e293b;
-        color: #e2e8f0;
-        border: 1px solid #334155;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin: 1rem 0;
-        overflow-x: auto;
-        white-space: pre-wrap;
-    }
-
+    
     .code-output {
         font-family: 'Courier New', monospace;
         font-size: 14px;
@@ -355,17 +105,17 @@
         border-radius: 0.5rem;
         border: 1px solid #1e293b;
     }
-
+    
     .option-button {
         transition: all 0.3s ease;
         border: 2px solid #e2e8f0;
     }
-
+    
     .option-button:hover {
         border-color: #3B82F6;
         transform: translateY(-2px);
     }
-
+    
     .feedback-message {
         padding: 1rem;
         border-radius: 0.5rem;
@@ -373,66 +123,323 @@
         font-weight: 600;
         text-align: center;
     }
-
+    
     .feedback-correct {
         background-color: #d1fae5;
         color: #065f46;
         border: 2px solid #10b981;
     }
-
+    
     .feedback-incorrect {
         background-color: #fee2e2;
         color: #7f1d1d;
         border: 2px solid #ef4444;
     }
-
-    /* Estilos para o sistema de dicas */
-    .hint-step {
-        display: none;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #dbeafe;
-    }
-
-    .hint-step:last-child {
-        border-bottom: none;
-    }
-
-    .hint-step.active {
-        display: block;
-        animation: fadeIn 0.5s ease-in;
-    }
-
-    .hint-counter {
-        background: #3B82F6;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
+    
+    /* Botão voltar */
+    .back-button {
         display: inline-flex;
         align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748B;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    
+    .back-button:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Progresso da prática */
+    .practice-progress {
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .practice-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3B82F6, #1E40AF);
+        transition: width 0.5s ease;
+    }
+    
+    /* Indicador de questões */
+    .questions-indicator {
+        display: flex;
         justify-content: center;
-        font-size: 0.75rem;
-        font-weight: bold;
+        gap: 8px;
+        margin: 1rem 0;
+    }
+    
+    .question-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .question-dot.answered {
+        background: #10b981;
+    }
+    
+    .question-dot.current {
+        background: #3B82F6;
+        transform: scale(1.2);
+    }
+    
+    .question-dot.wrong {
+        background: #ef4444;
+    }
+    
+    /* EDITOR DE CÓDIGO */
+    .code-editor-container {
+        position: relative;
+        border: 1px solid #334155;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        margin: 1rem 0;
+        background: #0f172a;
+    }
+    
+    .editor-header {
+        background: #1e293b;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .editor-title {
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .editor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .editor-btn {
+        background: #374151;
+        border: 1px solid #4b5563;
+        color: #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .editor-btn:hover {
+        background: #4b5563;
+        border-color: #6b7280;
+    }
+    
+    .editor-btn.primary {
+        background: #3B82F6;
+        border-color: #2563eb;
+    }
+    
+    .editor-btn.primary:hover {
+        background: #2563eb;
+    }
+    
+    .editor-content {
+        position: relative;
+        display: flex;
+        min-height: 300px;
+    }
+    
+    .editor-line-numbers {
+        background: #1e293b;
+        color: #64748b;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 1rem 0.5rem;
+        text-align: right;
+        border-right: 1px solid #334155;
+        user-select: none;
+        min-width: 50px;
+        overflow: hidden;
+    }
+    
+    .line-number {
+        height: 21px;
+        display: block;
+    }
+    
+    .code-textarea {
+        flex: 1;
+        background: #0f172a;
+        color: #e2e8f0;
+        border: none;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: none;
+        outline: none;
+        tab-size: 4;
+        white-space: pre;
+        overflow-wrap: normal;
+        overflow: auto;
+    }
+    
+    .code-textarea:focus {
+        box-shadow: none;
+    }
+    
+    /* Terminal de saída */
+    .terminal {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+    
+    .terminal-header {
+        background: #1e293b;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #334155;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .terminal-content {
+        padding: 1rem;
+        color: #10b981;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        min-height: 60px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .terminal-content.error {
+        color: #ef4444;
+    }
+    
+    .question-container {
+        display: none;
+    }
+    
+    .question-container.active {
+        display: block;
+        animation: slideIn 0.4s ease-out;
     }
 
-    /* Animações para feedback */
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+    /* Loading do Pyodide */
+    .pyodide-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        color: #6b7280;
+    }
+    
+    .spinner {
+        border: 2px solid #f3f4f6;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 1s linear infinite;
     }
 
-    .shake {
-        animation: shake 0.5s ease-in-out;
-    }
+/* ✅ CONTAINER COM ESPAÇOS COMPACTOS */
+.fill-blank-container {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.4 !important;      /* ✅ LINHAS MAIS JUNTAS */
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: -0.2px;           /* ✅ ESPAÇO ENTRE LETRAS REDUZIDO */
+    word-spacing: -0.5px;             /* ✅ ESPAÇO ENTRE PALAVRAS REDUZIDO */
+}
 
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
+/* ✅ ESPAÇOS ENTRE PARÁGRAFOS MENORES */
+.fill-blank-container br {
+    line-height: 0.8 !important;      /* ✅ QUEBRAS MAIS COMPACTAS */
+    margin-bottom: 2px !important;
+}
 
-    .bounce {
-        animation: bounce 0.5s ease-in-out;
+/* Classe para preservar espaços de forma natural */
+.preserve-spaces {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: inline;
+}
+
+/* Inputs de lacuna - TAMANHO REDUZIDO */
+.blank-input {
+    border-bottom: 2px solid #3B82F6;
+    text-align: center;
+    padding: 1px 3px !important; 
+    margin: 0 1px !important;
+    background: transparent;
+    outline: none;
+    min-width: 60px !important;      
+    max-width: 80px !important;       
+    font-weight: 500;
+    display: inline-block;
+    vertical-align: baseline;
+    font-family: inherit;
+    font-size: 13px !important;
+    border-radius: 2px;
+    height: 20px !important;
+    line-height: 1;
+}
+
+.blank-input:focus {
+    border-color: #1E40AF;
+    background: #f0f9ff;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.blank-input.correct-answer {
+    background: #d1fae5 !important;
+    border-color: #10b981 !important;
+    color: #065f46 !important;
+}
+
+.blank-input.wrong-answer {
+    background: #fee2e2 !important;
+    border-color: #ef4444 !important;
+    color: #7f1d1d !important;
+}
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
@@ -442,15 +449,10 @@
     <!-- Topo: Botão voltar + Cronômetro + Streak + Vidas -->
     <div class="flex items-center justify-between border-b border-blue-100 pb-4">
         <!-- Botão Voltar -->
-        <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}">
-            <button class="interactive-card flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-600 font-semibold rounded-xl hover:bg-blue-200 transition">
-                <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
-                Voltar
-            </button>
+        <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}" class="back-button">
+            <img src="{% static 'imagem/arrow_back_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Voltar" class="w-4 h-4">
+            <span>Voltar as Tarefas</span>
         </a>
-
-     
-        
 
         <!-- Cronômetro -->
         <div class="flex items-center gap-3 bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold">
@@ -471,17 +473,16 @@
     <input type="hidden" id="max-vidas" value="{{ max_vidas }}">
     <input type="hidden" id="aula-id" value="{{ aula.id }}">
     <input type="hidden" id="pratica-concluida" value="{{ pratica_concluida|yesno:'true,false' }}">
-    <!-- ✅ NOVO: Campo para controlar XP da revisão -->
     <input type="hidden" id="xp-revisao" value="5">
-    <!-- Cabeçalho da Prática com Animação -->
+    <input type="hidden" id="questoes_json" value='{{ questoes_json|escapejs }}'>
+
+    <!-- Cabeçalho da Prática -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-blue-600 typewriter">{{ aula.titulo_pratica|default:aula.titulo_aula }}</h2>
-            <!-- ✅ INDICADOR DE MODO REVISÃO -->
+            <h2 class="text-2xl font-bold text-blue-600">{{ aula.titulo_pratica|default:aula.titulo_aula }}</h2>
             {% if pratica_concluida %}
             <div class="flex items-center gap-2 mt-2">
                 <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                    
                     Modo Revisão
                 </span>
             </div>
@@ -489,10 +490,10 @@
         </div>
         
         <div class="flex gap-4">
-            <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover">
+            <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center">
                 <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="h-5 w-5 mx-1"> {{ aula.tempo_pratica }} min
             </div>
-            <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center card-hover pulse-animation">
+            <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-xl text-sm font-bold flex items-center">
                 +{{ aula.xp_pratica }} XP
             </div>
         </div>
@@ -500,16 +501,32 @@
 
     <!-- Descrição da Prática -->
     {% if aula.conteudo_pratico %}
-    <div class="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-2xl p-6 shadow-lg module-card">
+    <div class="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-2xl p-6 shadow-lg">
         <h3 class="text-lg font-bold text-blue-600 mb-3 flex items-center gap-2">
             <img src="{% static 'imagem/description_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Descrição" class="w-5 h-5">
-            
+            Descrição da Prática
         </h3>
         <p class="text-gray-700 leading-relaxed">
             {{ aula.conteudo_pratico }}
         </p>
     </div>
     {% endif %}
+
+    <!-- Progresso da Prática -->
+    <div class="bg-white rounded-xl p-4 shadow-md">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700">Progresso</span>
+            <span class="text-sm font-bold text-blue-600" id="progress-text">0/{{ aula.questoes.count }}</span>
+        </div>
+        <div class="practice-progress">
+            <div class="practice-progress-fill" id="practice-progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="questions-indicator" id="questions-indicator">
+            {% for questao in aula.questoes.all %}
+            <div class="question-dot" data-question-id="{{ questao.id }}"></div>
+            {% endfor %}
+        </div>
+    </div>
 
     <!-- Container Principal das Questões -->
     <div id="questions-container" class="space-y-6">
@@ -537,16 +554,15 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <!-- Botão de Dicas -->
-                    <button class="hint-btn bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition interactive-card flex items-center gap-2"
+                    <button class="hint-btn bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition flex items-center gap-2"
                             data-question-id="{{ questao.id }}">
                         <img src="{% static 'imagem/lightbulb_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Dicas" class="w-4 h-4">
                         Dicas
-                        <span class="hint-counter bg-white text-blue-600">{{ questao.dicas.count }}</span>
+                        <span class="hint-counter bg-white text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">{{ questao.dicas.count }}</span>
                     </button>
                     
                     <!-- XP da Questão -->
                     <div class="bg-yellow-100 text-yellow-800 px-3 py-2 rounded-lg font-bold flex items-center gap-2">
-                        
                         +{{ questao.xp }} XP
                     </div>
                 </div>
@@ -560,7 +576,6 @@
                 </div>
                 {% endif %}
                 
-
                 <!-- Container de Dicas -->
                 <div class="hint-container mb-6" id="hints-{{ questao.id }}" style="display: none;">
                     <div class="flex justify-between items-center mb-3">
@@ -573,7 +588,7 @@
                     
                     <div class="hints-list space-y-3">
                         {% for dica in questao.dicas.all %}
-                        <div class="hint-step bg-blue-50  p-4 rounded-r-lg"
+                        <div class="hint-step bg-blue-50 p-4 rounded-r-lg"
                             style="display: none;">
                             <div class="flex items-start gap-3">
                                 <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1 flex-shrink-0">
@@ -588,21 +603,6 @@
                         <p class="text-gray-500 text-center py-2">Nenhuma dica disponível para esta questão.</p>
                         {% endfor %}
                     </div>
-                    
-                    {% if questao.dicas.count > 1 %}
-                    <div class="hint-navigation flex justify-between mt-4">
-                        <button class="prev-hint bg-gray-500 text-white px-4 py-2 rounded text-sm hover:bg-gray-600 transition"
-                                data-question-id="{{ questao.id }}"
-                                style="display: none;">
-                            ← Anterior
-                        </button>
-                        <button class="next-hint bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition"
-                                data-question-id="{{ questao.id }}"
-                                style="display: none;">
-                            Próxima →
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Enunciado da Questão -->
@@ -637,130 +637,85 @@
                 </div>
 
                 {% elif questao.tipo == 'code' %}
-                <!-- Programação -->
+                <!-- EDITOR DE CÓDIGO COM PYODIDE - CORRIGIDO -->
                 <div class="space-y-4">
-                    {% if questao.codigo_inicial %}
+                    <!-- ✅ ELEMENTO OCULTO COM SAÍDA ESPERADA - AGORA FUNCIONAL -->
+                    <div id="saida-esperada-{{ questao.id }}" 
+                         data-saida-esperada="{{ questao.saida_esperada|default:'' }}" 
+                         style="display: none;">
+                    </div>
+                    
+                    <!-- EDITOR DE CÓDIGO -->
                     <div>
-                        <h4 class="font-bold text-gray-800 mb-2">Código Inicial:</h4>
-                        <div class="code-editor">
-                            <pre><code>{{ questao.codigo_inicial }}</code></pre>
+                        <h4 class="font-bold text-gray-800 mb-2">Escreva seu código Python:</h4>
+                        <div class="code-editor-container" id="editor-container-{{ questao.id }}">
+                            <div class="editor-header">
+                                <div class="editor-title">
+                                    <img src="{% static 'imagem/code_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Código" class="w-4 h-4">
+                                    main.py
+                                </div>
+                                <div class="editor-actions">
+                                    <button class="editor-btn run-editor-code" data-question-id="{{ questao.id }}">
+                                        <img src="{% static 'imagem/play_arrow_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Executar" class="w-4 h-4">
+                                        Executar
+                                    </button>
+                                    <button class="editor-btn primary check-editor-code" data-question-id="{{ questao.id }}">
+                                        <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Verificar" class="w-4 h-4">
+                                        Verificar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="editor-content">
+                                <div class="editor-line-numbers" id="line-numbers-{{ questao.id }}">1</div>
+                                <textarea class="code-textarea" id="code-input-{{ questao.id }}" 
+                                          placeholder="Escreva seu código Python aqui..." 
+                                          spellcheck="false">{{ questao.codigo_inicial|default:"# Escreva seu código aqui\n" }}</textarea>
+                            </div>
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    <!-- ✅ CORREÇÃO: VERIFICAÇÃO SEGURA DA SAÍDA ESPERADA -->
-                    {% if questao.saida_esperada %}
-                    <div class="mt-4">
-                        <h4 class="font-bold text-gray-800 mb-2">Saída Esperada:</h4>
-                        <div class="code-output" data-saida-esperada="{{ questao.saida_esperada|escapejs }}">
-                            <pre>{{ questao.saida_esperada }}</pre>
+
+                    <!-- TERMINAL DE SAÍDA -->
+                    <div class="terminal" id="terminal-{{ questao.id }}">
+                        <div class="terminal-header">
+                            <img src="{% static 'imagem/terminal_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Terminal" class="w-4 h-4">
+                            Saída do Código
                         </div>
-                    </div>
-
-                    
-                    
-                    //<script>
-                        // ✅ DEFINIR VARIÁVEL GLOBAL APENAS SE HOUVER SAÍDA
-                       // window.saidaEsperada_{{ questao.id }} = {{ questao.saida_esperada|escapejs }};
-                       // console.log("📝 Questão {{ questao.id }} - Saída esperada definida:", window.saidaEsperada_{{ questao.id }});
-                    //</script>
-                    {% else %}
-                    <div class="bg-blue-100 border border-blue-400 p-3 rounded-lg">
-                        <h4 class="font-bold text-blue-800">💡 Informação:</h4>
-                        <p class="text-blue-700">Execute o código para ver o resultado. Não há saída específica esperada.</p>
-                    </div>
-                    
-                    <script>
-                        // ✅ DEFINIR COMO VAZIO SE NÃO HOUVER SAÍDA
-                        //window.saidaEsperada_{{ questao.id }} = "";
-                        //console.log("📝 Questão {{ questao.id }} - Sem saída esperada definida");
-                    </script>
-                    {% endif %}
-
-                    <div>
-                        <h4 class="font-bold text-gray-800 mb-2">Seu Código:</h4>
-                        <textarea class="w-full h-48 bg-gray-900 text-green-400 p-4 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none font-mono text-sm"
-                                placeholder="Escreva seu código aqui..." id="code-input-{{ questao.id }}">{{ questao.codigo_inicial|default:"" }}</textarea>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button class="run-code bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition interactive-card flex items-center gap-2"
-                                data-question-id="{{ questao.id }}">
-                            <img src="{% static 'imagem/play_arrow_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Executar" class="w-4 h-4">
-                            Executar Código
-                        </button>
-                        
-                        <button class="check-code bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2"
-                                data-question-id="{{ questao.id }}">
-                            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Verificar" class="w-4 h-4">
-                            Verificar Código
-                        </button>
-                    </div>
-
-                    <div id="code-output-{{ questao.id }}" class="code-output hidden">
-                        <div class="text-gray-400">Saída do código aparecerá aqui...</div>
+                        <div class="terminal-content" id="code-output-{{ questao.id }}">
+                            <div class="pyodide-loading">
+                                <div class="spinner"></div>
+                                <span>Carregando Python...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {% elif questao.tipo == 'fill-blank' %}
-                
-                {% spaceless %}
-                <!-- Completar Lacunas -->
+                <!-- Completar Lacunas CORRIGIDO -->
                 <div class="space-y-4">
                     <h4 class="font-bold text-gray-800 mb-2">Complete as lacunas no texto abaixo:</h4>
                     
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    
-                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ questao.enunciado }}</div>
-                        
+                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 leading-relaxed whitespace-pre-line">
+                            {{ questao.enunciado }}
+                        </div>
                     </div>
-                    
-                    <!-- ✅ SOLUÇÃO: Variável global JavaScript -->
-                    <script>
-                        // Define as respostas como variável global
-                        window.respostasQuestao{{ questao.id }} = {{ questao.respostas_corretas|safe }};
-                        console.log("🎯 Respostas definidas para questão {{ questao.id }}:", window.respostasQuestao{{ questao.id }});
-                    </script>
 
-                    <div class="correct-answers-data" 
+                    <!-- ✅ DIV OCULTA COM AS RESPOSTAS CORRETAS -->
+                    <div id="respostas-{{ questao.id }}" 
                         data-questao-id="{{ questao.id }}"
-                        data-respostas='{{ questao.respostas_corretas|default:"[]"|safe }}'>
+                        data-respostas='{{ questao.respostas_corretas|default:"[]" }}'
+                        style="display: none;">
                     </div>
 
-                    <button class="check-blank bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2"
+                    <button class="check-blank bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
                             data-question-id="{{ questao.id }}">
-                        Verificar
+                        Verificar Respostas
                     </button>
                 </div>
-                {% endspaceless %}
                 {% endif %}
 
                 <!-- Feedback da Questão -->
                 <div id="feedback-{{ questao.id }}" class="feedback-message hidden mt-6"></div>
-
-                <!-- Navegação entre Questões -->
-                <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                    <button class="prev-question bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-700 transition interactive-card flex items-center gap-2 {% if forloop.first %}opacity-50 cursor-not-allowed{% endif %}"
-                            {% if forloop.first %}disabled{% endif %}>
-                        ← Anterior
-                        
-                    </button>
-
-                    <span class="text-gray-600 font-medium">Questão {{ forloop.counter }} de {{ aula.questoes.count }}</span>
-
-                    <button class="next-question bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition interactive-card flex items-center gap-2 {% if forloop.last %}hidden{% endif %}"
-                            data-question-id="{{ questao.id }}">
-                        Próxima
-                        <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Próxima" class="w-4 h-4">
-                    </button>
-                    <!-- Botão Finalizar (última questão) -->
-                    <button class="finish-practice bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition interactive-card flex items-center gap-2 opacity-50 cursor-not-allowed {% if not forloop.last %}hidden{% endif %}"
-                            data-aula-id="{{ aula.id }}" disabled>
-                        
-                        Responda todas as questões
-                    </button>
-                    
-                </div>
             </div>
         </div>
         {% empty %}
@@ -778,7 +733,7 @@
     </div>
 
     <!-- Tela de Resultados -->
-    <div id="result-screen" class="hidden bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg p-8 text-center space-y-6 border border-green-200 module-card">
+    <div id="result-screen" class="hidden bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg p-8 text-center space-y-6 border border-green-200">
         <div class="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-t-2xl p-6 -m-8 mb-6">
             <h2 class="text-3xl font-bold flex items-center justify-center gap-3">
                 <span>🎉</span>
@@ -789,7 +744,7 @@
 
         <!-- Resumo de Desempenho -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div class="bg-white rounded-xl p-6 shadow-md card-hover">
+            <div class="bg-white rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-center gap-2 mb-3">
                     <img src="{% static 'imagem/auto_awesome_mosaic_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-8 h-8">
                 </div>
@@ -797,7 +752,7 @@
                 <p class="text-sm text-gray-600">Total conquistado</p>
             </div>
 
-            <div class="bg-white rounded-xl p-6 shadow-md card-hover">
+            <div class="bg-white rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-center gap-2 mb-3">
                     <img src="{% static 'imagem/timer_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-8 h-8">
                 </div>
@@ -805,7 +760,7 @@
                 <p class="text-sm text-gray-600">Tempo total</p>
             </div>
 
-            <div class="bg-white rounded-xl p-6 shadow-md card-hover">
+            <div class="bg-white rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-center gap-2 mb-3">
                     <img src="{% static 'imagem/bolt_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Bônus" class="w-8 h-8">
                 </div>
@@ -814,640 +769,647 @@
             </div>
         </div>
 
+        <!-- ✅ CORREÇÃO: ADICIONAR BÔNUS DE REVISÃO -->
+        {% if pratica_concluida %}
+        <div class="bg-purple-100 border border-purple-300 rounded-xl p-4 mt-4">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <img src="{% static 'imagem/refresh_35dp_8B5CF6_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Revisão" class="w-6 h-6">
+                <span class="font-bold text-purple-800">Bônus de Revisão</span>
+            </div>
+            <div class="text-xl font-bold text-purple-600">+<span id="revisao-bonus">5</span> XP</div>
+            <p class="text-sm text-purple-700">Por completar a revisão</p>
+        </div>
+        {% endif %}
+
         <!-- Botões de Ação -->
         <div class="flex justify-center gap-4 mt-8">
             <button onclick="location.reload()"
                 class="bg-gradient-to-r from-green-500 to-green-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-green-600 hover:to-green-800 transition transform hover:scale-105 font-bold flex items-center gap-2">
                 Recomeçar
-                
             </button>
 
             <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}"
                 class="bg-white text-green-600 border border-green-300 px-8 py-3 rounded-xl shadow-lg hover:bg-green-50 transition transform hover:scale-105 font-bold flex items-center gap-2">
-                
                 Voltar às Tarefas
             </a>
         </div>
-        
     </div>
-    
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
+<!-- ✅ CARREGAR PYODIDE - PYTHON REAL NO NAVEGADOR -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 <script>
-    // ===== SISTEMA DINÂMICO DE PRÁTICA COM VIDAS =====
+    // ===== SISTEMA DE LOOP DE QUESTÕES =====
     
     // Variáveis globais
-    // ✅ SISTEMA DE CONTROLE DE QUESTÕES
-    let questionsAnswered = new Set(); // Armazena IDs das questões respondidas
-    let canFinish = false; // Controla se pode finalizar
-    let currentQuestion = 1;
+    let questions = [];
+    let currentQuestionIndex = 0;
     let totalQuestions = {{ aula.questoes.count }};
     let seconds = 0;
     let timerInterval;
     let totalXP = 0;
     let correctAnswers = 0;
     let usedHints = {};
-    let currentHintIndex = {};
     let userLives = parseInt(document.getElementById('vidas-restantes').value);
     let maxLives = parseInt(document.getElementById('max-vidas').value);
     let isReviewMode = document.getElementById('pratica-concluida').value === 'true';
-
+    
+    // ✅ VARIÁVEL PARA PYODIDE
+    let pyodide = null;
+    let isPyodideLoaded = false;
+    
+    // Questões respondidas corretamente
+    let answeredQuestions = new Set();
+    // Questões que ainda precisam ser respondidas
+    let pendingQuestions = new Set();
+    
     // ===== INICIALIZAÇÃO =====
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log("🎯 Iniciando sistema de loop de questões...");
         
-        console.log("🎯 Iniciando sistema de prática...");
-        console.log(`📝 Modo: ${isReviewMode ? 'REVISÃO' : 'NOVA PRÁTICA'}`);
-       
-        // Inicializar sistema
+        // ✅ INICIALIZAR PYODIDE PRIMEIRO
+        await initializePyodide();
+        
+        // Inicializar questões
+        initializeQuestions();
         initializeHints();
         initializeQuestionEvents();
+        initializeCodeEditors();
+        initializeFillBlankQuestions();
         startTimer();
-        
-        // ✅ CARREGAR DADOS INICIAIS DO CABEÇALHO
-        carregarStreakUsuario().then(() => {
-            console.log(`❤️ Vidas: ${userLives}/${maxLives}`);
-            console.log(`🔥 Streak: ${streakAtual} dias, +${bonusStreak}% XP`);
-            
-            // ✅ ATUALIZAR CABEÇALHO COM DADOS INICIAIS
-            atualizarCabecalhoDisplay();
-            atualizarDisplayStreak();
-        });
-        
-        // ✅ INICIAR ATUALIZAÇÃO PERIÓDICA
-        iniciarAtualizacaoPeriodica();
+        updateProgress();
         
         console.log(`✅ Sistema inicializado com ${totalQuestions} questões`);
     });
 
-    // ===== SISTEMA DE VIDAS =====
-    function updateLivesDisplay() {
-        // ✅ VERIFICAÇÃO DE SEGURANÇA: Se o elemento existe
-        const lifeIndicator = document.getElementById('life-indicator');
+    // ===== INICIALIZAR PYODIDE =====
+    async function initializePyodide() {
+        console.log("🐍 Iniciando Pyodide...");
         
-        if (lifeIndicator) {
-            const lives = lifeIndicator.querySelectorAll('.life');
-            
-            lives.forEach((life, index) => {
-                if (index < userLives) {
-                    life.classList.remove('bg-red-300', 'lost');
-                    life.classList.add('bg-green-500');
-                } else {
-                    life.classList.remove('bg-green-500');
-                    life.classList.add('bg-red-300', 'lost');
-                }
+        try {
+            // Mostrar loading
+            document.querySelectorAll('.terminal-content').forEach(terminal => {
+                terminal.innerHTML = `
+                    <div class="pyodide-loading">
+                        <div class="spinner"></div>
+                        <span>Carregando Python...</span>
+                    </div>
+                `;
             });
-        } else {
-            console.log("⚠️ life-indicator não encontrado, atualizando apenas o número");
-        }
-        
-        // ✅ ATUALIZAR O NÚMERO DE VIDAS NO CABEÇALHO (IMPORTANTE)
-        const vidaElement = document.querySelector('.bg-blue-200.px-3.py-1\\.5 h2');
-        if (vidaElement) {
-            vidaElement.textContent = userLives;
-        }
-        
-        // ✅ VERIFICAÇÃO DE SEGURANÇA: Se vidas = 0, finalizar prática
-        if (userLives <= 0 && !isReviewMode) {
-            console.log("💀 Vidas zeradas - finalizando prática...");
-            setTimeout(() => {
-                endPracticeDueToLives();
-            }, 1000);
+            
+            // Carregar Pyodide
+            pyodide = await loadPyodide({
+                indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
+            });
+            
+            // ✅ CORREÇÃO: Configurar input/output corretamente
+            await pyodide.runPythonAsync(`
+                import sys
+                import js
+                
+                class PythonInput:
+                    def __init__(self):
+                        self.buffer = ""
+                    
+                    def readline(self):
+                        # Para input() - retorna string vazia por enquanto
+                        return "\\\\n"
+                
+                class PythonOutput:
+                    def __init__(self):
+                        self.content = ""
+                    
+                    def write(self, text):
+                        self.content += text
+                        # Enviar para o terminal JavaScript
+                        js.console.log("Python output:", text)
+                    
+                    def flush(self):
+                        pass
+                
+                # Configurar stdin e stdout
+                sys.stdin = PythonInput()
+                output_capture = PythonOutput()
+                sys.stdout = output_capture
+                sys.stderr = output_capture
+            `);
+            
+            isPyodideLoaded = true;
+            console.log("✅ Pyodide carregado com sucesso!");
+            
+            // Atualizar terminais
+            document.querySelectorAll('.terminal-content').forEach(terminal => {
+                terminal.innerHTML = '<div class="text-green-400">✅ Python carregado! Digite seu código e clique em "Executar".</div>';
+            });
+            
+        } catch (error) {
+            console.error("❌ Erro ao carregar Pyodide:", error);
+            document.querySelectorAll('.terminal-content').forEach(terminal => {
+                terminal.innerHTML = '<div class="text-red-400">❌ Erro ao carregar Python. Recarregue a página.</div>';
+            });
         }
     }
-    let isProcessingLifeLoss = false; // Mutex para evitar perda dupla
-    async function loseLife() {
-        console.log("🔄 loseLife() chamado");
-        console.log(`📊 Estado atual - userLives: ${userLives}, isReviewMode: ${isReviewMode}`);
-        if (isProcessingLifeLoss) {
-         console.log("🔄 Perda de vida já em processamento...");
-         return { perdeuVida: false, vidasAcabaram: false };
+
+    // ===== EXECUTAR CÓDIGO PYTHON REAL =====
+    async function runPythonCode(code) {
+        if (!isPyodideLoaded || !pyodide) {
+            throw new Error("Python não está carregado ainda. Aguarde...");
         }
-        if (isReviewMode) {
-            console.log("📝 Modo revisão: não perde vidas");
+        
+        try {
+            // ✅ CORREÇÃO: Configurar output capture de forma correta
+            await pyodide.runPythonAsync(`
+                import sys
+                import io
+                
+                # Criar um StringIO para capturar output
+                output_capture = io.StringIO()
+                sys.stdout = output_capture
+                sys.stderr = output_capture
+            `);
+            
+            // ✅ EXECUTAR CÓDIGO E CAPTURAR OUTPUT
+            await pyodide.runPythonAsync(code);
+            
+            // ✅ PEGAR O OUTPUT CAPTURADO
+            const output = await pyodide.runPythonAsync(`
+                output_text = output_capture.getvalue()
+                # Restaurar stdout/stderr padrão
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
+                output_text
+            `);
+            
+            return output || "";
+            
+        } catch (error) {
+            // ✅ CAPTURAR ERRO CORRETAMENTE
+            const errorOutput = await pyodide.runPythonAsync(`
+                try:
+                    # Tentar pegar o erro do output_capture
+                    error_text = output_capture.getvalue()
+                    sys.stdout = sys.__stdout__
+                    sys.stderr = sys.__stderr__
+                    error_text if error_text else "Erro durante a execução"
+                except:
+                    "Erro: ${error.message}"
+            `);
+            
+            throw new Error(errorOutput || error.message);
+        }
+    }
+
+    // ===== BUSCAR SAÍDA ESPERADA DA QUESTÃO - CORRIGIDO =====
+    function getExpectedOutputForQuestion(questionId) {
+        console.log(`🔍 Buscando saída esperada para questão ${questionId}`);
+        
+        // Método 1: Buscar diretamente do elemento da questão
+        const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+        if (!questionElement) {
+            console.error("Elemento da questão não encontrado");
+            return "";
+        }
+        
+        // Buscar do campo saida_esperada do modelo Questao (se estiver no HTML)
+        const saidaEsperadaElement = document.getElementById(`saida-esperada-${questionId}`);
+        if (saidaEsperadaElement && saidaEsperadaElement.dataset.saidaEsperada) {
+            const saida = saidaEsperadaElement.dataset.saidaEsperada.trim();
+            console.log("✅ Saída esperada encontrada em data-saida-esperada:", saida);
+            return saida;
+        }
+        
+        // Buscar de elementos com classe específica
+        const outputElements = questionElement.querySelectorAll('.saida-esperada, .expected-output, [data-expected]');
+        for (let element of outputElements) {
+            if (element.value || element.textContent || element.dataset.expected) {
+                const saida = (element.value || element.textContent || element.dataset.expected).trim();
+                if (saida) {
+                    console.log("✅ Saída esperada encontrada em elemento:", saida);
+                    return saida;
+                }
+            }
+        }
+        
+        // Buscar do texto da questão (fallback)
+        const enunciado = questionElement.querySelector('.bg-gray-50, .enunciado, p');
+        if (enunciado) {
+            const texto = enunciado.textContent;
+            // Padrões comuns para identificar saída esperada
+            const patterns = [
+                /saída esperada[:\s]*([^\n\.]+)/i,
+                /output esperado[:\s]*([^\n\.]+)/i,
+                /resultado esperado[:\s]*([^\n\.]+)/i,
+                /deve imprimir[:\s]*([^\n\.]+)/i,
+                /deve retornar[:\s]*([^\n\.]+)/i
+            ];
+            
+            for (let pattern of patterns) {
+                const match = texto.match(pattern);
+                if (match && match[1]) {
+                    const saida = match[1].trim();
+                    console.log("✅ Saída esperada extraída do enunciado:", saida);
+                    return saida;
+                }
+            }
+        }
+        
+        console.warn("⚠️ Nenhuma saída esperada encontrada para a questão");
+        return "";
+    }
+
+    // ===== COMPARAÇÃO RIGOROSA DE SAÍDAS - CORRIGIDA =====
+    function areOutputsEqual(userOutput, expectedOutput) {
+        if (!userOutput || !expectedOutput) {
+            console.log("❌ Uma das saídas está vazia");
             return false;
         }
         
-        if (userLives > 0) {
-            userLives--;
-            console.log(`💔 Vida perdida! Novas vidas: ${userLives}`);
-            
-            // ✅ ATUALIZAR CABEÇALHO IMEDIATAMENTE
-            atualizarCabecalhoDisplay();
-            
-            // Salvar no backend
-            const aulaId = document.getElementById('aula-id').value;
-            console.log(`📡 Enviando requisição para aula: ${aulaId}`);
-            
-            try {
-                const response = await fetch("{% url 'usar_vida_pratica' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        aula_id: aulaId
-                    })
-                });
-                
-                console.log("📨 Resposta recebida:", response);
-                const data = await response.json();
-                console.log("📊 Dados da resposta:", data);
-                
-                if (data.success) {
-                    userLives = data.vidas_restantes;
-                    console.log(`✅ Vidas atualizadas do backend: ${userLives}`);
+        const user = userOutput.toString().trim();
+        const expected = expectedOutput.toString().trim();
+        
+        console.log(`🔍 Comparando: "${user}" vs "${expected}"`);
+        
+        // 1. Comparação exata (case-sensitive)
+        if (user === expected) {
+            console.log("✅ Comparação exata - CORRETO");
+            return true;
+        }
+        
+        // 2. Comparação case-insensitive
+        if (user.toLowerCase() === expected.toLowerCase()) {
+            console.log("✅ Comparação case-insensitive - CORRETO");
+            return true;
+        }
+        
+        // 3. Para números: comparar valores numéricos
+        const userNum = parseFloat(user);
+        const expectedNum = parseFloat(expected);
+        
+        if (!isNaN(userNum) && !isNaN(expectedNum)) {
+            if (userNum === expectedNum) {
+                console.log("✅ Comparação numérica - CORRETO");
+                return true;
+            }
+        }
+        
+        // 4. Para múltiplas linhas: comparar linha por linha
+        const userLines = user.split('\n').map(line => line.trim()).filter(line => line !== '');
+        const expectedLines = expected.split('\n').map(line => line.trim()).filter(line => line !== '');
+        
+        if (userLines.length === expectedLines.length) {
+            let todasLinhasIguais = true;
+            for (let i = 0; i < userLines.length; i++) {
+                if (userLines[i] !== expectedLines[i]) {
+                    // Tentar comparação numérica para cada linha
+                    const userLineNum = parseFloat(userLines[i]);
+                    const expectedLineNum = parseFloat(expectedLines[i]);
                     
-                    // ✅ ATUALIZAR CABEÇALHO NOVAMENTE COM OS DADOS DO BACKEND
-                    atualizarCabecalhoDisplay();
-                } else {
-                    console.error("❌ Erro do backend:", data.error);
+                    if (isNaN(userLineNum) || isNaN(expectedLineNum) || userLineNum !== expectedLineNum) {
+                        todasLinhasIguais = false;
+                        break;
+                    }
                 }
-            } catch (error) {
-                console.error('❌ Erro na requisição:', error);
             }
-            
-            return true; // Indica que perdeu vida
-        } else {
-            console.log("💀 Sem vidas disponíveis");
-            return false; // Indica que não perdeu vida (já estava sem)
-        }
-        // ✅ BLOQUEAR para evitar chamadas simultâneas
-        isProcessingLifeLoss = true;
-        console.log("🔄 loseLife() iniciado - Vidas antes:", userLives);
-    }
-
-    function endPracticeDueToLives() {
-        stopTimer();
-        
-        // Mostrar tela de game over
-        const resultScreen = document.getElementById('result-screen');
-        const questionsContainer = document.getElementById('questions-container');
-        
-        questionsContainer.style.display = 'none';
-        resultScreen.classList.remove('hidden');
-        
-        // Customizar mensagem para game over
-        resultScreen.querySelector('h2').innerHTML = '💔 Fim da Prática';
-        resultScreen.querySelector('p').textContent = 'Suas vidas acabaram! Tente novamente.';
-        
-        document.getElementById('final-xp').textContent = totalXP;
-        document.getElementById('time-bonus').textContent = '0';
-        
-        const minutes = Math.floor(seconds / 60);
-        const secondsRemaining = seconds % 60;
-        document.getElementById('final-time').textContent = 
-            String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
-        
-        // Customizar botão
-        const restartBtn = resultScreen.querySelector('button[onclick="location.reload()"]');
-        restartBtn.innerHTML = 'Tentar Novamente 🔄';
-        restartBtn.onclick = function() { location.reload(); };
-    }
-
-    
-    // ===== SISTEMA DE DICAS COM SEQUÊNCIA VISÍVEL =====
-    function initializeHints() {
-        document.querySelectorAll('.question-container').forEach(container => {
-            const questionId = container.dataset.questionId;
-            usedHints[questionId] = 0;
-            currentHintIndex[questionId] = 0;
-            
-            // Garantir que tudo está escondido
-            const hintContainer = document.getElementById(`hints-${questionId}`);
-            if (hintContainer) {
-                hintContainer.style.display = 'none';
-                const hintSteps = hintContainer.querySelectorAll('.hint-step');
-                hintSteps.forEach(step => {
-                    step.style.display = 'none';
-                });
-                
-                // ✅ INICIALIZAR CONTADOR DE SEQUÊNCIA
-                const sequenceCounter = document.createElement('div');
-                sequenceCounter.id = `hint-sequence-${questionId}`;
-                sequenceCounter.className = 'hint-sequence-counter mb-3 p-2 bg-blue-100 rounded-lg text-center hidden';
-                sequenceCounter.innerHTML = `
-                    <span class="text-blue-700 font-semibold">Dicas visualizadas: </span>
-                    <span id="hint-sequence-text-${questionId}" class="text-blue-800 font-bold"></span>
-                `;
-                hintContainer.insertBefore(sequenceCounter, hintContainer.firstChild);
-            }
-        });
-    }
-
-    function showHint(questionId) {
-        const hintContainer = document.getElementById(`hints-${questionId}`);
-        const hintSteps = hintContainer.querySelectorAll('.hint-step');
-        const totalHints = hintSteps.length;
-        
-        if (totalHints === 0) {
-            alert("Não há dicas disponíveis.");
-            return;
-        }
-        
-        // Se é o primeiro clique
-        if (usedHints[questionId] === 0) {
-            // Mostrar container
-            hintContainer.style.display = 'block';
-            usedHints[questionId] = 1;
-        } else if (usedHints[questionId] < totalHints) {
-            // Mostrar próxima dica
-            usedHints[questionId]++;
-        } else {
-            alert("Todas as dicas já foram mostradas!");
-            return;
-        }
-        
-        // ✅ MOSTRAR TODAS AS DICAS JÁ USADAS (não apenas a última)
-        for (let i = 0; i < usedHints[questionId]; i++) {
-            hintSteps[i].style.display = 'block';
-        }
-        
-        // Atualizar contador do botão
-        const hintBtn = document.querySelector(`.hint-btn[data-question-id="${questionId}"]`);
-        const counter = hintBtn.querySelector('.hint-counter');
-        const remaining = totalHints - usedHints[questionId];
-        
-        counter.textContent = remaining;
-        
-        if (remaining === 0) {
-            hintBtn.disabled = true;
-            counter.classList.add('bg-red-500', 'text-white');
-        }
-        
-        // ✅ MOSTRAR CONTADOR DE SEQUÊNCIA (opcional)
-        showHintSequence(questionId);
-    }
-
-    // ===== SISTEMA DE QUESTÕES =====
-    function initializeQuestionEvents() {
-        // Sistema de dicas - APENAS o botão principal
-        document.querySelectorAll('.hint-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const questionId = e.currentTarget.dataset.questionId;
-                showHint(questionId);
-            });
-        });
-
-        
-
-        // ... resto dos event listeners
-
-
-
-        // Múltipla escolha
-        document.querySelectorAll('.option-button').forEach(btn => {
-            btn.addEventListener('click', handleMultipleChoice);
-        });
-
-        // Programação
-        document.querySelectorAll('.run-code').forEach(btn => {
-            btn.addEventListener('click', handleRunCode);
-        });
-
-        document.querySelectorAll('.check-code').forEach(btn => {
-            btn.addEventListener('click', handleCheckCode);
-        });
-
-        // Completar lacunas
-        document.querySelectorAll('.check-blank').forEach(btn => {
-            btn.addEventListener('click', handleCheckBlank);
-        });
-
-        document.querySelectorAll('.word-option').forEach(option => {
-            option.addEventListener('click', handleWordSelection);
-        });
-
-        // Navegação
-        document.querySelectorAll('.next-question').forEach(btn => {
-            btn.addEventListener('click', nextQuestion);
-        });
-
-        document.querySelectorAll('.prev-question').forEach(btn => {
-            btn.addEventListener('click', prevQuestion);
-        });
-
-        // Finalizar prática
-        document.querySelectorAll('.finish-practice').forEach(btn => {
-            btn.addEventListener('click', finishPractice);
-        });
-    }
-
-    // ===== MANIPULADORES DE RESPOSTAS =====
-    // Função auxiliar para mostrar feedback no modo revisão
-    function showReviewModeFeedback(questionId, tipo) {
-        const messages = {
-            'multiple-choice': '📝 Modo revisão: Aprenda com os erros anteriores',
-            'code': '📝 Modo revisão: Melhore seu código',
-            'fill-blank': '📝 Modo revisão: Complete corretamente as lacunas'
-        };
-        
-        showFeedback(questionId, 'info', messages[tipo] || '📝 Modo revisão: Aprendizado ativo', 0);
-    }
-
-    // Modifique as funções de verificação para o modo revisão
-    async function handleMultipleChoice(e) {
-        const btn = e.currentTarget;
-        const questionContainer = btn.closest('.question-container');
-        const questionId = questionContainer.dataset.questionId;
-        const isCorrect = btn.dataset.correct === 'true';
-        const xp = parseInt(questionContainer.querySelector('.bg-yellow-100').textContent.match(/\d+/)[0]);
-        
-        if (isReviewMode) {
-            // ✅ MODO REVISÃO: Mostrar resposta correta e feedback educativo
-            questionContainer.querySelectorAll('.option-button').forEach(option => {
-                if (option.dataset.correct === 'true') {
-                    option.classList.add('correct-answer', 'pulse-animation');
-                }
-                option.classList.add('opacity-70');
-            });
-            
-            showReviewModeFeedback(questionId, 'multiple-choice');
-            return;
-        }
-        
-        // Remover seleção anterior
-        questionContainer.querySelectorAll('.option-button').forEach(option => {
-            option.classList.remove('correct-answer', 'wrong-answer');
-        });
-        
-        if (isCorrect) {
-            btn.classList.add('correct-answer', 'bounce');
-            showFeedback(questionId, 'correct', '✅ Resposta correta!', xp);
-            correctAnswers++;
-            
-            // ✅ REGISTRAR ATIVIDADE COM STREAK (ACERTOU)
-            const resultado = await registrarAtividadeStreak(xp, 'questao');
-            const xpComBonus = resultado.xp_total;
-            
-            totalXP += xpComBonus;
-            await saveProgress(questionId, true, xpComBonus);
-            
-            setTimeout(() => {
-                if (currentQuestion < totalQuestions) {
-                    nextQuestion();
-                }
-            }, 2000);
-        } else {
-            btn.classList.add('wrong-answer', 'shake');
-            showFeedback(questionId, 'incorrect', '❌ Resposta incorreta.', 0);
-            
-            // ✅ REGISTRAR ATIVIDADE COM STREAK (ERROU - mas mantém streak)
-            await registrarAtividadeStreak(0, 'questao');
-            
-            // ✅ CORREÇÃO: Capturar o resultado do loseLife
-            const resultado = await loseLife();
-            
-            // ✅ ATUALIZAR CABEÇALHO APÓS ERRO
-            await atualizarAposErro();
-            await saveProgress(questionId, false, 0);
-            
-            // ✅ CHAMAR END PRACTICE SE VIDAS ACABARAM (AGORA DEPOIS DO loseLife)
-            if (resultado.vidasAcabaram) {
-                setTimeout(() => {
-                    endPracticeDueToLives();
-                }, 1500);
-                return; // Impede continuar
+            if (todasLinhasIguais) {
+                console.log("✅ Todas as linhas são iguais - CORRETO");
+                return true;
             }
         }
-        // ✅ MARCAR QUESTÃO COMO RESPONDIDA
         
-        questionsAnswered.add(questionId);
-        
-        // ✅ VERIFICAR SE PODE FINALIZAR
-        checkAllQuestionsAnswered();
+        console.log("❌ Saídas diferentes - INCORRETO");
+        return false;
     }
-    // ✅ DEBUG ESPECÍFICO PARA QUESTÕES DE CÓDIGO
-    function debugQuestaoCodigo(questionId) {
-        console.log("💻 === DEBUG DETALHADO CÓDIGO ===");
+
+    // ===== VERIFICAÇÃO DE CÓDIGO EDITOR - CORRIGIDA =====
+    async function handleCheckEditorCode(questionId) {
+        console.log("=== 🚨 INICIANDO VERIFICAÇÃO DE CÓDIGO ===");
         
+        const textarea = document.getElementById(`code-input-${questionId}`);
+        const terminal = document.getElementById(`code-output-${questionId}`);
         const questionContainer = document.querySelector(`[data-question-id="${questionId}"]`);
-        const codeInput = document.getElementById(`code-input-${questionId}`);
         
-        // 1. Verificar a saída esperada do template
-        const expectedOutputRaw = `{{ questao.saida_esperada|default:"" }}`;
-        console.log("📥 Saída esperada RAW:", expectedOutputRaw);
-        console.log("📏 Tamanho RAW:", expectedOutputRaw.length);
-        console.log("🔍 Caracteres especiais:", Array.from(expectedOutputRaw).map(char => 
-            char.charCodeAt(0)
-        ));
-        
-        // 2. Verificar o código do usuário
-        console.log("📝 Código do usuário:", codeInput ? codeInput.value : 'NÃO ENCONTRADO');
-        
-        // 3. Testar a interpretação
-        if (codeInput && codeInput.value) {
-            console.log("🧪 Testando interpretPythonCode:");
-            try {
-                const output = interpretPythonCode(codeInput.value);
-                console.log("🖨️ Saída gerada:", output);
-                console.log("📏 Tamanho saída:", output.length);
-                
-                // Comparação EXTREMAMENTE detalhada
-                const normalizedOutput = output.trim();
-                const normalizedExpected = expectedOutputRaw.trim();
-                
-                console.log("🔍 COMPARAÇÃO DETALHADA:");
-                console.log("   Saída normalizada: '" + normalizedOutput + "'");
-                console.log("   Esperada normalizada: '" + normalizedExpected + "'");
-                console.log("   São iguais?", normalizedOutput === normalizedExpected);
-                
-                // Comparação case insensitive
-                console.log("🔍 COMPARAÇÃO CASE INSENSITIVE:");
-                console.log("   Saída (lower): '" + normalizedOutput.toLowerCase() + "'");
-                console.log("   Esperada (lower): '" + normalizedExpected.toLowerCase() + "'");
-                console.log("   São iguais?", normalizedOutput.toLowerCase() === normalizedExpected.toLowerCase());
-                
-            } catch (error) {
-                console.error("❌ Erro na interpretação:", error);
-            }
-        }
-        
-        console.log("💻 === FIM DEBUG CÓDIGO ===");
-    }
-
-
-    async function handleCheckCode(e) {
-        const btn = e.currentTarget;
-        const questionContainer = btn.closest('.question-container');
-        const questionId = questionContainer.dataset.questionId;
-        
-        console.log("🎯 === INÍCIO VERIFICAÇÃO CÓDIGO ===");
-        console.log("ID Questão:", questionId);
-        
-        // ✅ BUSCA ROBUSTA DA SAÍDA ESPERADA
-        // ✅ BUSCA ROBUSTA DA SAÍDA ESPERADA (CORRIGIDA)
-        let expectedOutput = "";
-        let source = "none";
-
-        // ✅ MÉTODO 1: Data attribute (MAIS SEGURO)
-        const saidaElement = questionContainer.querySelector('[data-saida-esperada]');
-        if (saidaElement) {
-            expectedOutput = saidaElement.dataset.saidaEsperada;
-            source = "data_attribute";
-            console.log("📥 Saída esperada (data attribute):", expectedOutput);
-        }
-
-        // ✅ MÉTODO 2: Elemento por ID (fallback)
-        if (!expectedOutput) {
-            const expectedOutputElement = questionContainer.querySelector('[id^="saida-esperada-"]');
-            if (expectedOutputElement) {
-                expectedOutput = expectedOutputElement.textContent.trim();
-                source = "html";
-                console.log("📥 Saída esperada (HTML):", expectedOutput);
-            }
-        }
-
-        // ✅ MÉTODO 3: Busca inteligente com filtros (último recurso)
-        if (!expectedOutput) {
-            const possibleOutputElements = questionContainer.querySelectorAll('pre, .code-output, [class*="output"]');
-            possibleOutputElements.forEach(el => {
-                const text = el.textContent.trim();
-                
-                // ✅ FILTROS MAIS RESTRITIVOS
-                const isExpectedOutput = 
-                    !text.includes('Código Inicial') &&
-                    !text.includes('Seu Código') &&
-                    !text.includes('Dicas visualizadas') &&
-                    !text.includes('Saída do código') &&
-                    !text.includes('Executando código') &&
-                    text.length > 2 &&
-                    !el.closest('.hint-container');
-                
-                if (isExpectedOutput && !expectedOutput) { // Só pega o primeiro
-                    expectedOutput = text;
-                    source = "auto_filtrado";
-                    console.log("📥 Saída esperada (auto filtrado):", expectedOutput);
-                }
-            });
-        }
-        
-        console.log("🎯 Saída esperada final:", expectedOutput, "(fonte:", source + ")");
-        
-        const codeInput = document.getElementById(`code-input-${questionId}`);
-        const xpElement = questionContainer.querySelector('.bg-yellow-100');
-        const xp = xpElement ? parseInt(xpElement.textContent.match(/\d+/)[0]) : 10;
-        
-        if (isReviewMode) {
-            if (expectedOutput) {
-                showFeedback(questionId, 'info', `📝 Modo revisão: Saída esperada:\n${expectedOutput}`, 0);
-            } else {
-                showFeedback(questionId, 'info', `📝 Modo revisão: Execute o código para ver o resultado`, 0);
-            }
+        if (!textarea || !terminal || !questionContainer) {
+            console.error("❌ Elementos não encontrados");
             return;
         }
         
-        const userCode = codeInput.value.trim();
-        console.log("📝 Código do usuário:", userCode);
+        // ✅ BUSCAR SAÍDA ESPERADA - AGORA FUNCIONAL
+        const expectedOutput = getExpectedOutputForQuestion(questionId);
+        console.log("🚨 SAÍDA ESPERADA ENCONTRADA:", expectedOutput);
+        
+        const userCode = textarea.value.trim();
+        console.log("🚨 CÓDIGO DO USUÁRIO:", userCode);
         
         let isCorrect = false;
-        let feedbackMessage = '';
         let output = "";
         
         try {
-            output = interpretPythonCode(userCode);
-            console.log("🖨️ Saída gerada:", output);
+            output = await runPythonCode(userCode);
+            output = output.trim();
+            console.log("🚨 SAÍDA DO USUÁRIO:", output);
             
-            // ✅ LÓGICA DE VERIFICAÇÃO INTELIGENTE
-            if (!expectedOutput) {
-                // Caso 1: Não há saída esperada - verificar se executa sem erro
-                isCorrect = true;
-                feedbackMessage = '✅ Código executado com sucesso!\nSaída: ' + output;
-                console.log("✅ Sem saída esperada - aprovado por execução");
-            } else if (!output.trim() && expectedOutput.trim()) {
-                // Caso 2: Há saída esperada mas o código não produz nada
-                isCorrect = false;
-                feedbackMessage = `❌ Código não produz a saída esperada.\nEsperado: "${expectedOutput}"\nSeu código não imprime nada.`;
-                console.log("❌ Código não produz saída");
+            // ✅ COMPARAÇÃO EXATA E RIGOROSA - AGORA FUNCIONAL
+            if (expectedOutput && expectedOutput.trim() !== "") {
+                isCorrect = areOutputsEqual(output, expectedOutput);
+                console.log("🚨 RESULTADO DA COMPARAÇÃO:", isCorrect ? "CORRETO" : "INCORRETO");
             } else {
-                // Caso 3: Comparar saídas
-                const normalizedOutput = output.trim();
-                const normalizedExpected = expectedOutput.trim();
-                
-                console.log("🔍 COMPARAÇÃO DETALHADA:");
-                console.log("   Saída gerada:", `"${normalizedOutput}"`);
-                console.log("   Esperada:", `"${normalizedExpected}"`);
-                
-                // Estratégias de comparação
-                if (normalizedOutput === normalizedExpected) {
-                    isCorrect = true;
-                    feedbackMessage = '✅ Código correto! Saída esperada alcançada.';
-                } else if (normalizedOutput.toLowerCase() === normalizedExpected.toLowerCase()) {
-                    isCorrect = true;
-                    feedbackMessage = '✅ Código correto! (Diferença de case ignorada)';
-                } else if (normalizedOutput.replace(/\s+/g, ' ') === normalizedExpected.replace(/\s+/g, ' ')) {
-                    isCorrect = true;
-                    feedbackMessage = '✅ Código correto! (Espaços normalizados)';
-                } else {
-                    isCorrect = false;
-                    feedbackMessage = `❌ Código incorreto.\nSua saída: "${output}"\nEsperado: "${expectedOutput}"`;
-                }
-            }
-            
-            // ✅ REGISTRAR NO STREAK
-            if (isCorrect) {
-                correctAnswers++;
-                const resultadoStreak = await registrarAtividadeStreak(xp, 'codigo');
-                const xpComBonus = resultadoStreak.xp_total;
-                totalXP += xpComBonus;
-                console.log("💰 XP ganho:", xpComBonus);
-            } else {
-                await registrarAtividadeStreak(0, 'codigo');
+                console.log("🚨 SEM SAÍDA ESPERADA - APENAS EXECUTA");
+                isCorrect = true; // Se não há saída esperada, considera correto se executou sem erro
             }
             
         } catch (error) {
+            console.log("🚨 ERRO NA EXECUÇÃO:", error);
             isCorrect = false;
-            feedbackMessage = `❌ Erro na execução: ${error.message}`;
-            await registrarAtividadeStreak(0, 'codigo');
-            console.error("💥 Erro:", error);
+            output = error.message;
         }
         
-        console.log("📊 Resultado final:", isCorrect ? "✅ CORRETO" : "❌ ERRADO");
-        console.log("🎯 === FIM VERIFICAÇÃO ===");
-        
-        showFeedback(questionId, isCorrect ? 'correct' : 'incorrect', feedbackMessage, isCorrect ? xp : 0);
-        await saveProgress(questionId, isCorrect, isCorrect ? xp : 0);
-        
-        // ✅ MARCAR QUESTÃO COMO RESPONDIDA
-        questionsAnswered.add(questionId);
-        checkAllQuestionsAnswered();
-        
+        // ✅ FEEDBACK CLARO E CORRETO
         if (isCorrect) {
-            setTimeout(() => {
-                if (currentQuestion < totalQuestions) {
-                    nextQuestion();
-                }
-            }, 2000);
+            showFeedback(questionId, 'correct', `✅ Correto!`, 10);
+            terminal.innerHTML = `<div class="text-green-400">${output}</div>`;
+            setTimeout(() => nextQuestion(true), 1500);
         } else {
-            const resultado = await loseLife();
-            await atualizarAposErro();
+            showFeedback(questionId, 'incorrect', `❌ Incorreto! Verifique sua solução.`, 0);
+            terminal.innerHTML = `<div class="text-red-400">${output}</div>`;
+            await loseLife();
+            setTimeout(() => nextQuestion(false), 1500);
+        }
+        
+        console.log("=== 🚨 VERIFICAÇÃO FINALIZADA ===");
+    }
+
+    // ===== EXECUTAR CÓDIGO EDITOR =====
+    async function handleRunEditorCode(questionId) {
+        const textarea = document.getElementById(`code-input-${questionId}`);
+        const terminal = document.getElementById(`code-output-${questionId}`);
+        
+        if (!textarea || !terminal) return;
+        
+        const code = textarea.value.trim();
+        
+        if (!code) {
+            terminal.innerHTML = '<div class="text-yellow-400">Digite algum código para executar.</div>';
+            return;
+        }
+        
+        if (!isPyodideLoaded) {
+            terminal.innerHTML = '<div class="text-yellow-400">Aguarde, Python ainda está carregando...</div>';
+            return;
+        }
+        
+        // Mostrar "executando..."
+        terminal.innerHTML = '<div class="text-yellow-400">🐍 Executando código Python...</div>';
+        terminal.classList.remove('error');
+        
+        try {
+            console.log("▶️ Executando código:", code);
+            const output = await runPythonCode(code);
+            console.log("✅ Output recebido:", output);
             
-            if (resultado.vidasAcabaram) {
-                setTimeout(() => {
-                    endPracticeDueToLives();
-                }, 1500);
-                return;
+            // ✅ FORMATAR OUTPUT CORRETAMENTE
+            let formattedOutput = output;
+            if (!formattedOutput || formattedOutput.trim() === "") {
+                formattedOutput = "✅ Código executado sem output.";
+            }
+            
+            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-green-400">${formattedOutput}</div>`;
+            terminal.classList.remove('error');
+            
+        } catch (error) {
+            console.error("❌ Erro capturado:", error);
+            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-red-400">${error.message}</div>`;
+            terminal.classList.add('error');
+        }
+    }
+    
+    // ===== SIMPLES: PRIMEIRA LINHA SEM ESPAÇO =====
+    function initializeFillBlankQuestions() {
+        document.querySelectorAll('[id^="fill-blank-text-"]').forEach(container => {
+            const questionId = container.id.replace('fill-blank-text-', '');
+            
+            const originalText = container.textContent;
+            
+            // ✅ ENCONTRAR ONDE COMEÇA A PRIMEIRA LINHA
+            const firstLineStart = originalText.search(/\S/); // Primeiro caractere não-espaço
+            if (firstLineStart > 0) {
+                // ✅ REMOVER ESPAÇOS APENAS DO INÍCIO DO TEXTO TODO
+                const correctedText = originalText.substring(firstLineStart);
+                
+                const processedHTML = correctedText.replace(/\[_____\]/g, 
+                    '<input type="text" class="blank-input" placeholder="______">'
+                );
+                
+                container.innerHTML = processedHTML;
+            } else {
+                // ✅ JÁ ESTÁ CORRETO
+                const processedHTML = originalText.replace(/\[_____\]/g, 
+                    '<input type="text" class="blank-input" placeholder="______">'
+                );
+                container.innerHTML = processedHTML;
+            }
+            
+            container.style.whiteSpace = 'pre-wrap';
+            container.style.wordWrap = 'break-word';
+            container.style.fontFamily = 'monospace';
+        });
+    }
+        
+    // ===== SISTEMA DE QUESTÕES EM LOOP =====
+    function initializeQuestions() {
+        // Coletar todas as questões
+        document.querySelectorAll('.question-container').forEach(container => {
+            const questionId = container.dataset.questionId;
+            questions.push({
+                id: questionId,
+                element: container,
+                answered: false,
+                correct: false
+            });
+            
+            // Adicionar à lista de questões pendentes
+            pendingQuestions.add(questionId);
+        });
+        
+        // Mostrar primeira questão
+        showQuestion(currentQuestionIndex);
+    }
+    
+    function showQuestion(index) {
+        // Esconder todas as questões
+        document.querySelectorAll('.question-container').forEach(container => {
+            container.classList.remove('active');
+        });
+        
+        // Mostrar questão atual
+        if (questions[index]) {
+            questions[index].element.classList.add('active');
+            
+            // Atualizar indicador visual
+            updateQuestionIndicator(index);
+            
+            // Scroll para o topo
+            scrollToTop();
+        }
+    }
+    
+    function updateQuestionIndicator(currentIndex) {
+        // Atualizar dots de questões
+        document.querySelectorAll('.question-dot').forEach((dot, index) => {
+            dot.classList.remove('current', 'answered', 'wrong');
+            
+            if (index === currentIndex) {
+                dot.classList.add('current');
+            } else if (answeredQuestions.has(questions[index].id)) {
+                dot.classList.add('answered');
+            } else if (!pendingQuestions.has(questions[index].id)) {
+                dot.classList.add('wrong');
+            }
+        });
+    }
+    
+    function nextQuestion(isCorrect) {
+    const currentQuestion = questions[currentQuestionIndex];
+    
+    // ✅ CORREÇÃO MELHORADA: Modo revisão sempre marca como respondida e passa
+    if (isCorrect || isReviewMode) {
+        answeredQuestions.add(currentQuestion.id);
+        pendingQuestions.delete(currentQuestion.id);
+        currentQuestion.answered = true;
+        currentQuestion.correct = true;
+        
+        if (answeredQuestions.size === totalQuestions) {
+            finishPractice();
+            return;
+        }
+    } else {
+        pendingQuestions.add(currentQuestion.id);
+    }
+    
+    // Resto do código permanece igual...
+    let nextIndex = -1;
+    for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
+        if (pendingQuestions.has(questions[i].id)) {
+            nextIndex = i;
+            break;
+        }
+    }
+    
+    if (nextIndex === -1) {
+        for (let i = 0; i < questions.length; i++) {
+            if (pendingQuestions.has(questions[i].id)) {
+                nextIndex = i;
+                break;
             }
         }
     }
+    
+    if (nextIndex === -1) {
+        finishPractice();
+        return;
+    }
+    
+    currentQuestionIndex = nextIndex;
+    showQuestion(currentQuestionIndex);
+    updateProgress();
+}
+    
+    function updateProgress() {
+        const progress = (answeredQuestions.size / totalQuestions) * 100;
+        document.getElementById('practice-progress-fill').style.width = `${progress}%`;
+        document.getElementById('progress-text').textContent = `${answeredQuestions.size}/${totalQuestions}`;
+    }
+    
+    // ===== EDITOR DE CÓDIGO =====
+    function initializeCodeEditors() {
+        document.querySelectorAll('.code-textarea').forEach(textarea => {
+            const questionId = textarea.id.replace('code-input-', '');
+            setupCodeEditor(questionId);
+        });
+    }
+    
+    function setupCodeEditor(questionId) {
+        const textarea = document.getElementById(`code-input-${questionId}`);
+        const lineNumbers = document.getElementById(`line-numbers-${questionId}`);
+        
+        if (!textarea) return;
+        
+        // Inicializar números de linha
+        updateLineNumbers(textarea, lineNumbers);
+        
+        // Event listeners para o editor
+        textarea.addEventListener('input', () => {
+            updateLineNumbers(textarea, lineNumbers);
+        });
+        
+        textarea.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = textarea.scrollTop;
+        });
+        
+        textarea.addEventListener('keydown', handleEditorKeydown);
+        
+        // Event listeners para os botões
+        const runBtn = document.querySelector(`.run-editor-code[data-question-id="${questionId}"]`);
+        const checkBtn = document.querySelector(`.check-editor-code[data-question-id="${questionId}"]`);
+        
+        if (runBtn) {
+            runBtn.addEventListener('click', () => handleRunEditorCode(questionId));
+        }
+        
+        if (checkBtn) {
+            checkBtn.addEventListener('click', () => handleCheckEditorCode(questionId));
+        }
+    }
+    
+    function updateLineNumbers(textarea, lineNumbers) {
+        const lines = textarea.value.split('\n').length;
+        let numbersHTML = '';
+        
+        for (let i = 1; i <= lines; i++) {
+            numbersHTML += `<div class="line-number">${i}</div>`;
+        }
+        
+        lineNumbers.innerHTML = numbersHTML;
+        lineNumbers.style.height = textarea.scrollHeight + 'px';
+    }
+    
+    function handleEditorKeydown(e) {
+        const textarea = e.target;
+        
+        // Tab com 4 espaços
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            
+            // Inserir 4 espaços
+            textarea.value = textarea.value.substring(0, start) + '    ' + textarea.value.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + 4;
+            
+            // Atualizar números de linha
+            const questionId = textarea.id.replace('code-input-', '');
+            const lineNumbers = document.getElementById(`line-numbers-${questionId}`);
+            updateLineNumbers(textarea, lineNumbers);
+            
+            return false;
+        }
+    }
+    
+    // ===== SISTEMA DE LACUNAS CORRIGIDO =====
     async function handleCheckBlank(e) {
         const btn = e.currentTarget;
         const questionContainer = btn.closest('.question-container');
         const questionId = questionContainer.dataset.questionId;
-        const xp = parseInt(questionContainer.querySelector('.bg-yellow-100').textContent.match(/\d+/)[0]);
+        const xpElement = questionContainer.querySelector('.bg-yellow-100');
+        const xp = xpElement ? parseInt(xpElement.textContent.match(/\d+/)[0]) : 10;
         
-        console.log("🎯 === INÍCIO VERIFICAÇÃO LACUNAS ===");
-        console.log("ID Questão:", questionId);
+        console.log(`🔍 Verificando questão de lacunas: ${questionId}`);
         
         if (isReviewMode) {
-            // ✅ MODO REVISÃO: Preencher automaticamente as lacunas corretas
             const blankInputs = questionContainer.querySelectorAll('.blank-input');
             const respostasCorretas = getCorrectAnswersForReview(questionId);
-            
-            console.log("📝 MODO REVISÃO - Preenchendo respostas:", respostasCorretas);
             
             blankInputs.forEach((input, index) => {
                 const respostaCorreta = respostasCorretas[index] || "Resposta não disponível";
@@ -1456,14 +1418,14 @@
                 input.disabled = true;
             });
             
-            showReviewModeFeedback(questionId, 'fill-blank');
+            showFeedback(questionId, 'info', '📝 Modo revisão: Complete corretamente as lacunas', 0);
             return;
         }
         
-        // Verificar se todas as lacunas foram preenchidas
         const blankInputs = questionContainer.querySelectorAll('.blank-input');
         let allFilled = true;
         
+        // Verificar se todas as lacunas foram preenchidas
         blankInputs.forEach(input => {
             if (!input.value.trim()) {
                 allFilled = false;
@@ -1477,13 +1439,13 @@
             return;
         }
         
-        // ✅ CORREÇÃO COMPLETA: Verificação real das respostas
+        // ✅ BUSCAR RESPOSTAS CORRETAS DE FORMA ROBUSTA
+        const respostasCorretas = await getCorrectAnswersForQuestion(questionId);
+        console.log("Respostas corretas encontradas:", respostasCorretas);
+        console.log("Número de inputs:", blankInputs.length);
+        
         let isCorrect = true;
         let incorrectAnswers = [];
-        const respostasCorretas = getCorrectAnswersForReview(questionId);
-        
-        console.log("🔍 VERIFICAÇÃO DAS RESPOSTAS:");
-        console.log("   Respostas corretas:", respostasCorretas);
         
         // Remover classes anteriores
         blankInputs.forEach(input => {
@@ -1493,42 +1455,27 @@
         // Verificar cada lacuna
         blankInputs.forEach((input, index) => {
             const userAnswer = input.value.trim().toLowerCase();
-            const correctAnswer = respostasCorretas[index] ? respostasCorretas[index].toLowerCase() : "";
+            const correctAnswer = respostasCorretas[index] ? respostasCorretas[index].toString().toLowerCase() : "";
             
-            console.log(`   Lacuna ${index + 1}:`);
-            console.log(`      Usuário: "${userAnswer}"`);
-            console.log(`      Correto: "${correctAnswer}"`);
+            console.log(`Lacuna ${index}: Usuário="${userAnswer}", Correto="${correctAnswer}"`);
             
             if (userAnswer === correctAnswer) {
-                // ✅ RESPOSTA CORRETA
-                input.classList.add('correct-answer', 'blank-filled');
-                console.log(`      ✅ CORRETO`);
+                input.classList.add('correct-answer', 'blank-filled', 'bounce-in');
             } else {
-                // ❌ RESPOSTA ERRADA
                 isCorrect = false;
                 incorrectAnswers.push(index + 1);
                 input.classList.add('wrong-answer', 'shake');
-                console.log(`      ❌ ERRADO`);
             }
         });
-        
-        console.log(`📊 RESULTADO: ${isCorrect ? '✅ TODAS CORRETAS' : '❌ ALGUMAS ERRADAS'}`);
         
         if (isCorrect) {
             showFeedback(questionId, 'correct', '✅ Todas as lacunas preenchidas corretamente!', xp);
             correctAnswers++;
-            
-            const resultadoStreak = await registrarAtividadeStreak(xp, 'lacunas');
-            const xpComBonus = resultadoStreak.xp_total;
-            
-            totalXP += xpComBonus;
-            await saveProgress(questionId, true, xpComBonus);
+            totalXP += xp;
             
             setTimeout(() => {
-                if (currentQuestion < totalQuestions) {
-                    nextQuestion();
-                }
-            }, 2000);
+                nextQuestion(true);
+            }, 1500);
         } else {
             let errorMessage = '❌ Algumas lacunas estão incorretas.';
             if (incorrectAnswers.length > 0) {
@@ -1537,872 +1484,291 @@
             
             showFeedback(questionId, 'incorrect', errorMessage, 0);
             
-            await registrarAtividadeStreak(0, 'lacunas');
+            await loseLife();
             
-            const resultado = await loseLife();
-            
-            await atualizarAposErro();
-            
-            if (resultado.vidasAcabaram) {
-                setTimeout(() => {
-                    endPracticeDueToLives();
-                }, 1500);
-                return;
-            }
-            
-            await saveProgress(questionId, false, 0);
-        }
-        // ✅ MARCAR QUESTÃO COMO RESPONDIDA
-        
-        questionsAnswered.add(questionId);
-        
-        // ✅ VERIFICAR SE PODE FINALIZAR
-        checkAllQuestionsAnswered();
-        
-        console.log("🎯 === FIM VERIFICAÇÃO LACUNAS ===");
-    }
-
-    function handleWordSelection(e) {
-        const word = e.currentTarget;
-        const wordText = word.dataset.answer;
-        
-        // Encontrar a primeira lacuna vazia
-        const blankInput = document.querySelector('.blank-input:placeholder-shown');
-        if (blankInput) {
-            blankInput.value = wordText;
-            blankInput.classList.add('blank-filled');
-            word.style.display = 'none'; // Esconder palavra usada
-            
-            
+            setTimeout(() => {
+                nextQuestion(false);
+            }, 1500);
         }
     }
-    // ✅ DEBUG DETALHADO DA ATRIBUIÇÃO
-    function debugAtribuicao() {
-        console.log("=== 🐛 DEBUG ATRIBUIÇÃO ===");
-        
-        // Teste direto do regex
-        const testLines = [
-            "x=1",
-            "x = 1", 
-            "y = \"texto\"",
-            "z = [1, 2, 3]"
-        ];
-        
-        testLines.forEach(line => {
-            const match = line.match(/^(\w+)\s*=\s*(.+)$/);
-            console.log(`Linha: "${line}"`);
-            console.log(`Match:`, match);
-            if (match) {
-                console.log(`Variável: ${match[1]}, Valor: ${match[2]}`);
-            }
-            console.log('---');
-        });
-        
-        console.log("=== FIM DEBUG ===");
-    }
 
-    // Execute para ver o problema
-    debugAtribuicao();
-
-    function interpretPythonCode(code) {
-        let output = "";
-        const variables = {};
-        const functions = {};
+    // ✅ FUNÇÃO MELHORADA PARA BUSCAR RESPOSTAS CORRETAS
+    async function getCorrectAnswersForQuestion(questionId) {
+        console.log(`🔍 Buscando respostas para questão ${questionId}`);
         
         try {
-            const lines = code.split('\n');
-            let i = 0;
-            
-            // ✅ FUNÇÃO PARA VERIFICAR INDENTAÇÃO
-            function isIndented(line, referenceLine) {
-                if (!referenceLine || !line || line.trim() === '') return false;
-                
-                const refIndent = referenceLine.length - referenceLine.trimStart().length;
-                const lineIndent = line.length - line.trimStart().length;
-                
-                return lineIndent > refIndent;
+            // Tentar buscar via API
+            const response = await fetch(`/api/questao/${questionId}/respostas/`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Respostas da API:", data.respostas);
+                return data.respostas || [];
             }
-            
-            // ✅ FUNÇÃO PARA PROCESSAR BLOCO DE CÓDIGO
-            function processBlock(blockLines, localVars = {}) {
-                console.log("📦 Processando bloco com", blockLines.length, "linhas:", blockLines);
-                
-                const mergedVars = { ...variables, ...localVars };
-                let blockOutput = "";
-                let j = 0;
-                
-                while (j < blockLines.length) {
-                    let currentLine = blockLines[j];
-                    
-                    // Manter linhas originais para verificação de indentação
-                    if (!currentLine || currentLine.trim() === '' || currentLine.trim().startsWith('#')) {
-                        j++;
-                        continue;
-                    }
-                    
-                    const trimmedLine = currentLine.trim();
-                    console.log(`   📝 Linha ${j} [original]: "${currentLine}"`);
-                    console.log(`   📝 Linha ${j} [trimmed]: "${trimmedLine}"`);
-                    // ✅ ATRIBUIÇÃO DE VARIÁVEIS - DEVE VIR PRIMEIRO!
-                    const assignmentMatch = trimmedLine.match(/^(\w+)\s*=\s*(.+)$/);
-                    if (assignmentMatch) {
-                        const varName = assignmentMatch[1];
-                        const valueExpr = assignmentMatch[2];
-                        
-                        console.log(`   💾 Atribuição encontrada: ${varName} = ${valueExpr}`);
-                        
-                        // Avaliar a expressão do valor
-                        const value = evaluateExpression(valueExpr, mergedVars);
-                        console.log(`   ✅ ${varName} = ${value}`);
-                        
-                        // ✅ SALVAR NO ESCOPO LOCAL E GLOBAL
-                        mergedVars[varName] = value;
-                        variables[varName] = value; // ← LINHA CRÍTICA QUE FALTAVA
-                        
-                        j++;
-                        continue;
-                    }
-                    
-                    
-                    // ✅ IF/ELIF/ELSE
-                    if (trimmedLine.startsWith('if ') || trimmedLine.startsWith('elif ') || trimmedLine.startsWith('else:')) {
-                        let conditionResult = false;
-                        let blockToExecute = [];
-                        
-                        // PROCESSAR CONDIÇÃO
-                        if (trimmedLine.startsWith('if ')) {
-                            const ifMatch = trimmedLine.match(/^if\s+(.+):$/);
-                            if (ifMatch) {
-                                conditionResult = evaluateCondition(ifMatch[1], mergedVars);
-                                console.log(`   🔍 IF "${ifMatch[1]}": ${conditionResult}`);
-                            }
-                        }
-                        else if (trimmedLine.startsWith('elif ')) {
-                            const elifMatch = trimmedLine.match(/^elif\s+(.+):$/);
-                            if (elifMatch) {
-                                let previousExecuted = false;
-                                for (let k = 0; k < j; k++) {
-                                    const prevLine = blockLines[k].trim();
-                                    if (prevLine.startsWith('if ') || prevLine.startsWith('elif ')) {
-                                        const prevMatch = prevLine.match(/^(if|elif)\s+(.+):$/);
-                                        if (prevMatch && evaluateCondition(prevMatch[2], mergedVars)) {
-                                            previousExecuted = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                conditionResult = !previousExecuted && evaluateCondition(elifMatch[1], mergedVars);
-                                console.log(`   🔍 ELIF "${elifMatch[1]}": ${conditionResult}`);
-                            }
-                        }
-                        else if (trimmedLine.startsWith('else:')) {
-                            let anyPreviousExecuted = false;
-                            for (let k = 0; k < j; k++) {
-                                const prevLine = blockLines[k].trim();
-                                if (prevLine.startsWith('if ') || prevLine.startsWith('elif ')) {
-                                    const prevMatch = prevLine.match(/^(if|elif)\s+(.+):$/);
-                                    if (prevMatch && evaluateCondition(prevMatch[2], mergedVars)) {
-                                        anyPreviousExecuted = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            conditionResult = !anyPreviousExecuted;
-                            console.log(`   🔍 ELSE: ${conditionResult}`);
-                        }
-                        
-                        // ENCONTRAR BLOCO
-                        let k = j + 1;
-                        while (k < blockLines.length && isIndented(blockLines[k], currentLine)) {
-                            blockToExecute.push(blockLines[k]);
-                            k++;
-                        }
-                        
-                        console.log(`   📂 Bloco da condição: ${blockToExecute.length} linhas`);
-                        
-                        if (conditionResult) {
-                            console.log("   ✅ Executando bloco");
-                            blockOutput += processBlock(blockToExecute, mergedVars);
-                        } else {
-                            console.log("   ❌ Pulando bloco");
-                        }
-                        
-                        j = k;
-                        continue;
-                    }
-                    
-                    // ✅ ATRIBUIÇÃO
-                    
-                    
-                    // ✅ PRINT
-                    if (trimmedLine.startsWith('print(') && trimmedLine.endsWith(')')) {
-                        const content = trimmedLine.slice(6, -1).trim();
-                        const result = processPrintContent(content, mergedVars);
-                        blockOutput += result + '\n';
-                        console.log(`   🖨️ "${result}"`);
-                    }
-                    
-                    j++;
-                }
-                
-                return blockOutput;
-            }
-            // ✅ FUNÇÃO PARA CALCULAR EXPRESSÕES MATEMÁTICAS
-            function calcularExpressao(expr, vars) {
-                expr = expr.trim();
-                console.log(`   🧮 Calculando expressão: "${expr}"`);
-                
-                // Tentar como número simples
-                if (/^\-?\d+$/.test(expr)) {
-                    return parseInt(expr);
-                }
-                
-                // Tentar como soma: x + z
-                if (expr.includes('+')) {
-                    const partes = expr.split('+').map(p => p.trim());
-                    console.log(`   ➕ Partes da soma:`, partes);
-                    
-                    let resultado = 0;
-                    for (const parte of partes) {
-                        // Se for número
-                        if (/^\-?\d+$/.test(parte)) {
-                            resultado += parseInt(parte);
-                            console.log(`   🔢 Somando número: ${parte} → ${resultado}`);
-                        } 
-                        // Se for variável
-                        else if (vars[parte] !== undefined) {
-                            const valor = vars[parte];
-                            if (typeof valor === 'number') {
-                                resultado += valor;
-                                console.log(`   💾 Somando variável ${parte}=${valor} → ${resultado}`);
-                            } else {
-                                console.log(`   ⚠️  Variável ${parte} não é número: ${valor}`);
-                                
-                            }
-                        }
-                        // Se não for reconhecido
-                        else {
-                            console.log(`   ❌ Parte não reconhecida: "${parte}"`);
-                            ;
-                        }
-                    }
-                    console.log(`   ✅ Resultado da soma: ${resultado}`);
-                    return resultado;
-                }
-                
-                // Se for apenas uma variável
-                if (vars[expr] !== undefined) {
-                    console.log(`   💾 Retornando variável: ${expr} = ${vars[expr]}`);
-                    return vars[expr];
-                }
-                
-                // Se não for reconhecido, retorna como string
-                console.log(`   ⚠️  Expressão não reconhecida, retornando como string: "${expr}"`);
-                
-            }
-            // ✅ FUNÇÃO CORRIGIDA PARA AVALIAR EXPRESSÕES
-            function evaluateExpression(expr, vars) {
-                expr = expr.trim();
-                console.log(`   🧮 Avaliando expressão: "${expr}"`);
-                
-                // ✅ Números inteiros
-                if (/^\-?\d+$/.test(expr)) {
-                    const result = parseInt(expr);
-                    console.log(`   🔢 Número inteiro: ${result}`);
-                    return result;
-                }
-                
-                // ✅ Listas - CORREÇÃO CRÍTICA
-                const listMatch = expr.match(/^\[([^\]]*)\]$/);
-                if (listMatch) {
-                    console.log(`   📋 Detectada lista: ${expr}`);
-                    
-                    // ✅ CASO: lista vazia []
-                    if (listMatch[1].trim() === '') {
-                        console.log(`   ✅ Lista vazia: []`);
-                        return [];
-                    }
-                    
-                    const items = listMatch[1].split(',').map(item => {
-                        let trimmed = item.trim();
-                        if (trimmed === '') return undefined;
-                        
-                        // ✅ Converter números (incluindo negativos)
-                        if (/^\-?\d+$/.test(trimmed)) {
-                            const num = parseInt(trimmed);
-                            console.log(`   🔢 Convertido para número: ${num}`);
-                            return num;
-                        }
-                        
-                        // ✅ Remover aspas de strings
-                        if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
-                            (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-                            const str = trimmed.slice(1, -1);
-                            console.log(`   📝 Convertido para string: "${str}"`);
-                            return str;
-                        }
-                        
-                        // ✅ Buscar variáveis
-                        if (vars[trimmed] !== undefined) {
-                            console.log(`   💾 Usando variável: ${trimmed} = ${vars[trimmed]}`);
-                            return vars[trimmed];
-                        }
-                        
-                        console.log(`   ⚠️  Item mantido como string: "${trimmed}"`);
-                        return trimmed;
-                    }).filter(item => item !== undefined);
-                    
-                    console.log(`   ✅ Lista final:`, items);
-                    return items;
-                }
-
-                // ✅ ✅ ✅ ADICIONAR ESTA SEÇÃO PARA SOMA (FALTANDO) ✅ ✅ ✅
-                // ✅ SOMA: x + y
-                if (expr.includes('+')) {
-                    const partes = expr.split('+').map(p => p.trim());
-                    console.log(`   ➕ Detectada soma:`, partes);
-                    
-                    let resultado = 0;
-                    let todasPartesNumericas = true;
-                    
-                    for (const parte of partes) {
-                        // Se for número
-                        if (/^\-?\d+$/.test(parte)) {
-                            resultado += parseInt(parte);
-                            console.log(`   🔢 Somando número: ${parte} → ${resultado}`);
-                        } 
-                        // Se for variável
-                        else if (vars[parte] !== undefined) {
-                            const valor = vars[parte];
-                            if (typeof valor === 'number') {
-                                resultado += valor;
-                                console.log(`   💾 Somando variável ${parte}=${valor} → ${resultado}`);
-                            } else {
-                                console.log(`   ⚠️  Variável ${parte} não é número: ${valor}`);
-                                todasPartesNumericas = false;
-                                break;
-                            }
-                        }
-                        // Se não for reconhecido
-                        else {
-                            console.log(`   ❌ Parte não reconhecida: "${parte}"`);
-                            todasPartesNumericas = false;
-                            break;
-                        }
-                    }
-                    
-                    if (todasPartesNumericas) {
-                        console.log(`   ✅ Resultado da soma: ${resultado}`);
-                        return resultado;
-                    } else {
-                        console.log(`   ❌ Não foi possível calcular a soma, retornando expressão`);
-                        
-                    }
-                }
-
-                // ✅ Strings entre aspas
-                if ((expr.startsWith('"') && expr.endsWith('"')) || 
-                    (expr.startsWith("'") && expr.endsWith("'"))) {
-                    const result = expr.slice(1, -1);
-                    console.log(`   📝 String: "${result}"`);
-                    return result;
-                }
-                
-                // ✅ Variáveis existentes
-                if (vars[expr] !== undefined) {
-                    console.log(`   💾 Variável ${expr} =`, vars[expr]);
-                    return vars[expr];
-                }
-                
-                
-            }
-            
-            // ✅ PROCESSAR LINHAS PRINCIPAIS
-            while (i < lines.length) {
-                const line = lines[i];
-                const trimmedLine = line.trim();
-                
-                if (!trimmedLine || trimmedLine.startsWith('#')) {
-                    i++;
-                    continue;
-                }
-                
-                console.log(`🔷 Linha ${i}: "${line}"`);
-
-                // ✅ CORREÇÃO: ATRIBUIÇÃO GLOBAL
-                if (line.includes('=')) {
-                    const parts = line.split('=').map(p => p.trim());
-                    if (parts.length === 2 && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(parts[0])) {
-                        const varName = parts[0];
-                        const valueExpr = parts[1];
-                        
-                        console.log(`💾 DETECTEI ATRIBUIÇÃO: ${varName} = ${valueExpr}`);
-                        
-                        // ✅ USAR evaluateExpression CORRIGIDA
-                        let value = evaluateExpression(valueExpr, variables);
-                        
-                        // ✅ VERIFICAR SE A LISTA FOI CONVERTIDA CORRETAMENTE
-                        console.log(`   🔍 Valor após evaluateExpression:`, value, `(tipo: ${typeof value})`);
-                        
-                        if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-                            // ❌ CASO DE FALHA: tentar converter manualmente
-                            console.log(`   ⚠️  Lista ainda como string - convertendo manualmente`);
-                            try {
-                                value = JSON.parse(value.replace(/'/g, '"'));
-                                console.log(`   ✅ Lista convertida manualmente:`, value);
-                            } catch (e) {
-                                console.log(`   ❌ Falha na conversão manual`);
-                            }
-                        }
-                        
-                        // ✅ SALVAR VARIÁVEL
-                        variables[varName] = value;
-                        console.log(`✅ VARIÁVEL SALVA: variables["${varName}"] =`, value);
-                        console.log("📊 VARIÁVEIS DEPOIS:", variables);
-                        
-                        i++;
-                        continue;
-                    }
-                }
-                // ✅ FOR LOOPS NO ESCOPO GLOBAL - ADICIONAR ESTA SEÇÃO
-                    const forListMatchGlobal = trimmedLine.match(/^for\s+(\w+)\s+in\s+(\w+):$/);
-                    if (forListMatchGlobal) {
-                        const varName = forListMatchGlobal[1];
-                        const listName = forListMatchGlobal[2];
-                        
-                        console.log(`🎯🎯🎯 FOR LOOP GLOBAL DETECTADO: for ${varName} in ${listName}`);
-                        
-                        if (variables[listName] && Array.isArray(variables[listName])) {
-                            const lista = variables[listName];
-                            
-                            console.log(`   📊 Lista encontrada:`, lista);
-                            
-                            // ✅ ENCONTRAR BLOCO DO LOOP
-                            const forBlockLines = [];
-                            let k = i + 1;
-                            
-                            while (k < lines.length) {
-                                const currentLine = lines[k];
-                                
-                                if (currentLine.trim() === '') {
-                                    k++;
-                                    continue;
-                                }
-                                
-                                const lineIndent = currentLine.length - currentLine.trimStart().length;
-                                const forIndent = line.length - line.trimStart().length;
-                                
-                                if (lineIndent > forIndent) {
-                                    console.log(`   ✅ Adicionando ao bloco: "${currentLine}"`);
-                                    forBlockLines.push(currentLine);
-                                    k++;
-                                } else {
-                                    console.log(`   ❌ Fim do bloco: "${currentLine}"`);
-                                    break;
-                                }
-                            }
-                            
-                            console.log(`   📦 Bloco do loop: ${forBlockLines.length} linhas`, forBlockLines);
-                            
-                            // ✅ EXECUTAR LOOP
-                            let loopOutput = "";
-                            for (const valor of lista) {
-                                console.log(`   🔄 ${varName} = ${valor}`);
-                                
-                                const loopVars = { ...variables, [varName]: valor };
-                                
-                                // ✅ PROCESSAR BLOCO DO LOOP
-                                const iterationOutput = processBlock(forBlockLines, loopVars);
-                                loopOutput += iterationOutput;
-                            }
-                            
-                            output += loopOutput;
-                            i = k; // Pular para depois do bloco
-                            continue;
-                            
-                        } else {
-                            console.log(`❌ Lista ${listName} não encontrada:`, variables[listName]);
-                        }
-                        
-                        i++;
-                        continue;
-                    }
-
-                // ... resto do seu código (def, function call, print, etc)
-
-                
-                // ✅ DEF FUNCTIONS - CORRIGIDO
-                const defMatch = trimmedLine.match(/^def\s+(\w+)\(\):/);
-                if (defMatch) {
-                    const funcName = defMatch[1];
-                    
-                    // ENCONTRAR BLOCO COMPLETO
-                    const funcBlockLines = [];
-                    let k = i + 1;
-                    
-                    while (k < lines.length) {
-                        const currentLine = lines[k];
-                        
-                        if (currentLine.trim() === '') {
-                            funcBlockLines.push(currentLine);
-                            k++;
-                        } else {
-                            const lineIndent = currentLine.length - currentLine.trimStart().length;
-                            const defIndent = line.length - line.trimStart().length;
-                            
-                            if (lineIndent > defIndent) {
-                                funcBlockLines.push(currentLine);
-                                k++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                    
-                    functions[funcName] = funcBlockLines;
-                    console.log(`📝 Função ${funcName} definida com ${funcBlockLines.length} linhas`);
-                    
-                    i = k;
-                    continue;
-                }
-                
-                // ✅ CHAMADA DE FUNÇÃO
-                const callMatch = trimmedLine.match(/^(\w+)\(\)$/);
-                if (callMatch && functions[callMatch[1]]) {
-                    const funcName = callMatch[1];
-                    console.log(`🔤 Chamando ${funcName}()`);
-                    output += processBlock(functions[funcName], {});
-                    i++;
-                    continue;
-                }
-                
-                
-                
-                // ✅ PRINT
-                if (trimmedLine.startsWith('print(') && trimmedLine.endsWith(')')) {
-                    const content = trimmedLine.slice(6, -1).trim();
-                    const result = processPrintContent(content, variables);
-                    output += result + '\n';
-                    console.log(`🖨️ "${result}"`);
-                }
-                
-                i++;
-            }
-            
-            return output.trim() || "# Execução concluída";
-            
         } catch (error) {
-            return `# Erro: ${error.message}`;
+            console.log("API não disponível, usando método alternativo");
         }
+        
+        // Método alternativo: buscar das opções corretas
+        const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+        if (!questionElement) {
+            console.error("Elemento da questão não encontrado");
+            return [];
+        }
+        
+        // Buscar todas as opções marcadas como corretas
+        const opcoesCorretas = questionElement.querySelectorAll('.option-button[data-correct="true"]');
+        const respostas = Array.from(opcoesCorretas).map(opcao => {
+            return opcao.textContent.trim();
+        });
+        
+        console.log("Respostas das opções:", respostas);
+        
+        // Se não encontrou opções, tentar do data attribute
+        if (respostas.length === 0) {
+            const questaoData = questionElement.querySelector('[data-respostas]');
+            if (questaoData && questaoData.dataset.respostas) {
+                try {
+                    const respostasData = JSON.parse(questaoData.dataset.respostas);
+                    console.log("Respostas do data attribute:", respostasData);
+                    return respostasData;
+                } catch (e) {
+                    console.error("Erro ao parsear respostas:", e);
+                }
+            }
+        }
+        
+        return respostas;
     }
 
-    // ✅ FUNÇÕES AUXILIARES (manter as mesmas)
-    function evaluateCondition(condition, variables) {
-        condition = condition.trim();
-        console.log(`   🧮 Avaliando: "${condition}"`);
+    // ✅ FUNÇÃO AUXILIAR PARA MODO REVISÃO (mantida para compatibilidade)
+    function getCorrectAnswersForReview(questionId) {
+        let respostas = [];
         
-        if (condition.includes(' and ')) {
-            const parts = condition.split(' and ').map(part => part.trim());
-            for (const part of parts) {
-                if (!evaluateCondition(part, variables)) return false;
+        // Tentar da variável global
+        if (window[`respostasQuestao${questionId}`]) {
+            respostas = window[`respostasQuestao${questionId}`];
+        }
+        // Tentar do data attribute
+        else {
+            const answersContainer = document.querySelector(`[data-questao-id="${questionId}"]`);
+            if (answersContainer && answersContainer.dataset.respostas) {
+                try {
+                    respostas = JSON.parse(answersContainer.dataset.respostas);
+                } catch (e) {
+                    console.error("❌ Erro ao parsear respostas:", e);
+                }
             }
-            return true;
         }
         
-        const patterns = [
-            [/^(\w+)\s*<\s*(\d+)$/, (v, n) => variables[v] < parseInt(n)],
-            [/^(\w+)\s*<=\s*(\d+)$/, (v, n) => variables[v] <= parseInt(n)],
-            [/^(\w+)\s*>\s*(\d+)$/, (v, n) => variables[v] > parseInt(n)],
-            [/^(\w+)\s*>=\s*(\d+)$/, (v, n) => variables[v] >= parseInt(n)],
-        ];
+        console.log(`Respostas para questão ${questionId}:`, respostas);
+        return Array.isArray(respostas) ? respostas : [];
+    }
         
-        for (const [pattern, fn] of patterns) {
-            const match = condition.match(pattern);
-            if (match && variables[match[1]] !== undefined) {
-                const result = fn(match[1], match[2]);
-                console.log(`   📊 ${match[1]}=${variables[match[1]]}, ${condition} = ${result}`);
-                return result;
+    // ===== SISTEMA DE DICAS =====
+    function initializeHints() {
+        document.querySelectorAll('.question-container').forEach(container => {
+            const questionId = container.dataset.questionId;
+            usedHints[questionId] = 0;
+        });
+    }
+    
+    function showHint(questionId) {
+        const hintContainer = document.getElementById(`hints-${questionId}`);
+        const hintSteps = hintContainer.querySelectorAll('.hint-step');
+        const totalHints = hintSteps.length;
+        
+        if (totalHints === 0) {
+            alert("Não há dicas disponíveis.");
+            return;
+        }
+        
+        if (usedHints[questionId] === 0) {
+            hintContainer.style.display = 'block';
+            usedHints[questionId] = 1;
+        } else if (usedHints[questionId] < totalHints) {
+            usedHints[questionId]++;
+        } else {
+            alert("Todas as dicas já foram mostradas!");
+            return;
+        }
+        
+        for (let i = 0; i < usedHints[questionId]; i++) {
+            hintSteps[i].style.display = 'block';
+        }
+        
+        const hintBtn = document.querySelector(`.hint-btn[data-question-id="${questionId}"]`);
+        const counter = hintBtn.querySelector('.hint-counter');
+        const remaining = totalHints - usedHints[questionId];
+        
+        counter.textContent = remaining;
+        
+        if (remaining === 0) {
+            hintBtn.disabled = true;
+            counter.classList.add('bg-red-500', 'text-white');
+        }
+    }
+    
+    // ===== MANIPULADORES DE RESPOSTAS =====
+    function initializeQuestionEvents() {
+        // Sistema de dicas
+        document.querySelectorAll('.hint-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const questionId = e.currentTarget.dataset.questionId;
+                showHint(questionId);
+            });
+        });
+        
+        // Múltipla escolha
+        document.querySelectorAll('.option-button').forEach(btn => {
+            btn.addEventListener('click', handleMultipleChoice);
+        });
+        
+        // Completar lacunas
+        document.querySelectorAll('.check-blank').forEach(btn => {
+            btn.addEventListener('click', handleCheckBlank);
+        });
+    }
+    
+    function handleMultipleChoice(e) {
+    const btn = e.currentTarget;
+    const questionContainer = btn.closest('.question-container');
+    const questionId = questionContainer.dataset.questionId;
+    const isCorrect = btn.dataset.correct === 'true';
+    const xp = parseInt(questionContainer.querySelector('.bg-yellow-100').textContent.match(/\d+/)[0]);
+    
+    if (isReviewMode) {
+        questionContainer.querySelectorAll('.option-button').forEach(option => {
+            if (option.dataset.correct === 'true') {
+                option.classList.add('correct-answer', 'bounce-in');
             }
+            option.classList.add('opacity-70');
+        });
+        
+        showFeedback(questionId, 'info', '📝 Modo revisão: Aprenda com os erros anteriores', 0);
+        
+        // ✅ CORREÇÃO: No modo revisão, passar automaticamente para próxima questão após 2 segundos
+        setTimeout(() => {
+            nextQuestion(true); // true porque no modo revisão sempre passa
+        }, 2000);
+        
+        return;
+    }
+    
+    questionContainer.querySelectorAll('.option-button').forEach(option => {
+        option.classList.remove('correct-answer', 'wrong-answer');
+    });
+    
+    if (isCorrect) {
+        btn.classList.add('correct-answer', 'bounce-in');
+        showFeedback(questionId, 'correct', '✅ Resposta correta!', xp);
+        correctAnswers++;
+        totalXP += xp;
+        
+        setTimeout(() => {
+            nextQuestion(true);
+        }, 1500);
+    } else {
+        btn.classList.add('wrong-answer', 'shake');
+        showFeedback(questionId, 'incorrect', '❌ Resposta incorreta.', 0);
+        
+        loseLife().then(() => {
+            setTimeout(() => {
+                nextQuestion(false);
+            }, 1500);
+        });
+    }
+}
+    
+    // ===== FUNÇÕES AUXILIARES =====
+    async function loseLife() {
+        if (isReviewMode) return false;
+        
+        if (userLives > 0) {
+            userLives--;
+            
+            const aulaId = document.getElementById('aula-id').value;
+            
+            try {
+                const response = await fetch("{% url 'usar_vida_pratica' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        aula_id: aulaId
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    userLives = data.vidas_restantes;
+                }
+            } catch (error) {
+                console.error('❌ Erro na requisição:', error);
+            }
+            
+            if (userLives <= 0) {
+                setTimeout(() => {
+                    endPracticeDueToLives();
+                }, 1000);
+            }
+            
+            return true;
         }
         
         return false;
     }
-
-    // ✅ FUNÇÃO CORRIGIDA PARA PROCESSAR CONTEÚDO DO PRINT
-    // ✅ FUNÇÃO processPrintContent CORRIGIDA
-    function processPrintContent(content, variables) {
-        content = content.trim();
-        console.log(`   🔍 Processando print: "${content}"`);
-        
-        // ✅ CORREÇÃO: Divisão inteligente que respeita strings
-        const args = splitRespectingStrings(content);
-        
-        if (args.length > 1) {
-            let result = '';
-            
-            console.log(`   🔗 Argumentos com vírgula:`, args);
-            
-            for (const arg of args) {
-                if (result !== '') result += ' '; // Espaço entre argumentos
-                
-                let argValue = processPrintArgument(arg, variables);
-                result += argValue;
-            }
-            
-            console.log(`   🎯 Resultado final: "${result}"`);
-            return result;
-        }
-        
-        // ✅ Processamento normal para único argumento
-        return processPrintArgument(content, variables);
-    }
-
-    // ✅ NOVA FUNÇÃO: Divide respeitando strings
-    function splitRespectingStrings(content) {
-        const args = [];
-        let current = '';
-        let inString = false;
-        let stringChar = '';
-        
-        for (let i = 0; i < content.length; i++) {
-            const char = content[i];
-            
-            // Toggle string mode
-            if ((char === '"' || char === "'") && !inString) {
-                inString = true;
-                stringChar = char;
-                current += char;
-            } else if (char === stringChar && inString) {
-                inString = false;
-                current += char;
-            } 
-            // Split on comma only when not in string
-            else if (char === ',' && !inString) {
-                args.push(current.trim());
-                current = '';
-            } else {
-                current += char;
-            }
-        }
-        
-        // Add the last part
-        if (current.trim()) {
-            args.push(current.trim());
-        }
-        
-        return args;
-    }
-
-    // ✅ NOVA FUNÇÃO: Processa um único argumento do print
-    function processPrintArgument(arg, variables) {
-        console.log(`   🧩 Processando argumento: "${arg}"`);
-        
-        // 1. str(idade) - converter variável para string
-        if (arg.startsWith('str(') && arg.endsWith(')')) {
-            const varName = arg.slice(4, -1).trim();
-            const value = variables[varName];
-            console.log(`   🧪 str(${varName}) = ${value}`);
-            return value !== undefined ? String(value) : `# Erro: '${varName}' não definida`;
-        }
-        
-        // 2. Concatenação com +
-        if (arg.includes('+')) {
-            const parts = arg.split('+').map(part => part.trim());
-            let result = '';
-            
-            console.log(`   🔗 Partes da concatenação:`, parts);
-            
-            for (const part of parts) {
-                let partValue = processPrintArgument(part, variables); // ✅ Recursivo
-                result += partValue;
-            }
-            
-            return result;
-        }
-        
-        // 3. String literal
-        if ((arg.startsWith('"') && arg.endsWith('"')) || 
-            (arg.startsWith("'") && arg.endsWith("'"))) {
-            const result = arg.slice(1, -1);
-            console.log(`   📝 String literal: "${result}"`);
-            return result;
-        }
-        
-        // 4. Variável
-        if (variables[arg] !== undefined) {
-            const value = variables[arg];
-            const result = formatValueForPrint(value);
-            console.log(`   💾 Variável ${arg} = "${result}"`);
-            return result;
-        }
-        
-        // 5. Variável não definida
-        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(arg)) {
-            console.log(`   ❌ Variável não definida: "${arg}"`);
-            return `# Erro: '${arg}' não definida`;
-        }
-        
-        // 6. Número ou texto simples
-        console.log(`   🔤 Texto simples: "${arg}"`);
-        return arg;
-    }
-
-    // ✅ NOVA FUNÇÃO: FORMATAR VALORES PARA PRINT
-    function formatValueForPrint(value) {
-        if (Array.isArray(value)) {
-            // ✅ FORMATAR ARRAY como string Python-style
-            return '[' + value.map(item => 
-                typeof item === 'string' ? `"${item}"` : String(item)
-            ).join(', ') + ']';
-        }
-        return String(value);
-    }
-
-    function toString(value) {
-        if (value === undefined || value === null) return "None";
-        if (Array.isArray(value)) return `[${value.join(', ')}]`;
-        return String(value);
-    }
-
-    // Função handleRunCode usando o interpretador
-    function handleRunCode(e) {
-        const btn = e.currentTarget;
-        const questionContainer = btn.closest('.question-container');
-        const questionId = questionContainer.dataset.questionId;
-        const codeInput = document.getElementById(`code-input-${questionId}`);
-        const codeOutput = document.getElementById(`code-output-${questionId}`);
-        
-        const userCode = codeInput.value;
-        
-        codeOutput.innerHTML = '<div class="text-yellow-400">Executando código...</div>';
-        codeOutput.classList.remove('hidden');
-        
-        setTimeout(() => {
-            try {
-                let output = interpretPythonCode(userCode);
-                codeOutput.innerHTML = `<pre class="text-green-400 bg-gray-900 p-4 rounded-lg">${output}</pre>`;
-                
-            } catch (error) {
-                codeOutput.innerHTML = `<pre class="text-red-400 bg-gray-900 p-4 rounded-lg">Erro: ${error.message}</pre>`;
-            }
-        }, 500);
-    }
-
-    // ===== FEEDBACK E NAVEGAÇÃO =====
+    
     function showFeedback(questionId, type, message, xp) {
         const feedback = document.getElementById(`feedback-${questionId}`);
         feedback.innerHTML = message;
-        feedback.className = `feedback-message feedback-${type}`;
+        feedback.className = `feedback-message feedback-${type} bounce-in`;
         feedback.classList.remove('hidden');
-        
-        if (type === 'correct' && xp > 0 && !isReviewMode) {
-            showXPGain(xp);
-        }
     }
-
-    function showXPGain(amount) {
-        const xpEffect = document.createElement('div');
-        xpEffect.className = 'fixed top-6 right-6 xp-gain-notification z-30';
-        xpEffect.innerHTML = `
-            <div class="xp-gain-content">
-                <div class="xp-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L13.09 8.26L20 8.26L14.55 12.77L16.18 19.02L12 15.77L7.82 19.02L9.45 12.77L4 8.26L10.91 8.26L12 2Z" 
-                            fill="currentColor"/>
-                    </svg>
-                </div>
-                <div class="xp-text">
-                    <span class="xp-amount">+${amount}</span>
-                    <span class="xp-label">XP</span>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(xpEffect);
-        
-        // Animação de entrada
-        setTimeout(() => {
-            xpEffect.classList.add('show');
-        }, 10);
-        
-        // Remover após animação
-        setTimeout(() => {
-            xpEffect.classList.add('hide');
-            setTimeout(() => {
-                if (xpEffect.parentNode) {
-                    xpEffect.remove();
-                }
-            }, 500);
-        }, 2000);
-    }
-
-    function nextQuestion() {
-        if (currentQuestion < totalQuestions) {
-            document.querySelector(`.question-container[data-question-number="${currentQuestion}"]`).classList.remove('active');
-            currentQuestion++;
-            document.querySelector(`.question-container[data-question-number="${currentQuestion}"]`).classList.add('active');
-            scrollToTop();
-        }
-    }
-
-    function prevQuestion() {
-        if (currentQuestion > 1) {
-            document.querySelector(`.question-container[data-question-number="${currentQuestion}"]`).classList.remove('active');
-            currentQuestion--;
-            document.querySelector(`.question-container[data-question-number="${currentQuestion}"]`).classList.add('active');
-            scrollToTop();
-        }
-    }
-
+    
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    // ===== TIMER E PROGRESSO =====
+    
     function startTimer() {
         timerInterval = setInterval(() => {
             seconds++;
             updateTimerDisplay();
-            
-            const progress = (seconds / ({{ aula.tempo_pratica }} * 60)) * 88;
-            const circle = document.querySelector('.progress-ring__circle');
-            if (circle) {
-                circle.style.strokeDashoffset = Math.max(0, 88 - progress);
-            }
         }, 1000);
     }
-
+    
     function updateTimerDisplay() {
         let minutes = Math.floor(seconds / 60);
         let secs = seconds % 60;
         document.getElementById('timer').textContent = 
             String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
     }
-
+    
     function stopTimer() {
         clearInterval(timerInterval);
         return seconds;
     }
-
-    // ===== FINALIZAÇÃO E BACKEND =====
-    async function finishPractice(e) {
-        // ✅ VERIFICAR SE TODAS AS QUESTÕES FORAM RESPONDIDAS
-        if (!checkAllQuestionsAnswered()) {
-            showErrorMessage('❌ Responda todas as questões antes de finalizar!');
-            return; // Impede a finalização
-        }
-        const aulaId = e.currentTarget.dataset.aulaId;
+    
+    async function finishPractice() {
+        const aulaId = document.getElementById('aula-id').value;
         const elapsedTime = stopTimer();
         
-        // ✅ CALCULAR BÔNUS POR REVISÃO
+        // ✅ CORREÇÃO: CALCULAR XP CORRETAMENTE
+        let xpBase = totalXP;
         let revisaoBonus = 0;
+        let timeBonus = 0;
+        
         if (isReviewMode) {
+            // MODO REVISÃO: APENAS 5 XP FIXOS (NÃO SOMA XP DAS QUESTÕES)
             revisaoBonus = parseInt(document.getElementById('xp-revisao').value) || 5;
-            totalXP += revisaoBonus;
+            totalXP = revisaoBonus; // ✅ CORREÇÃO: SÓ O BÔNUS DE REVISÃO
+            xpBase = 0; // Zera o XP das questões no modo revisão
             
-            // ✅ REGISTRAR XP DA REVISÃO NO BACKEND
+            console.log(`📝 Modo Revisão: XP das questões ignorado, apenas bônus de ${revisaoBonus} XP`);
+            
             try {
-                const response = await fetch("{% url 'registrar_xp_revisao' %}", {
+                await fetch("{% url 'registrar_xp_revisao' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2413,29 +1779,20 @@
                         xp_revisao: revisaoBonus
                     })
                 });
-                
-                const data = await response.json();
-                if (data.success) {
-                    console.log(`✅ ${revisaoBonus} XP de revisão registrados!`);
-                }
             } catch (error) {
                 console.error('❌ Erro ao registrar XP da revisão:', error);
             }
-        }
-        
-        // Calcular bônus por tempo (apenas se não for revisão)
-        let timeBonus = 0;
-        if (!isReviewMode) {
+        } else {
+            // MODO NORMAL: XP das questões + bônus por tempo
             const expectedTime = {{ aula.tempo_pratica }} * 60;
-            if (elapsedTime < expectedTime * 0.5) {
-                timeBonus = 50;
-            } else if (elapsedTime < expectedTime * 0.8) {
-                timeBonus = 25;
-            }
-            totalXP += timeBonus;
+            if (elapsedTime < expectedTime * 0.5) timeBonus = 10;
+            else if (elapsedTime < expectedTime * 0.8) timeBonus = 5;
+            totalXP = xpBase + timeBonus;
+            
+            console.log(`🎯 Modo Normal: XP Base=${xpBase}, Bônus Tempo=${timeBonus}, Total=${totalXP}`);
         }
         
-        // Finalizar no backend (apenas se não for revisão)
+        // ✅ CORREÇÃO: SÓ REGISTRAR NO BANCO SE NÃO FOR REVISÃO
         if (!isReviewMode) {
             try {
                 const response = await fetch("{% url 'finalizar_pratica' %}", {
@@ -2446,28 +1803,23 @@
                     },
                     body: JSON.stringify({
                         aula_id: aulaId,
-                        xp_total: totalXP,
+                        xp_total: totalXP, // ✅ ENVIA O XP CORRETO
                         vidas_restantes: userLives
                     })
                 });
                 
                 const data = await response.json();
                 if (data.success) {
-                    totalXP = data.xp_total;
-                    showSuccessMessage(`🎉 Prática concluída! Você ganhou ${totalXP} XP!`);
+                    console.log("✅ Prática finalizada com sucesso! XP:", totalXP);
                 }
             } catch (error) {
-                console.error('Erro ao finalizar prática:', error);
-                showSuccessMessage(`🎉 Prática concluída! Você ganhou ${totalXP} XP!`);
+                console.error('❌ Erro ao finalizar prática:', error);
             }
-        } else {
-            showSuccessMessage(`📝 Revisão concluída! Você ganhou ${revisaoBonus} XP!`);
         }
         
-        // Mostrar tela de resultados
         showResultScreen(totalXP, elapsedTime, timeBonus, revisaoBonus);
     }
-
+    
     function showResultScreen(totalXP, elapsedTime, timeBonus, revisaoBonus = 0) {
         const resultScreen = document.getElementById('result-screen');
         const questionsContainer = document.getElementById('questions-container');
@@ -2475,821 +1827,59 @@
         questionsContainer.style.display = 'none';
         resultScreen.classList.remove('hidden');
         
-        // Ajustar mensagem baseada no modo
         if (isReviewMode) {
             resultScreen.querySelector('h2').innerHTML = '📝 Revisão Concluída';
             resultScreen.querySelector('p').textContent = 'Revisão dos exercícios finalizada!';
-            
-            // ✅ ADICIONAR CARD DE XP DA REVISÃO
-            const bonusGrid = resultScreen.querySelector('.grid');
-            if (revisaoBonus > 0) {
-                const revisaoCard = `
-                    <div class="bg-white rounded-xl p-6 shadow-md card-hover">
-                        <div class="flex items-center justify-center gap-2 mb-3">
-                            <img src="{% static 'imagem/visibility_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Revisão" class="w-8 h-8">
-                        </div>
-                        <div class="text-2xl font-bold text-green-600 mb-2">+${revisaoBonus} XP</div>
-                        <p class="text-sm text-gray-600">Bônus de Revisão</p>
-                    </div>
-                `;
-                bonusGrid.innerHTML += revisaoCard;
-            }
         }
         
-        document.getElementById('final-xp').textContent = totalXP - timeBonus - revisaoBonus;
-        document.getElementById('time-bonus').textContent = isReviewMode ? '0' : timeBonus;
+        // ✅ CORREÇÃO: MOSTRAR XP CORRETAMENTE NA TELA
+        if (isReviewMode) {
+            // No modo revisão, mostra apenas o bônus de revisão
+            document.getElementById('final-xp').textContent = revisaoBonus;
+            document.getElementById('time-bonus').textContent = '0';
+        } else {
+            // No modo normal, mostra XP base + bônus tempo
+            document.getElementById('final-xp').textContent = totalXP - timeBonus;
+            document.getElementById('time-bonus').textContent = timeBonus;
+        }
+        
+        // ✅ CORREÇÃO: MOSTRAR BÔNUS DE REVISÃO
+        if (isReviewMode) {
+            document.getElementById('revisao-bonus').textContent = revisaoBonus;
+        }
         
         const minutes = Math.floor(elapsedTime / 60);
         const secondsRemaining = elapsedTime % 60;
         document.getElementById('final-time').textContent = 
             String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
-    }
-
-    // ===== INTEGRAÇÃO COM BACKEND =====
-    async function saveProgress(questaoId, concluida, xpGanho) {
-        try {
-            const response = await fetch("{% url 'marcar_aula_concluida' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    aula_id: {{ aula.id }},
-                    tipo: 'pratica',
-                    questao_id: questaoId,
-                    concluida: concluida,
-                    xp_ganho: xpGanho
-                })
-            });
             
-            const data = await response.json();
-            
-            if (data.success) {
-                console.log('✅ Progresso salvo:', data);
-                return true;
-            } else {
-                console.error('❌ Erro ao salvar progresso:', data.error);
-                return false;
-            }
-        } catch (error) {
-            console.error('❌ Erro na requisição:', error);
-            return true;
-        }
-    }
-
-    function showSuccessMessage(message) {
-        const successDiv = document.createElement('div');
-        successDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-bounce';
-        successDiv.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>🎉</span>
-                <span class="font-bold">${message}</span>
-            </div>
-        `;
-        document.body.appendChild(successDiv);
-        
-        setTimeout(() => {
-            successDiv.remove();
-        }, 3000);
-    }
-
-    // Função auxiliar para processar texto com lacunas
-    function processFillBlankText(text) {
-        return text.replace(/\[_____\]/g, 
-            '<input type="text" class="blank-input w-32 border-b-2 border-blue-400 text-center px-2 bg-transparent focus:outline-none focus:border-blue-600" placeholder="______">'
-        );
-    }
-
-    // Inicializar textos com lacunas
-    document.querySelectorAll('[id^="fill-blank-text-"]').forEach(container => {
-        const originalText = container.textContent;
-        container.innerHTML = processFillBlankText(originalText);
-    });
-
-    console.log("🚀 Sistema de prática com vidas carregado com sucesso!");
-    // ===== SISTEMA DE STREAK =====
-    let streakAtual = 0;
-    let bonusStreak = 0;
-    let tempoRestanteStreak = 24;
-
-    // Carregar dados do streak do usuário
-    async function carregarStreakUsuario() {
-        try {
-            const response = await fetch("{% url 'api_streak_usuario' %}");
-            const data = await response.json();
-            
-            if (data.success) {
-                streakAtual = data.streak_atual;
-                bonusStreak = data.bonus_streak;
-                tempoRestanteStreak = data.tempo_restante;
-                atualizarDisplayStreak();
-                
-                console.log(`🔥 Streak carregado: ${streakAtual} dias, +${bonusStreak}% XP`);
-            }
-        } catch (error) {
-            console.log('⚠️ Não foi possível carregar streak, usando valores padrão');
-            streakAtual = 0;
-            bonusStreak = 0;
-            tempoRestanteStreak = 24;
-            atualizarDisplayStreak();
-        }
-    }
-
-    function atualizarDisplayStreak() {
-        const streakElement = document.getElementById('streak-atual');
-        const bonusElement = document.getElementById('bonus-streak');
-        const container = document.getElementById('streak-container');
-        
-        if (streakElement) streakElement.textContent = streakAtual;
-        if (bonusElement) bonusElement.textContent = Math.round(bonusStreak);
-        
-        // Efeitos visuais baseados no streak
-        if (container) {
-            // Reset classes
-            container.className = 'px-4 py-2 rounded-xl font-bold flex items-center gap-3 card-hover';
-            
-            if (streakAtual === 0) {
-                container.classList.add('bg-gray-500', 'text-white');
-            } else if (streakAtual < 3) {
-                container.classList.add('bg-orange-500', 'text-white');
-            } else if (streakAtual < 7) {
-                container.classList.add('bg-orange-600', 'text-white');
-            } else if (streakAtual < 14) {
-                container.classList.add('bg-red-500', 'text-white', 'pulse-animation');
-            } else {
-                container.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'text-white', 'pulse-animation');
-            }
-        }
-    }
-
-    // Registrar atividade e atualizar streak
-    async function registrarAtividadeStreak(xpBase = 0, tipo = 'questao') {
-        if (isReviewMode) {
-            console.log("📝 Modo revisão: não registra streak");
-            return { xp_total: xpBase, xp_bonus: 0 };
-        }
-        
-        try {
-            const response = await fetch("{% url 'registrar_atividade_streak' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    tipo: tipo,
-                    xp_base: xpBase
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                console.log(`🔥 Streak: ${data.streak_anterior} → ${data.streak_atual}`);
-                console.log(`💰 XP: ${data.xp_base} + ${data.xp_bonus} (bônus) = ${data.xp_total}`);
-                
-                // Atualizar variáveis locais
-                streakAtual = data.streak_atual;
-                bonusStreak = parseInt(data.bonus_streak);
-                atualizarDisplayStreak();
-                
-                // Mostrar feedbacks
-                if (data.streak_zerado) {
-                    showStreakZerado(data.streak_anterior);
-                } else if (data.streak_aumentado) {
-                    showStreakAumentado(data.streak_atual);
-                }
-                
-                if (data.level_up) {
-                    showLevelUp(data.nivel_atual);
-                }
-                
-                if (data.conquistas_desbloqueadas.length > 0) {
-                    data.conquistas_desbloqueadas.forEach(conquista => {
-                        showConquistaDesbloqueada(conquista);
-                    });
-                }
-                
-                return {
-                    xp_total: data.xp_total,
-                    xp_bonus: data.xp_bonus,
-                    streak_atual: data.streak_atual
-                };
-            }
-        } catch (error) {
-            console.error('❌ Erro ao registrar atividade streak:', error);
-        }
-        
-        // Fallback: retorna XP base se a requisição falhar
-        return { xp_total: xpBase, xp_bonus: 0 };
-    }
-
-    // Funções de feedback visual
-    function showStreakAumentado(novoStreak) {
-        const effect = document.createElement('div');
-        effect.className = 'fixed top-20 right-4 bg-orange-500 text-white px-4 py-2 rounded-xl font-bold animate-bounce z-50 shadow-lg';
-        effect.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>🔥</span>
-                <span>Streak: ${novoStreak} dias!</span>
-            </div>
-        `;
-        document.body.appendChild(effect);
-        
-        setTimeout(() => effect.remove(), 3000);
-    }
-
-    function showStreakZerado(streakAnterior) {
-        const effect = document.createElement('div');
-        effect.className = 'fixed top-20 right-4 bg-gray-600 text-white px-4 py-2 rounded-xl font-bold animate-bounce z-50 shadow-lg';
-        effect.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>💀</span>
-                <span>Streak zerado! Era ${streakAnterior} dias</span>
-            </div>
-        `;
-        document.body.appendChild(effect);
-        
-        setTimeout(() => effect.remove(), 4000);
-    }
-
-    function showLevelUp(novoNivel) {
-        const effect = document.createElement('div');
-        effect.className = 'fixed top-32 right-4 bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold animate-bounce z-50 shadow-lg';
-        effect.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>⭐</span>
-                <span>Level Up! Nível ${novoNivel}</span>
-            </div>
-        `;
-        document.body.appendChild(effect);
-        
-        setTimeout(() => effect.remove(), 3000);
-    }
-
-    function showConquistaDesbloqueada(conquista) {
-        const effect = document.createElement('div');
-        effect.className = 'fixed top-44 right-4 bg-purple-500 text-white px-4 py-2 rounded-xl font-bold animate-bounce z-50 shadow-lg';
-        effect.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>🏆</span>
-                <span>${conquista}</span>
-            </div>
-        `;
-        document.body.appendChild(effect);
-        
-        setTimeout(() => effect.remove(), 4000);
-    }
-
-    
-    // ===== ATUALIZAÇÃO AUTOMÁTICA DO CABEÇALHO =====
-
-    // ===== ATUALIZAÇÃO AUTOMÁTICA DO CABEÇALHO =====
-    async function atualizarCabecalhoUsuario() {
-        try {
-            // Buscar dados atualizados do usuário
-            const response = await fetch("{% url 'api_streak_usuario' %}");
-            const data = await response.json();
-            
-            if (data.success) {
-                // Atualizar vidas
-                userLives = data.vidas_restantes || userLives;
-                maxLives = data.max_vidas || maxLives;
-                
-                // Atualizar streak
-                streakAtual = data.streak_atual;
-                bonusStreak = data.bonus_streak;
-                
-                // Atualizar displays NO CABEÇALHO
-                atualizarCabecalhoDisplay();
-                atualizarDisplayStreak();
-                
-                console.log(`🔄 Cabeçalho atualizado: ${userLives} vidas, ${streakAtual} dias streak`);
-                
-                // Retornar os dados para uso externo se necessário
-                return data;
-            }
-        } catch (error) {
-            console.log('⚠️ Não foi possível atualizar cabeçalho:', error);
-            return null;
-        }
-    }
-
-    // Função específica para atualizar o cabeçalho (base.html)
-    function atualizarCabecalhoDisplay() {
-        console.log("🔄 atualizarCabecalhoDisplay() - Vidas:", userLives);
-        
-        // Atualizar vidas no cabeçalho
-        const vidaElement = document.querySelector('.bg-blue-200.px-3.py-1\\.5 h2');
-        if (vidaElement) {
-            vidaElement.textContent = userLives;
-            console.log("✅ Número de vidas atualizado no cabeçalho:", userLives);
-        } else {
-            console.log("❌ Elemento de vidas não encontrado no cabeçalho");
-        }
-        
-        // ✅ VERIFICAÇÃO CRÍTICA: Se vidas = 0, finalizar prática
-        if (userLives <= 0 && !isReviewMode) {
-            console.log("🚨 VIDAS ZERADAS - Chamando endPracticeDueToLives()");
-            setTimeout(() => {
-                endPracticeDueToLives();
-            }, 1000);
-        }
-        
-        // Atualizar sequência (streak)
-        const sequenciaElement = document.querySelector('.bg-blue-200.px-3.py-1\\.5:nth-child(3) h2');
-        if (sequenciaElement) {
-            sequenciaElement.textContent = streakAtual;
-        }
-    }
-
-    // Função para atualizar vidas após errar
-    async function atualizarAposErro() {
-        const dadosAtualizados = await atualizarCabecalhoUsuario();
-        
-        if (dadosAtualizados) {
-            // Feedback visual adicional
-            const header = document.querySelector('header');
-            if (header) {
-                header.classList.add('shake');
-                setTimeout(() => header.classList.remove('shake'), 500);
-            }
-            
-            // Mostrar notificação de vida perdida
-            showLifeLostNotification();
-        }
-    }
-
-    // Função para atualizar após acerto
-    async function atualizarAposAcerto() {
-        await atualizarCabecalhoUsuario();
-        
-        // Feedback visual positivo
-        const header = document.querySelector('header');
-        if (header) {
-            header.classList.add('bounce');
-            setTimeout(() => header.classList.remove('bounce'), 500);
-        }
-    }
-
-    // Notificação visual quando perde vida
-    function showLifeLostNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-bounce';
-        notification.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>💔</span>
-                <span class="font-bold">Vida perdida! ${userLives} restantes</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-
-    // Atualizar periodicamente o cabeçalho (a cada 30 segundos)
-    function iniciarAtualizacaoPeriodica() {
-        setInterval(async () => {
-            await atualizarCabecalhoUsuario();
-        }, 30000); // 30 segundos
-    }
-    // Função para forçar atualização manual do cabeçalho (útil para debugging)
-    function forcarAtualizacaoCabecalho() {
-        console.log("🔄 Forçando atualização do cabeçalho...");
-        atualizarCabecalhoUsuario();
-    }
-    // ✅ FUNÇÃO CORRIGIDA PARA OBTER RESPOSTAS
-    function getCorrectAnswersForReview(questionId) {
-        console.log(`🔍 Buscando respostas para questão ${questionId}`);
-        
-        // ✅ PRIMEIRO: Tenta pela variável global
-        const respostasGlobal = window[`respostasQuestao${questionId}`];
-        if (respostasGlobal) {
-            console.log("✅ Respostas da variável global:", respostasGlobal);
-            return respostasGlobal;
-        }
-        
-        // ✅ SEGUNDO: Tenta pelo data attribute
-        const answersContainer = document.querySelector(`[data-questao-id="${questionId}"]`);
-        if (answersContainer && answersContainer.dataset.respostas) {
-            try {
-                // Remove caracteres problemáticos antes de parsear
-                let respostasData = answersContainer.dataset.respostas
-                    .replace(/^\[/, '[')
-                    .replace(/\]$/, ']')
-                    .replace(/\\u0027/g, "'");
-                
-                const respostas = JSON.parse(respostasData);
-                console.log("✅ Respostas do data attribute:", respostas);
-                return respostas;
-            } catch (e) {
-                console.error("❌ Erro ao parsear data attribute:", e);
-            }
-        }
-        
-        console.log("🚨 Não foi possível carregar respostas");
-        return [];
-    }
-    // ✅ SISTEMA COMPLETO DE DEBUG
-    function debugSistema() {
-        console.log("🐛 === DEBUG COMPLETO DO SISTEMA ===");
-        
-        // Debug da questão ativa
-        const activeQuestion = document.querySelector('.question-container.active');
-        if (!activeQuestion) {
-            console.log("❌ Nenhuma questão ativa encontrada");
-            return;
-        }
-        
-        const questionId = activeQuestion.dataset.questionId;
-        const questionType = activeQuestion.dataset.questionType;
-        
-        console.log("📋 Informações da Questão:");
-        console.log("   ID:", questionId);
-        console.log("   Tipo:", questionType);
-        console.log("   Elemento:", activeQuestion);
-        
-        // Debug específico para lacunas
-        if (questionType === 'fill-blank') {
-            debugLacunas(questionId, activeQuestion);
-        }
-        
-        // Debug específico para código
-        if (questionType === 'code') {
-            debugCodigo(questionId, activeQuestion);
-        }
-        
-        console.log("🐛 === FIM DEBUG ===");
-    }
-
-    // ✅ DEBUG ESPECÍFICO PARA LACUNAS
-    function debugLacunas(questionId, questionContainer) {
-        console.log("🔍 === DEBUG LACUNAS ===");
-        
-        // Verificar TODAS as fontes possíveis de respostas
-        const sources = [
-            { 
-                name: 'data-questao-id', 
-                selector: `[data-questao-id="${questionId}"]`,
-                dataField: 'respostas'
-            },
-            { 
-                name: 'question-container', 
-                selector: `[data-question-id="${questionId}"]`,
-                dataField: 'correctAnswers'
-            },
-            { 
-                name: 'hidden answers', 
-                selector: '.correct-answers-data',
-                dataField: 'respostas'
-            }
-        ];
-        
-        let respostasEncontradas = null;
-        
-        sources.forEach(source => {
-            const element = document.querySelector(source.selector);
-            if (element) {
-                console.log(`✅ ${source.name} encontrado:`, element);
-                
-                const dataValue = element.dataset[source.dataField];
-                console.log(`   data-${source.dataField}:`, dataValue);
-                
-                if (dataValue && !respostasEncontradas) {
-                    try {
-                        respostasEncontradas = JSON.parse(dataValue);
-                        console.log(`🎯 RESPOSTAS ENCONTRADAS:`, respostasEncontradas);
-                    } catch (e) {
-                        console.error(`❌ Erro ao parsear:`, e);
-                    }
-                }
-            } else {
-                console.log(`❌ ${source.name}: Não encontrado`);
-            }
-        });
-        
-        // Verificar lacunas
-        const blankInputs = questionContainer.querySelectorAll('.blank-input');
-        console.log(`📝 Lacunas encontradas: ${blankInputs.length}`);
-        
-        blankInputs.forEach((input, index) => {
-            console.log(`   Lacuna ${index + 1}:`, {
-                valor: input.value,
-                dataCorrect: input.dataset.correctAnswer,
-                placeholder: input.placeholder
-            });
-        });
-        
-        // Testar a função getCorrectAnswersForReview
-        console.log("🧪 Testando getCorrectAnswersForReview:");
-        const respostasFuncao = getCorrectAnswersForReview(questionId);
-        console.log("   Resultado:", respostasFuncao);
-    }
-
-    // ✅ DEBUG ESPECÍFICO PARA CÓDIGO
-    function debugCodigo(questionId, questionContainer) {
-        console.log("💻 === DEBUG CÓDIGO ===");
-        
-        const codeInput = document.getElementById(`code-input-${questionId}`);
-        const expectedOutput = `{{ questao.saida_esperada|default:"" }}`.trim();
-        
-        console.log("📥 Saída esperada do template:", expectedOutput);
-        console.log("📝 Código do usuário:", codeInput ? codeInput.value : 'NÃO ENCONTRADO');
-        
-        // Testar a função de interpretação
-        if (codeInput && codeInput.value) {
-            console.log("🧪 Testando interpretPythonCode:");
-            try {
-                const output = interpretPythonCode(codeInput.value);
-                console.log("   Saída gerada:", output);
-                console.log("   Tipo:", typeof output);
-                
-                // Comparação detalhada
-                console.log("🔍 Comparação detalhada:");
-                console.log("   Saída gerada (trim/lower):", output.trim().toLowerCase());
-                console.log("   Esperada (trim/lower):", expectedOutput.toLowerCase().trim());
-                console.log("   São iguais?", output.trim().toLowerCase() === expectedOutput.toLowerCase().trim());
-                
-            } catch (error) {
-                console.error("❌ Erro na interpretação:", error);
-            }
-        }
-    }
-
-    
-
-    
-    
-    // ✅ BOTÃO ESPECÍFICO PARA DEBUG DE CÓDIGO
-    
-
-    
-    // ✅ DEBUG ESPECÍFICO PARA LACUNAS
-    function debugLacunasDetalhado(questionId) {
-        console.log("🔍 === DEBUG LACUNAS DETALHADO ===");
-        
-        const questionContainer = document.querySelector(`[data-question-id="${questionId}"]`);
-        const blankInputs = questionContainer.querySelectorAll('.blank-input');
-        
-        // 1. Verificar respostas corretas
-        console.log("📋 RESPOSTAS CORRETAS:");
-        const respostasCorretas = getCorrectAnswersForReview(questionId);
-        console.log("   Array:", respostasCorretas);
-        console.log("   Tipo:", typeof respostasCorretas);
-        console.log("   Tamanho:", respostasCorretas.length);
-        
-        respostasCorretas.forEach((resposta, index) => {
-            console.log(`   Lacuna ${index + 1}: "${resposta}"`);
-        });
-        
-        // 2. Verificar inputs do usuário
-        console.log("📝 INPUTS DO USUÁRIO:");
-        blankInputs.forEach((input, index) => {
-            console.log(`   Lacuna ${index + 1}:`, {
-                valor: `"${input.value}"`,
-                valor_trim: `"${input.value.trim()}"`,
-                valor_lower: `"${input.value.trim().toLowerCase()}"`,
-                dataCorrect: input.dataset.correctAnswer
-            });
-        });
-        
-        // 3. Simular verificação
-        console.log("🧪 SIMULAÇÃO DE VERIFICAÇÃO:");
-        let todasCorretas = true;
-        
-        blankInputs.forEach((input, index) => {
-            const userAnswer = input.value.trim().toLowerCase();
-            const correctAnswer = respostasCorretas[index] ? respostasCorretas[index].toLowerCase() : "";
-            
-            const estaCorreta = userAnswer === correctAnswer;
-            todasCorretas = todasCorretas && estaCorreta;
-            
-            console.log(`   Lacuna ${index + 1}:`);
-            console.log(`      Usuário: "${userAnswer}"`);
-            console.log(`      Correto: "${correctAnswer}"`);
-            console.log(`      Resultado: ${estaCorreta ? '✅ CORRETO' : '❌ ERRADO'}`);
-        });
-        
-        console.log(`📊 RESULTADO FINAL: ${todasCorretas ? '✅ TODAS CORRETAS' : '❌ ALGUMAS ERRADAS'}`);
-        console.log("🔍 === FIM DEBUG LACUNAS ===");
-        
-        return todasCorretas;
+        console.log(`🏁 Tela de Resultados: Total XP=${totalXP}, Tempo=${minutes}:${secondsRemaining}, Revisão=${revisaoBonus}`);
     }
     
-    // ===== SISTEMA DE RASTREAMENTO DE TEMPO =====
-    let startTime;
-    let totalPracticeTime = 0;
-    let isTracking = false;
-
-    function startTimeTracking() {
-        if (!isTracking) {
-            startTime = new Date();
-            isTracking = true;
-            console.log("⏱️ Iniciando rastreamento de tempo da prática...");
-        }
-    }
-
-    function stopTimeTracking() {
-        if (isTracking && startTime) {
-            const endTime = new Date();
-            const timeSpent = Math.floor((endTime - startTime) / 1000); // tempo em segundos
-            totalPracticeTime += timeSpent;
-            isTracking = false;
-            console.log(`⏱️ Tempo gasto na prática: ${timeSpent} segundos`);
-            return timeSpent;
-        }
-        return 0;
-    }
-
-    // Função para salvar o tempo da prática
-    async function savePracticeTime() {
-        const timeSpent = stopTimeTracking();
-        if (timeSpent > 0) {
-            console.log(`💾 Tentando salvar ${timeSpent} segundos de prática...`);
-            
-            try {
-                const response = await fetch("{% url 'salvar_tempo_pratica' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        aula_id: {{ aula.id }},
-                        tempo_segundos: timeSpent
-                    })
-                });
-                
-                const data = await response.json();
-                console.log("📨 Resposta do servidor:", data);
-                
-                if (data.success) {
-                    console.log(`✅ Tempo de prática salvo: ${timeSpent} segundos`);
-                    console.log(`📊 Tempo total agora: ${data.tempo_total} segundos`);
-                    
-                    
-                } else {
-                    console.error('❌ Erro do servidor:', data.error);
-                }
-            } catch (error) {
-                console.error('❌ Erro na requisição:', error);
-            }
-        }
-    }
-
-    // Função para mostrar notificação de tempo salvo
-    function showTimeSavedNotification(segundos) {
-        const minutos = Math.floor(segundos / 60);
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-        notification.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>⏱️</span>
-                <span>${minutos} min de estudo salvos!</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
+    function endPracticeDueToLives() {
+        stopTimer();
         
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
+        const resultScreen = document.getElementById('result-screen');
+        const questionsContainer = document.getElementById('questions-container');
+        
+        questionsContainer.style.display = 'none';
+        resultScreen.classList.remove('hidden');
+        
+        resultScreen.querySelector('h2').innerHTML = '💔 Fim da Prática';
+        resultScreen.querySelector('p').textContent = 'Suas vidas acabaram! Tente novamente.';
+        
+        document.getElementById('final-xp').textContent = totalXP;
+        document.getElementById('time-bonus').textContent = '0';
+        
+        const minutes = Math.floor(seconds / 60);
+        const secondsRemaining = seconds % 60;
+        document.getElementById('final-time').textContent = 
+            String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
+        
+        const restartBtn = resultScreen.querySelector('button[onclick="location.reload()"]');
+        restartBtn.innerHTML = 'Tentar Novamente 🔄';
     }
-
-    // Iniciar tracking quando a página carregar
-    document.addEventListener('DOMContentLoaded', function() {
-        startTimeTracking();
-        
-        // Salvar tempo quando o usuário sair da página
-        window.addEventListener('beforeunload', function() {
-            savePracticeTime();
-        });
-        
-        // Salvar tempo quando finalizar a prática
-        document.querySelectorAll('.finish-practice').forEach(btn => {
-            btn.addEventListener('click', function() {
-                setTimeout(savePracticeTime, 1000);
-            });
-        });
-    });
-    // ===== SISTEMA DE TAB E AUTO-INDENTAÇÃO =====
-    function setupCodeEditor(questionId) {
-    const textarea = document.getElementById(`code-input-${questionId}`);
     
-    if (!textarea) return;
-    
-    textarea.addEventListener('keydown', function(e) {
-        // ✅ APENAS TAB - versão ultra-simplificada
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            
-            // ✅ SEMPRE 4 espaços, sem lógica complexa
-            this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + 4;
-            
-            // ✅ PARAR aqui - não processar mais nada
-            return false;
-        }
-    });
-}
-
-    // Inicializar todos os editores
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('[id^="code-input-"]').forEach(input => {
-            const questionId = input.id.replace('code-input-', '');
-            setupCodeEditor(questionId);
-        });
-    });
-    // ✅ VERIFICAR SE TODAS AS QUESTÕES FORAM RESPONDIDAS
-    // ✅ FUNÇÃO CORRIGIDA - ATUALIZAÇÃO VISUAL DO BOTÃO
-    function checkAllQuestionsAnswered() {
-        const allAnswered = questionsAnswered.size === totalQuestions;
-        
-        console.log(`📊 Progresso: ${questionsAnswered.size}/${totalQuestions} questões respondidas`);
-        
-        // ✅ ENCONTRAR BOTÕES DE FORMA MAIS EFETIVA
-        const finishBtns = document.querySelectorAll('.finish-practice');
-        
-        console.log(`🔍 Encontrados ${finishBtns.length} botões de finalizar`);
-        
-        if (finishBtns.length === 0) {
-            console.log("❌ NENHUM botão finalizar encontrado!");
-            // Tentar encontrar de outra forma
-            const alternativeBtns = document.querySelectorAll('button[data-aula-id]');
-            console.log("Botões alternativos encontrados:", alternativeBtns.length);
-        }
-        
-        finishBtns.forEach((btn, index) => {
-            console.log(`🔄 Atualizando botão ${index + 1}:`, btn);
-            
-            if (allAnswered) {
-                // ✅ LIBERAR COMPLETAMENTE
-                btn.classList.remove('bg-gray-400', 'opacity-50', 'cursor-not-allowed');
-                btn.classList.add('bg-green-600', 'hover:bg-green-700');
-                btn.disabled = false;
-                
-                // ✅ CORREÇÃO: Usar innerHTML de forma segura
-                const iconHTML = `<img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Finalizar" class="w-4 h-4">`;
-                btn.innerHTML = `${iconHTML} Finalizar Prática`;
-                
-                console.log(`✅ Botão ${index + 1} LIBERADO`);
-            } else {
-                // ✅ MANTER BLOQUEADO
-                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                btn.classList.add('bg-gray-400', 'opacity-50', 'cursor-not-allowed');
-                btn.disabled = true;
-                
-                const iconHTML = `<img src="{% static 'imagem/block_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Bloqueado" class="w-4 h-4">`;
-                btn.innerHTML = `${iconHTML} Responda todas (${questionsAnswered.size}/${totalQuestions})`;
-                
-                console.log(`❌ Botão ${index + 1} BLOQUEADO`);
-            }
-        });
-        
-        
-        
-       
-        
-        return allAnswered;
-    }
-    // ✅ MENSAGEM DE SUCESSO
-    function showSuccessMessage(message) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-bounce';
-        messageDiv.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>✅</span>
-                <span class="font-bold">${message}</span>
-            </div>
-        `;
-        document.body.appendChild(messageDiv);
-        
-        setTimeout(() => {
-            messageDiv.remove();
-        }, 3000);
-    }
-
-    // ✅ MENSAGEM DE ERRO
-    function showErrorMessage(message) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-shake';
-        messageDiv.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span>❌</span>
-                <span class="font-bold">${message}</span>
-            </div>
-        `;
-        document.body.appendChild(messageDiv);
-        
-        setTimeout(() => {
-            messageDiv.remove();
-        }, 3000);
-    }
-    // Adicione um botão de teste se necessário (remova em produção)
-    // <button onclick="forcarAtualizacaoCabecalho()" class="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded">🔄 Atualizar Cabeçalho</button>
+    console.log("🚀 Sistema com Python real (Pyodide) carregado com sucesso!");
 </script>
 {% endblock %}

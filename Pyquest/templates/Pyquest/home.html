@@ -1,492 +1,809 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Página Inicial{% endblock %}
+{% block title %}Home - PyQuest{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Seus estilos CSS existentes permanecem aqui */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
-    .card-hover {
-      transition: all 0.3s ease;
+    /* Animações personalizadas */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
     }
     
-    .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
-    }
-    
-    .progress-bar {
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .progress-bar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: var(--progress);
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-      border-radius: 9999px;
-    }
-    
-    .xp-badge {
-      background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .activity-item {
-      transition: all 0.3s ease;
-      border-left: 4px solid transparent;
-    }
-    
-    .activity-item:hover {
-      transform: translateY(-2px);
-      border-left-color: #3B82F6;
-    }
-
-    .activity-item.active {
-      transform: translateY(-2px);
-      border-left-color: #3B82F6;
-    }
-    
-    .pulse-animation {
-      animation: pulse 2s infinite;
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
     
-    .floating-element {
-      animation: float 6s ease-in-out infinite;
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-
-    .circular-chart {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
     }
     
-    .circle-bg {
-      fill: none;
-      stroke: #EFF6FF;
-      stroke-width: 3.8;
+    .animate-fadeInUp {
+        animation: fadeInUp 1s ease-out;
     }
     
-    .circle {
-      fill: none;
-      stroke-width: 2.8;
-      stroke-linecap: round;
-      stroke: #EF4444;
-      animation: progress 1.5s ease-out forwards;
+    .animate-pulse {
+        animation: pulse 2s infinite;
     }
     
-    @keyframes progress {
-      0% { stroke-dasharray: 0 100; }
+    .animate-gradient {
+        background: linear-gradient(-45deg, #3B82F6, #1E40AF, #2563EB, #60A5FA);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
     }
     
-    .percentage {
-      fill: #DC2626;
-      font-size: 0.5em;
-      text-anchor: middle;
-      font-weight: bold;
+    /* Estilos gerais */
+    .hero-section {
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
     }
     
-    /* Novos estilos adicionados */
-    .card-blue {
-      border-color: #3B82F6;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    .hero-content {
+        position: relative;
+        z-index: 10;
     }
     
-     .card-white {
-      border-color: #3B82F6;
-      background: linear-gradient(135deg, #ffff 0%, #ffffff 100%);
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
     }
     
-    .card-red {
-      border-color: #EF4444;
-      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.1;
     }
     
-    .card-purple {
-      border-color: #8B5CF6;
-      background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%);
+    .shape-1 {
+        width: 300px;
+        height: 300px;
+        background: #3B82F6;
+        top: 10%;
+        left: 5%;
+        animation: float 8s ease-in-out infinite;
     }
     
-    .card-green {
-      border-color: #10B981;
-      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    .shape-2 {
+        width: 200px;
+        height: 200px;
+        background: #1E40AF;
+        top: 60%;
+        right: 10%;
+        animation: float 10s ease-in-out infinite;
     }
     
-    .card-amber {
-      border-color: #F59E0B;
-      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    .shape-3 {
+        width: 150px;
+        height: 150px;
+        background: #2563EB;
+        bottom: 10%;
+        left: 20%;
+        animation: float 12s ease-in-out infinite;
     }
     
-    .section-title {
-      position: relative;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
+    /* Cards interativos */
+    .feature-card {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        border: none;
+        backdrop-filter: blur(10px);
     }
     
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(30, 64, 175, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
     }
     
-    .highlight-text {
-      background: linear-gradient(90deg, #3B82F6 0%, #EF4444 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .feature-card:hover::before {
+        opacity: 1;
     }
-
-    /* Novo estilo para o timer */
-    .timer-active {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
-      color: white !important;
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.2);
+    }
+    
+    .feature-card-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Carrossel de conquistas */
+    .achievements-carousel {
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: #3B82F6 #EFF6FF;
+    }
+    
+    .achievements-carousel::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .achievements-carousel::-webkit-scrollbar-track {
+        background: #EFF6FF;
+        border-radius: 10px;
+    }
+    
+    .achievements-carousel::-webkit-scrollbar-thumb {
+        background: #3B82F6;
+        border-radius: 10px;
+    }
+    
+    /* Seções com gradiente */
+    .gradient-section {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gradient-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    /* Botões especiais */
+    .cta-button {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 15px 30px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .cta-button:hover::before {
+        left: 100%;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Cards de estatísticas */
+    .stats-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Timeline de progresso */
+    .progress-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .progress-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: #E5E7EB;
+        border-radius: 10px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -36px;
+        top: 5px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #3B82F6;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px #3B82F6;
+    }
+    
+    /* Animações de entrada */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* Glassmorphism */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 80vh;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .stats-card {
+            padding: 20px;
+        }
+        
+        .feature-card {
+            margin-bottom: 1rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="flex-1 bg-white rounded-2xl p-6 flex flex-col gap-6">
-<!-- Boas-vindas com gradiente e animação -->
-<div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 flex justify-between items-center shadow-lg relative overflow-hidden">
-  <div class="relative z-10">
-    <h2 class="text-2xl font-bold text-white">Olá, {{ nome }}!</h2>
-    <p class="text-blue-100 mt-1">Continue sua jornada de aprendizado Python. Você está indo bem!</p>
-    <div class="flex items-center mt-4">
-      <div class="bg-blue-800 text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
-        Nível {{ nivel }}
-      </div>
-      <div class="bg-purple-700 text-purple-100 text-xs font-medium px-3 py-1 rounded-full ml-2">
-        {{ xp }} XP
-      </div>
+<!-- Seção Hero -->
+<section class="hero-section animate-gradient flex items-center justify-center text-white">
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
     </div>
-  </div>
-  <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Boas-vindas" class="w-16 h-16 relative z-10 floating-element">
-  
-  <!-- Elementos decorativos de fundo -->
-  <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-    <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
-    <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
-    <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
-  </div>
-</div>
-
-<!-- Cards de Estatísticas com layout melhorado -->
-<div class="stats-grid">
-  <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-blue">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-blue-700">Progresso Diário</h3>
-      <img src="{% static 'imagem/trending_up_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Progresso" class="w-6 h-6">
-    </div>
-    <p class="mt-2 text-blue-600 font-bold text-2xl">{{ progresso }}%</p>
-    <div class="w-full bg-blue-200 h-2.5 rounded-full mt-3 progress-bar" style="--progress: {{ progresso }}%;"></div>
-    <p class="text-xs text-blue-500 mt-2">Meta: {{ meta }}% diário</p>
-  </div>
-  
-  <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-green">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-green-700">Tempo de Estudo</h3>
-      <img src="{% static 'imagem/schedule_35dp_10B981_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-6 h-6">
-    </div>
-    <div class="flex items-center mt-2 flex-grow">
-      <img src="{% static 'imagem/local_cafe_100dp_10B981_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
-      <p id="tempo-estudo-display" class="text-green-600 font-bold text-2xl ml-3">{{ tempo }}</p>
-    </div>
-    <p class="text-xs text-green-500 mt-2">Minutos</p>
-  </div>
-  
-  <div class="p-5 activity-item rounded-2xl shadow-md card-hover border card-amber">
-    <div class="flex justify-between items-start">
-      <h3 class="text-lg font-semibold text-amber-700">Sequência atual</h3>
-      <img src="{% static 'imagem/calendar_month_35dp_F59E0B_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Sequência" class="w-6 h-6">
-    </div>
-    <div class="flex items-center mt-2 flex-grow">
-      <img src="{% static 'imagem/mode_heat_100dp_F59E0B_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-12 h-12">
-      <p class="text-amber-600 font-bold text-2xl ml-3">{{ perfil.sequencia }} Dias</p>
-    </div>
-    <p class="text-xs text-amber-500 mt-2">Mantenha a sequência para ganhar bônus!</p>
-  </div>
-</div>
-
-<!-- Cards de Missões e Conquistas com design aprimorado -->
-<div class="stats-grid">
-  <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-red">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-red-700">Vidas</h3>
-      <img src="{% static 'imagem/favorite_35dp_EF4444_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Vidas" class="w-6 h-6">
-    </div>
-    <div class="flex items-center">
-      <div class="relative">
-        <div class="w-16 h-16">
-          <svg viewBox="0 0 36 36" class="circular-chart">
-            <path class="circle"
-              stroke-dasharray="{{ progresso_vidas }}, 100"
-              d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            <text x="18" y="20.35" class="percentage">{{ vidas }}/{{ max_vidas }}</text>
-          </svg>
+    
+    <div class="hero-content text-center px-4 max-w-4xl">
+        <h1 class="hero-title text-5xl md:text-7xl font-bold mb-6 animate-fadeInUp">
+            Domine Python de Forma <span class="text-yellow-300">Divertida</span>
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 opacity-90 animate-fadeInUp" style="animation-delay: 0.2s;">
+            Aprenda programação Python através de uma jornada gamificada, desafios interativos e uma comunidade ativa.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp" style="animation-delay: 0.4s;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'conteudo' %}" class="cta-button text-lg">
+                    Continuar Aprendendo
+                </a>
+                <a href="{% url 'dashboard' %}" class="bg-white text-blue-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors">
+                    Ver Meu Progresso
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="cta-button text-lg">
+                    Fazer Login
+                </a>
+                <a href="{% url 'registro' %}" class="bg-white text-blue-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors">
+                    Criar Conta
+                </a>
+            {% endif %}
         </div>
-      </div>
-      <p class="text-red-600 font-bold text-xl ml-4">{{ vidas }}</p>
+        
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 animate-fadeInUp" style="animation-delay: 0.6s;">
+            <div class="stats-card">
+                <div class="text-3xl font-bold" id="total-estudantes">0</div>
+                <div class="text-sm opacity-80">Estudantes</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold" id="total-modulos">0</div>
+                <div class="text-sm opacity-80">Módulos</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold" id="total-conquistas">0</div>
+                <div class="text-sm opacity-80">Conquistas</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold" id="total-posts">0</div>
+                <div class="text-sm opacity-80">Discussões</div>
+            </div>
+        </div>
     </div>
-    <p class="text-xs text-red-500 mt-2">
-    {% if perfil.vidas < 10 %}
-      Regeneração: {{ perfil.tempo_para_proxima_vida }} min
-    {% else %}
-      Vidas completas
-    {% endif %}
-    </p>
-  </div>
+</section>
 
-  <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-purple">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-purple-700">XP Total</h3>
-      <img src="{% static 'imagem/chess_35dp_8B5CF6_FILL0_wght400_GRAD0_opsz40.png' %}" alt="XP" class="w-6 h-6">
+<!-- Seção Recursos -->
+<section id="features" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16 fade-in">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Como a PyQuest Transforma seu Aprendizado</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Uma plataforma completa que combina educação, gamificação e comunidade para tornar o aprendizado de Python uma experiência envolvente.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conteúdo" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Conteúdo Estruturado</h3>
+                    <p class="text-gray-600 mb-6">
+                        Aprenda Python através de uma trilha de aprendizado cuidadosamente organizada, do básico ao avançado.
+                    </p>
+                    <a href="{% url 'conteudo' %}" class="text-blue-600 font-semibold flex items-center">
+                        Explorar Conteúdo
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.2s;">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/rocket_launch_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Gamificação" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Aprendizado Gamificado</h3>
+                    <p class="text-gray-600 mb-6">
+                        Ganhe XP, desbloqueie conquistas e suba de nível enquanto aprende. Torne sua jornada divertida e recompensadora.
+                    </p>
+                    <a href="{% url 'perfil' %}" class="text-blue-600 font-semibold flex items-center">
+                        Ver Meu Progresso
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.4s;">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/forum_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Comunidade" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Comunidade Ativa</h3>
+                    <p class="text-gray-600 mb-6">
+                        Conecte-se com outros aprendizes, tire dúvidas e compartilhe conhecimento em nosso fórum dedicado.
+                    </p>
+                    <a href="{% url 'forum' %}" class="text-blue-600 font-semibold flex items-center">
+                        Participar do Fórum
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card 4 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/analytics_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dashboard" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Dashboard Personalizado</h3>
+                    <p class="text-gray-600 mb-6">
+                        Acompanhe seu progresso com estatísticas detalhadas, calendário de atividades e gráficos de evolução.
+                    </p>
+                    <a href="{% url 'dashboard' %}" class="text-blue-600 font-semibold flex items-center">
+                        Ver Dashboard
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card 5 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.2s;">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/social_leaderboard_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Ranking" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Sistema de Ranking</h3>
+                    <p class="text-gray-600 mb-6">
+                        Compita com outros estudantes, suba no ranking global e mostre suas habilidades em Python.
+                    </p>
+                    <a href="{% url 'ranking' %}" class="text-blue-600 font-semibold flex items-center">
+                        Ver Ranking
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Card 6 -->
+            <div class="feature-card bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.4s;">
+                <div class="feature-card-content">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <img src="{% static 'imagem/school_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Aprendizado" class="w-10 h-10">
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Aprendizado Contínuo</h3>
+                    <p class="text-gray-600 mb-6">
+                        Sistema de streak para manter a consistência e revisões para consolidar o conhecimento.
+                    </p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'conteudo' %}" class="text-blue-600 font-semibold flex items-center">
+                        Continuar Estudando
+                        <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
+                    </a>
+                    {% else %}
+                    <p class="text-sm text-gray-500">Faça login para começar</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="flex items-center">
-      <img src="{% static 'imagem/trophy_100dp_8B5CF6_FILL0_wght400_GRAD0_opsz48.png' %}" alt="trofeu" class="w-16 h-16">
-      <p class="text-purple-600 font-bold text-2xl ml-4">{{ perfil.xp }}</p>
-    </div>
-    <p class="text-xs text-purple-500 mt-2">+{{ perfil.xp_hoje }} XP hoje</p>
-  </div>
-  
-  <div class="activity-item p-5 rounded-2xl shadow-md card-hover border card-blue">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-blue-700">Conquistas</h3>
-      <img src="{% static 'imagem/military_tech_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Conquistas" class="w-6 h-6">
-    </div>
-    <div class="flex items-center">
-      <img src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="" class="w-16 h-16">
-      <div class="ml-4">
-        <p class="text-blue-600 font-bold text-2xl">{{ conquistas }}/{{ total_conquistas }}</p>
-        <p class="text-xs text-blue-500">conquistas</p>
-      </div>
-    </div>
-    <p class="text-xs text-blue-500 mt-2">3 conquistas próximas</p>
-  </div>
-</div>
+</section>
 
-<!-- Botão Continuar Estudando com sistema de timer -->
-<div class="mt-6 flex justify-center">
-  <button id="btn-iniciar-estudo" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-4 rounded-2xl font-semibold text-l transition transform hover:scale-105 shadow-lg flex items-center pulse-animation">
-    <span id="btn-text">Continuar Estudando</span>
-    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Seta" class="w-5 h-5 ml-2">
-  </button>
-  
-  <div id="timer-display" class="hidden items-center ml-4">
-    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-mono text-lg">
-      <span id="timer-minutes">00</span>:<span id="timer-seconds">00</span>
+<!-- Seção Progresso do Usuário -->
+{% if user.is_authenticated %}
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16 fade-in">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Seu Progresso na PyQuest</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Acompanhe sua jornada de aprendizado e veja como você está evoluindo como programador Python.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="fade-in">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Sua Jornada de Aprendizado</h3>
+                
+                <div class="progress-timeline">
+                    <div class="timeline-item">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">Nível {{ perfil.nivel|default:"1" }}</h4>
+                        <p class="text-gray-600">{{ perfil.xp|default:"0" }} XP conquistados - Progresso: {{ perfil.get_progresso_nivel|default:"0" }}%</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">Streak de {{ perfil.sequencia|default:"0" }} dias</h4>
+                        <p class="text-gray-600">Mantenha sua sequência para ganhar bônus de XP!</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2" id="conquistas-desbloqueadas">0 conquistas</h4>
+                        <p class="text-gray-600">Parabéns! Você já desbloqueou <span id="conquistas-count">0</span> conquistas.</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2" id="tempo-estudo-hoje">00:00 de estudo hoje</h4>
+                        <p class="text-gray-600">Tempo dedicado ao aprendizado hoje.</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <a href="{% url 'dashboard' %}" class="cta-button inline-block">
+                        Ver Dashboard Completo
+                    </a>
+                </div>
+            </div>
+            
+            <div class="fade-in" style="animation-delay: 0.3s;">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white">
+                    <h3 class="text-2xl font-bold mb-6">Próximos Desafios</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/10 p-4 rounded-xl">
+                            <h4 class="font-semibold mb-2">Comece sua jornada</h4>
+                            <p class="opacity-90 mb-3">Explore nossos módulos iniciais para começar a aprender Python.</p>
+                            <a href="{% url 'conteudo' %}" class="text-white font-semibold text-sm bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                                Explorar Conteúdo
+                            </a>
+                        </div>
+                        
+                        <div class="bg-white/10 p-4 rounded-xl">
+                            <h4 class="font-semibold mb-2">Participe da comunidade</h4>
+                            <p class="opacity-90 mb-3">Junte-se às discussões no fórum e ajude outros estudantes.</p>
+                            <a href="{% url 'forum' %}" class="text-white font-semibold text-sm bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                                Ir para o Fórum
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <button id="btn-parar-estudo" class="ml-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">
-      Parar
-    </button>
-  </div>
-</div>
+</section>
+{% endif %}
 
+<!-- Seção Conquistas -->
+<section class="py-20 gradient-section text-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16 fade-in">
+            <h2 class="text-4xl font-bold mb-4">Conquistas Populares</h2>
+            <p class="text-xl opacity-90 max-w-3xl mx-auto">
+                Desafios especiais que você pode desbloquear durante sua jornada de aprendizado.
+            </p>
+        </div>
+        
+        <div class="achievements-carousel flex gap-6 pb-6 justify-center" id="conquistas-populares">
+            <!-- As conquistas serão carregadas via JavaScript -->
+        </div>
+        
+        <div class="text-center mt-8 fade-in">
+            <a href="{% url 'perfil' %}" class="bg-white text-blue-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-block">
+                Ver Todas as Conquistas
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Seção CTA Final -->
+<section class="py-20 bg-gray-900 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <div class="max-w-3xl mx-auto fade-in">
+            <h2 class="text-4xl font-bold mb-6">Pronto para Começar sua Jornada em Python?</h2>
+            <p class="text-xl mb-8 opacity-90">
+                Junte-se a milhares de estudantes que estão transformando suas carreiras com a PyQuest.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if user.is_authenticated %}
+                <a href="{% url 'conteudo' %}" class="cta-button text-lg animate-pulse">
+                    Continuar Aprendendo
+                </a>
+                <a href="{% url 'dashboard' %}" class="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors">
+                    Ver Meu Progresso
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="cta-button text-lg animate-pulse">
+                    Fazer Login
+                </a>
+                <a href="{% url 'registro' %}" class="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors">
+                    Criar Conta
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-class TimerEstudo {
-    constructor() {
-        this.tempoInicio = null;
-        this.intervalo = null;
-        this.tempoDecorrido = 0;
-        this.estaRodando = false;
-        
-        this.btnIniciar = document.getElementById('btn-iniciar-estudo');
-        this.btnParar = document.getElementById('btn-parar-estudo');
-        this.timerDisplay = document.getElementById('timer-display');
-        this.tempoEstudoDisplay = document.getElementById('tempo-estudo-display');
-        
-        this.inicializarEventos();
-    }
-    
-    inicializarEventos() {
-        this.btnIniciar.addEventListener('click', () => this.iniciarEstudo());
-        this.btnParar.addEventListener('click', () => this.pararEstudo());
-        
-        // Salvar tempo quando a página for fechada/recarregada
-        window.addEventListener('beforeunload', () => {
-            if (this.estaRodando) {
-                this.salvarTempoEstudo();
-            }
-        });
-    }
-    
-    iniciarEstudo() {
-        this.estaRodando = true;
-        this.tempoInicio = new Date();
-        
-        this.btnIniciar.classList.add('hidden');
-        this.timerDisplay.classList.remove('hidden');
-        this.btnIniciar.classList.remove('pulse-animation');
-        
-        this.intervalo = setInterval(() => {
-            this.atualizarTimer();
-        }, 1000);
-        
-        console.log("⏱️ Timer iniciado");
-    }
-    
-    atualizarTimer() {
-        const agora = new Date();
-        const diferenca = Math.floor((agora - this.tempoInicio) / 1000);
-        this.tempoDecorrido = diferenca;
-        
-        const minutos = Math.floor(diferenca / 60);
-        const segundos = diferenca % 60;
-        
-        document.getElementById('timer-minutes').textContent = minutos.toString().padStart(2, '0');
-        document.getElementById('timer-seconds').textContent = segundos.toString().padStart(2, '0');
-    }
-    
-    async pararEstudo() {
-        if (this.intervalo) {
-            clearInterval(this.intervalo);
-        }
-        
-        this.estaRodando = false;
-        
-        try {
-            await this.salvarTempoEstudo();
-            this.resetarTimer();
-        } catch (error) {
-            console.error('Erro ao salvar tempo:', error);
-            this.resetarTimer();
-        }
-    }
-    
-    async salvarTempoEstudo() {
-        if (this.tempoDecorrido > 0) {
-            try {
-                const response = await fetch('/salvar-tempo-estudo/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        tempo_segundos: this.tempoDecorrido,
-                        tipo: 'estudo_geral'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    console.log(`✅ Tempo salvo: ${this.tempoDecorrido} segundos`);
-                    
-                    // Atualizar display do tempo total
-                    if (this.tempoEstudoDisplay && data.tempo_total_formatado) {
-                        this.tempoEstudoDisplay.textContent = data.tempo_total_formatado;
-                    }
-                    
-                    // Mostrar notificação
-                    this.mostrarNotificacao(`+${this.formatarTempo(this.tempoDecorrido)} de estudo registrado!`);
-                    
-                    return true;
-                }
-            } catch (error) {
-                console.error('Erro ao salvar tempo:', error);
-            }
-        }
-        return false;
-    }
-    
-    resetarTimer() {
-        this.tempoInicio = null;
-        this.tempoDecorrido = 0;
-        
-        this.btnIniciar.classList.remove('hidden');
-        this.timerDisplay.classList.add('hidden');
-        this.btnIniciar.classList.add('pulse-animation');
-        
-        document.getElementById('timer-minutes').textContent = '00';
-        document.getElementById('timer-seconds').textContent = '00';
-        
-        console.log("⏱️ Timer resetado");
-    }
-    
-    formatarTempo(segundos) {
-        const minutos = Math.floor(segundos / 60);
-        const segs = segundos % 60;
-        
-        if (minutos > 0) {
-            return `${minutos}min ${segs}s`;
-        } else {
-            return `${segs}s`;
-        }
-    }
-    
-    mostrarNotificacao(mensagem) {
-        // Criar notificação simples
-        const notificacao = document.createElement('div');
-        notificacao.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-        notificacao.textContent = mensagem;
-        
-        document.body.appendChild(notificacao);
-        
-        // Remover após 3 segundos
-        setTimeout(() => {
-            document.body.removeChild(notificacao);
-        }, 3000);
-    }
-}
-
-// Inicializar o timer quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
-    window.timerEstudo = new TimerEstudo();
+    // Animação de entrada dos elementos
+    const fadeElements = document.querySelectorAll('.fade-in');
     
-    // Atualizar tempo de estudo a cada 30 segundos (opcional)
-    setInterval(() => {
-        if (window.timerEstudo.estaRodando) {
-            console.log("🔄 Atualizando tempo em background...");
-        }
-    }, 30000);
-});
-
-// Função para testar o salvamento de tempo (apenas para desenvolvimento)
-async function testarSalvamentoTempo() {
-    try {
-        const response = await fetch('/testar-tempo/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                segundos: 120  // 2 minutos de teste
-            })
+    const fadeInObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
         });
+    }, { threshold: 0.1 });
+    
+    fadeElements.forEach(element => {
+        fadeInObserver.observe(element);
+    });
+    
+    // Sistema de rolagem suave para links internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // Efeito parallax nas formas flutuantes
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const shapes = document.querySelectorAll('.shape');
         
-        const data = await response.json();
-        
-        if (data.success) {
-            alert(`Tempo de teste salvo! Total: ${data.tempo_atual} segundos`);
-            location.reload();
-        }
-    } catch (error) {
-        console.error('Erro no teste:', error);
+        shapes.forEach((shape, index) => {
+            const speed = 0.5 + (index * 0.1);
+            const yPos = -(scrolled * speed);
+            shape.style.transform = `translateY(${yPos}px)`;
+        });
+    });
+
+    // Carregar estatísticas reais da plataforma
+    function carregarEstatisticas() {
+        // Buscar estatísticas gerais
+        fetch('/api/estatisticas-gerais/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('total-estudantes').textContent = data.total_usuarios;
+                    document.getElementById('total-modulos').textContent = data.total_modulos;
+                    document.getElementById('total-conquistas').textContent = data.total_conquistas;
+                    document.getElementById('total-posts').textContent = data.total_posts;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estatísticas:', error);
+                // Fallback para valores padrão
+                document.getElementById('total-estudantes').textContent = '150';
+                document.getElementById('total-modulos').textContent = '25';
+                document.getElementById('total-conquistas').textContent = '50';
+                document.getElementById('total-posts').textContent = '320';
+            });
+
+        // Buscar conquistas do usuário (se estiver logado)
+        {% if user.is_authenticated %}
+        fetch('/api/conquistas-usuario/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('conquistas-count').textContent = data.conquistas_desbloqueadas;
+                    document.getElementById('conquistas-desbloqueadas').textContent = 
+                        data.conquistas_desbloqueadas + ' conquistas';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar conquistas do usuário:', error);
+            });
+
+        // Buscar tempo de estudo diário
+        fetch('/api/tempo-estudo-hoje/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('tempo-estudo-hoje').textContent = 
+                        data.tempo_formatado + ' de estudo hoje';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar tempo de estudo:', error);
+            });
+        {% endif %}
+
+        // Buscar conquistas populares
+        fetch('/api/conquistas-populares/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.conquistas.length > 0) {
+                    const container = document.getElementById('conquistas-populares');
+                    container.innerHTML = '';
+                    
+                    data.conquistas.forEach(conquista => {
+                        const conquistaElement = document.createElement('div');
+                        conquistaElement.className = 'glass-card rounded-2xl p-6 min-w-[280px] text-center';
+                        conquistaElement.innerHTML = `
+                            <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                                ${conquista.icone ? 
+                                    `<img src="${conquista.icone}" alt="${conquista.titulo}" class="w-10 h-10">` :
+                                    `<img src="{% static 'imagem/trophy_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-10 h-10">`
+                                }
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">${conquista.titulo}</h3>
+                            <p class="text-sm opacity-80 mb-4">${conquista.descricao}</p>
+                            <div class="text-center">
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                                    ${conquista.raridade}
+                                </span>
+                            </div>
+                        `;
+                        container.appendChild(conquistaElement);
+                    });
+                } else {
+                    // Fallback para conquistas estáticas
+                    const container = document.getElementById('conquistas-populares');
+                    container.innerHTML = `
+                        <div class="glass-card rounded-2xl p-6 min-w-[280px] text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                                <img src="{% static 'imagem/trophy_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-10 h-10">
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Primeiros Passos</h3>
+                            <p class="text-sm opacity-80 mb-4">Complete seu primeiro módulo para desbloquear esta conquista.</p>
+                            <div class="text-center">
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Comum
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card rounded-2xl p-6 min-w-[280px] text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                                <img src="{% static 'imagem/diamond_shine_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-10 h-10">
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Programador Dedicado</h3>
+                            <p class="text-sm opacity-80 mb-4">Estude por 7 dias consecutivos na plataforma.</p>
+                            <div class="text-center">
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Rara
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card rounded-2xl p-6 min-w-[280px] text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                                <img src="{% static 'imagem/forum_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-10 h-10">
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Comunidade Ativa</h3>
+                            <p class="text-sm opacity-80 mb-4">Faça 10 posts ou comentários no fórum.</p>
+                            <div class="text-center">
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Épica
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card rounded-2xl p-6 min-w-[280px] text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                                <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Conquista" class="w-10 h-10">
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Mestre Python</h3>
+                            <p class="text-sm opacity-80 mb-4">Alcance o nível 10 na plataforma.</p>
+                            <div class="text-center">
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Lendária
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar conquistas populares:', error);
+            });
     }
-}
+
+    // Carregar estatísticas ao iniciar
+    carregarEstatisticas();
+});
 </script>
 {% endblock %}

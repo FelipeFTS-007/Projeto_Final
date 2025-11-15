@@ -7,165 +7,601 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
-    .card-hover {
-      transition: all 0.3s ease;
+    /* Variáveis de cores para consistência */
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-dark-blue: #1E40AF;
+        --light-blue: #EFF6FF;
+        --text-blue: #1E40AF;
+        --light-bg: #F8FAFC;
     }
     
-    .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .progress-bar {
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .progress-bar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 45%;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-      border-radius: 9999px;
-      animation: progressAnimation 1.5s ease-in-out;
-    }
-    
-    @keyframes progressAnimation {
-      0% { width: 0%; }
-      100% { width: 45%; }
-    }
-    
-    .module-card {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .locked-module {
-      position: relative;
-    }
-    
-    .locked-module::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-image: url("{% static 'imagem/lock_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}");
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: 50px;
-    }
-    
-    .floating-element {
-      animation: float 6s ease-in-out infinite;
+    /* Animações globais */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
     }
     
-    .circular-chart {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
     
-    .circle-bg {
-      fill: none;
-      stroke: #EFF6FF;
-      stroke-width: 3.8;
-    }
-    
-    .circle {
-      fill: none;
-      stroke-width: 2.8;
-      stroke-linecap: round;
-      stroke: #3B82F6;
-      animation: progress 1.5s ease-out forwards;
-    }
-    
-    @keyframes progress {
-      0% { stroke-dasharray: 0 100; }
-    }
-    
-    .percentage {
-      fill: #1E40AF;
-      font-size: 0.5em;
-      text-anchor: middle;
-      font-weight: bold;
-    }
-
-    /* Estilos para a descrição expansível */
-    .descricao-container {
-      position: relative;
-    }
-    
-    .descricao-resumida {
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-    }
-    
-    .descricao-completa {
-      display: none;
-    }
-    
-    .descricao-expandir {
-      color: #3B82F6;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      margin-top: 4px;
-    }
-    
-    .descricao-expandir:hover {
-      color: #1E40AF;
-      text-decoration: underline;
-    }
-
-    /* Adicione ao bloco extra_css */
-    .pagination-current {
+    /* Cabeçalho modernizado */
+    .page-header {
         background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
-        color: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-
-    .pagination-link {
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 400;
+        max-width: 600px;
+    }
+    
+    /* Estilos para filtros */
+    .filter-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 9999px;
+        padding: 0.5rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748B;
+        cursor: pointer;
         transition: all 0.3s ease;
     }
-
-    .pagination-link:hover {
+    
+    .filter-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+    
+    .filter-btn.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+    
+    /* Cartões de capítulos melhorados COM BORDAS POR DIFICULDADE */
+    .chapter-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
+        border: 3px solid transparent;
+    }
+    
+    .chapter-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.1);
+    }
+    
+    .chapter-card.locked {
+        filter: grayscale(0.7);
+        opacity: 0.7;
+        border-color: #E2E8F0 !important;
+    }
+    
+    .chapter-card.locked:hover {
+        transform: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-color: #E2E8F0 !important;
+    }
+    
+    /* Bordas por dificuldade */
+    .chapter-card.difficulty-beginner {
+        border-color: #3B82F6;
+    }
+    
+    .chapter-card.difficulty-beginner:hover {
+        border-color: #1E40AF;
+        box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.2), 0 10px 10px -5px rgba(16, 185, 129, 0.1);
+    }
+    
+    .chapter-card.difficulty-intermediate {
+        border-color: #F59E0B;
+    }
+    
+    .chapter-card.difficulty-intermediate:hover {
+        border-color: #D97706;
+        box-shadow: 0 20px 25px -5px rgba(245, 158, 11, 0.2), 0 10px 10px -5px rgba(245, 158, 11, 0.1);
+    }
+    
+    .chapter-card.difficulty-advanced {
+        border-color: #EF4444;
+    }
+    
+    .chapter-card.difficulty-advanced:hover {
+        border-color: #DC2626;
+        box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.2), 0 10px 10px -5px rgba(239, 68, 68, 0.1);
+    }
+    
+    .chapter-header {
+        padding: 1.5rem 1.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .difficulty-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+    }
+    
+    .difficulty-beginner-badge {
+        background: rgba(59, 130, 246, 0.1);
+        color: rgb(30, 64, 175);
+    }
+    
+    .difficulty-intermediate-badge {
+        background: rgba(245, 158, 11, 0.1);
+        color: rgb(180, 83, 9);
+    }
+    
+    .difficulty-advanced-badge {
+        background: rgba(239, 68, 68, 0.1);
+        color: rgb(185, 28, 28);
+    }
+    
+    /* CORREÇÃO DO GRÁFICO CIRCULAR */
+    .progress-ring-container {
+        width: 40px;
+        height: 40px;
+        position: relative;
+    }
+    
+    .progress-ring {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        fill: none;
+        stroke-width: 3;
+        stroke-linecap: round;
+    }
+    
+    .progress-ring-bg {
+        stroke: #E2E8F0;
+    }
+    
+    .progress-ring-fill {
+        stroke: var(--primary-blue);
+        transition: stroke-dashoffset 1s ease;
+        stroke-dasharray: 100 100;
+        stroke-dashoffset: 100;
+    }
+    
+    .progress-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: var(--primary-dark-blue);
+    }
+    
+    .chapter-icon {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        background: var(--light-blue);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .chapter-icon.locked {
+        animation: none;
+        background: #F1F5F9;
+    }
+    
+    .chapter-content {
+        padding: 0 1.5rem 1.5rem;
+    }
+    
+    .chapter-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-blue);
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .chapter-description {
+        color: #64748B;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .chapter-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: #64748B;
+    }
+    
+    .progress-container {
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        height: 0.5rem;
+        background: #E2E8F0;
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+        transition: width 1s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .progress-text {
+        font-size: 0.75rem;
+        color: var(--primary-blue);
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    .time-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: rgb(5, 150, 105);
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .locked-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1.5rem;
+        z-index: 10;
+    }
+    
+    .lock-icon {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 0.75rem;
+        opacity: 0.7;
+    }
+    
+    .locked-text {
+        font-size: 0.875rem;
+        color: #64748B;
+        text-align: center;
+        max-width: 80%;
+    }
+    
+    .chapter-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--primary-blue);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background: var(--primary-dark-blue);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .action-btn.locked {
+        background: #94A3B8;
+        pointer-events: none;
+    }
+    
+    /* Estatísticas gerais - COM CORES */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color-1, #3B82F6), var(--card-color-2, #1E40AF));
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.25rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+    
+    /* Cores específicas para cada card de estatística */
+    .stat-card-completed {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        --card-color-1: #10B981;
+        --card-color-2: #059669;
+    }
+    
+    .stat-card-progress {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        --card-color-1: #F59E0B;
+        --card-color-2: #D97706;
+    }
+    
+    .stat-card-locked {
+        background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+        --card-color-1: #6B7280;
+        --card-color-2: #4B5563;
+    }
+    
+    .stat-card-overall {
+        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        --card-color-1: #8B5CF6;
+        --card-color-2: #7C3AED;
+    }
+    
+    /* Dica de aprendizado */
+    .learning-tip {
+        background: linear-gradient(135deg, var(--light-blue) 0%, #EDF2FF 100%);
+        border-left: 4px solid var(--primary-blue);
+        border-radius: 0 1rem 1rem 0;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .tip-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .tip-text {
+        color: var(--text-blue);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    /* Paginação */
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E2E8F0;
+    }
+    
+    .pagination-info {
+        color: #64748B;
+        font-size: 0.875rem;
+    }
+    
+    .pagination-controls {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #64748B;
+        transition: all 0.3s ease;
+    }
+    
+    .pagination-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+    
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Animações de entrada para os cards */
+    .chapter-card:nth-child(1) { animation-delay: 0.1s; }
+    .chapter-card:nth-child(2) { animation-delay: 0.2s; }
+    .chapter-card:nth-child(3) { animation-delay: 0.3s; }
+    .chapter-card:nth-child(4) { animation-delay: 0.4s; }
+    .chapter-card:nth-child(5) { animation-delay: 0.5s; }
+    .chapter-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .filter-container {
+            justify-content: center;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .pagination {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
     }
 </style>
 {% endblock %}
@@ -173,43 +609,124 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Função para expandir/recolher a descrição
-    function toggleDescricao(button) {
-        const container = button.closest('.descricao-container');
-        const resumida = container.querySelector('.descricao-resumida');
-        const completa = container.querySelector('.descricao-completa');
-        
-        if (resumida.style.display === 'none') {
-            // Recolher
-            resumida.style.display = '-webkit-box';
-            completa.style.display = 'none';
-            button.textContent = 'Mostrar Mais';
-        } else {
-            // Expandir
-            resumida.style.display = 'none';
-            completa.style.display = 'block';
-            button.textContent = 'Mostrar Menos';
-        }
-    }
+    // Filtros de capítulos - CORREÇÃO DA LÓGICA
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const chapterCards = document.querySelectorAll('.chapter-card');
     
-    // Adicionar evento de clique a todos os botões de expandir
-    document.querySelectorAll('.descricao-expandir').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleDescricao(this);
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remover classe active de todos os botões
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Adicionar classe active ao botão clicado
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            // Filtrar cards
+            chapterCards.forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (filter === 'available') {
+                    // CORREÇÃO: Mostrar tanto 'available' quanto 'in-progress'
+                    const status = card.getAttribute('data-status');
+                    if (status === 'available' || status === 'in-progress') {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    const status = card.getAttribute('data-status');
+                    if (status === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+                
+                // Reaplicar animação de entrada
+                if (card.style.display === 'block') {
+                    card.style.animation = 'none';
+                    setTimeout(() => {
+                        card.style.animation = 'fadeIn 0.5s ease forwards';
+                    }, 10);
+                }
+            });
         });
     });
     
-    // Verificar se a descrição precisa ser truncada
-    document.querySelectorAll('.descricao-container').forEach(container => {
-        const resumida = container.querySelector('.descricao-resumida');
-        const textoCompleto = container.querySelector('.descricao-completa').textContent;
+    // Animação das barras de progresso
+    function animateProgressBars() {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            const progress = bar.getAttribute('data-progress');
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.width = `${progress}%`;
+            }, 300);
+        });
+    }
+    
+    // Animação dos anéis de progresso
+    function animateProgressRings() {
+        document.querySelectorAll('.progress-ring-fill').forEach(ring => {
+            const progress = parseInt(ring.getAttribute('data-progress'));
+            const circumference = 2 * Math.PI * 16; // raio do círculo
+            const offset = circumference - (progress / 100) * circumference;
+            
+            ring.style.strokeDasharray = `${circumference} ${circumference}`;
+            ring.style.strokeDashoffset = circumference;
+            
+            setTimeout(() => {
+                ring.style.strokeDashoffset = offset;
+            }, 300);
+        });
+    }
+    
+    // Inicializar animações
+    animateProgressBars();
+    animateProgressRings();
+    
+    // Efeito de digitação para o título
+    const title = document.querySelector('.page-title');
+    if (title) {
+        const text = title.textContent;
+        title.textContent = '';
         
-        // Se o texto tiver mais de 15 palavras, mostra o botão de expandir
-        const palavras = textoCompleto.trim().split(/\s+/).length;
-        if (palavras > 15) {
-            container.querySelector('.descricao-expandir').style.display = 'inline-flex';
+        let i = 0;
+        const typeWriter = () => {
+            if (i < text.length) {
+                title.textContent += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        };
+        
+        // Iniciar efeito após um breve delay
+        setTimeout(typeWriter, 500);
+    }
+    
+    // Interação com cards - efeito de clique
+    chapterCards.forEach(card => {
+        if (!card.classList.contains('locked')) {
+            card.addEventListener('click', function(e) {
+                // Evitar ação se clicar em um elemento filho que já tem seu próprio evento
+                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+                
+                // Adicionar efeito visual de clique
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                
+                // Navegar para a página do capítulo após um breve delay
+                setTimeout(() => {
+                    const link = this.querySelector('a');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                }, 200);
+            });
         }
     });
 });
@@ -217,153 +734,228 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% block content %}
-<!-- Cabeçalho com título e estatísticas -->
-<div class="mb-8">
-  <h1 class="text-3xl font-bold text-blue-700 mb-2">Trilha de Aprendizado</h1>
-  <p class="text-blue-600">Domine Python através de uma jornada gamificada e divertida</p>
-  
-  <!-- Cartões de visão geral -->
-  <div class="grid md:grid-cols-3 gap-6 mt-6">
-    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
-      <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Concluídos" class="w-10 h-10 mb-2">
-      <h3 class="font-bold text-lg">Capítulos Concluídos</h3>
-      <p class="text-4xl font-extrabold mt-1">{{ total_concluidos }}</p>
+<!-- Cabeçalho modernizado SEM AS CONQUISTAS -->
+<div class="page-header">
+    <div class="header-content">
+        <h1 class="page-title">Trilha de Aprendizado</h1>
+        <p class="page-subtitle">Domine Python através de uma jornada gamificada e divertida. Desbloqueie conquistas, complete desafios e evolua seu conhecimento passo a passo.</p>
     </div>
-    
-    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
-      <img src="{% static 'imagem/play_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Em Progresso" class="w-10 h-10 mb-2">
-      <h3 class="font-bold text-lg">Em Progresso</h3>
-      <p class="text-4xl font-extrabold mt-1">{{ total_em_progresso }}</p>
-    </div>
-    
-    <div class="bg-blue-700 text-white rounded-2xl p-5 shadow-lg flex flex-col items-center">
-      <img src="{% static 'imagem/lock_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Bloqueados" class="w-10 h-10 mb-2">
-      <h3 class="font-bold text-lg">Bloqueados</h3>
-      <p class="text-4xl font-extrabold mt-1">{{ total_bloqueados }}</p>
-    </div>
-  </div>
 </div>
 
-<!-- Dica -->
-<div class="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-8 shadow flex items-start">
-  <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="w-6 h-6 mr-3 flex-shrink-0">
-  <p>Complete os capítulos em ordem para uma melhor experiência de aprendizado e desbloqueie conquistas especiais!</p>
+<!-- Cartões de estatísticas COM CORES -->
+<div class="stats-grid">
+    <div class="stat-card stat-card-completed">
+        <div class="stat-icon">
+            <img src="{% static 'imagem/check_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Concluídos">
+        </div>
+        <div class="stat-number">{{ total_concluidos }}</div>
+        <div class="stat-label">Capítulos Concluídos</div>
+    </div>
+    
+    <div class="stat-card stat-card-progress">
+        <div class="stat-icon">
+            <img src="{% static 'imagem/play_circle_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Em Progresso">
+        </div>
+        <div class="stat-number">{{ total_em_progresso }}</div>
+        <div class="stat-label">Em Progresso</div>
+    </div>
+    
+    <div class="stat-card stat-card-locked">
+        <div class="stat-icon">
+            <img src="{% static 'imagem/lock_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Bloqueados">
+        </div>
+        <div class="stat-number">{{ total_bloqueados }}</div>
+        <div class="stat-label">Bloqueados</div>
+    </div>
+    
+    <div class="stat-card stat-card-overall">
+        <div class="stat-icon">
+            <img src="{% static 'imagem/trending_up_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Progresso Geral">
+        </div>
+        <div class="stat-number">
+            {% with total_capitulos=capitulos_com_stats|length total_concluido=total_concluidos %}
+            {% if total_capitulos > 0 %}
+                {% widthratio total_concluido total_capitulos 100 %}%
+            {% else %}
+                0%
+            {% endif %}
+            {% endwith %}
+        </div>
+        <div class="stat-label">Progresso Geral</div>
+    </div>
 </div>
 
-<!-- Grid de capítulos -->
+<!-- Dica de aprendizado -->
+<div class="learning-tip">
+    <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="tip-icon">
+    <p class="tip-text">Complete os capítulos em ordem para uma melhor experiência de aprendizado e desbloqueie conquistas especiais!</p>
+</div>
+
+<!-- Filtros -->
+<div class="filter-container">
+    <button class="filter-btn active" data-filter="all">Todos</button>
+    <button class="filter-btn" data-filter="available">Disponíveis</button>
+    <button class="filter-btn" data-filter="completed">Concluídos</button>
+    <button class="filter-btn" data-filter="in-progress">Em Progresso</button>
+    <button class="filter-btn" data-filter="locked">Bloqueados</button>
+</div>
+
+<!-- Grid de capítulos COM BORDAS POR DIFICULDADE -->
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {% for cap_stat in capitulos_com_stats %}
-  
-  {% if cap_stat.bloqueado %}
-  <!-- Capítulo Bloqueado -->
-  <div class="module-card locked-module bg-white border border-blue-300 rounded-2xl shadow p-5 relative">
-    <div class="flex items-center justify-between mb-3">
-      <span class="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full">
-        {% if cap_stat.dificuldade == 'beginner' %}Iniciante
-        {% elif cap_stat.dificuldade == 'intermediate' %}Intermediário
-        {% else %}Avançado{% endif %}
-      </span>
-    </div>
+    {% for cap_stat in capitulos_com_stats %}
     
-    <div class="flex justify-center mb-4">
-      <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="{{ cap_stat.capitulo.titulo }}" class="w-16 h-16 opacity-100">
-    </div>
-    
-    <h3 class="font-bold text-lg text-blue-700 mb-2 opacity-50">{{ cap_stat.capitulo.titulo }}</h3>
-    
-    <div class="descricao-container">
-      <p class="text-sm text-blue-600 mb-1 opacity-50 descricao-resumida">{{ cap_stat.capitulo.descricao|truncatewords:15 }}</p>
-      <p class="text-sm text-blue-600 mb-1 opacity-50 descricao-completa">{{ cap_stat.capitulo.descricao }}</p>
-      <span class="descricao-expandir" style="display: none;">...</span>
+    {% if cap_stat.bloqueado %}
+    <!-- Capítulo Bloqueado -->
+    <div class="chapter-card locked difficulty-{{ cap_stat.dificuldade }}" data-status="locked">
+        <div class="chapter-header">
+            <span class="difficulty-badge difficulty-{{ cap_stat.dificuldade }}-badge">
+                {% if cap_stat.dificuldade == 'beginner' %}Iniciante
+                {% elif cap_stat.dificuldade == 'intermediate' %}Intermediário
+                {% else %}Avançado{% endif %}
+            </span>
+            <span class="text-xs text-blue-500 font-medium">
+                Ordem {{ cap_stat.capitulo.ordem }}
+            </span>
+        </div>
+        
+        <div class="chapter-content">
+            <div class="chapter-icon locked">
+                <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="{{ cap_stat.capitulo.titulo }}">
+            </div>
+            
+            <h3 class="chapter-title">{{ cap_stat.capitulo.titulo }}</h3>
+            
+            <p class="chapter-description">{{ cap_stat.capitulo.descricao }}</p>
+            
+            <div class="chapter-stats">
+                <span>Módulos: {{ cap_stat.total_modulos }}</span>
+                <span>Aulas: {{ cap_stat.total_aulas }}</span>
+            </div>
+            
+            <div class="time-badge">
+                <img src="{% static 'imagem/schedule_20dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Tempo">
+                <span>{{ cap_stat.tempo_formatado }}</span>
+            </div>
+        </div>
+        
+        <div class="locked-overlay">
+            <img src="{% static 'imagem/lock_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Bloqueado" class="lock-icon">
+            <p class="locked-text">Complete o capítulo anterior para desbloquear</p>
+        </div>
     </div>
 
-    <div class="mt-6 text-center">
-      <span class="text-xs bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded-full">Complete o capítulo anterior para desbloquear</span>
+    {% else %}
+    <!-- Capítulo Disponível -->
+    <div class="chapter-card difficulty-{{ cap_stat.dificuldade }}" data-status="{% if cap_stat.progresso_percentual == 100 %}completed{% elif cap_stat.progresso_percentual > 0 %}in-progress{% else %}available{% endif %}">
+        <a href="{% url 'modulos' %}?capitulo={{ cap_stat.capitulo.id }}" class="absolute inset-0 z-0"></a>
+        
+        <div class="chapter-header">
+            <span class="difficulty-badge difficulty-{{ cap_stat.dificuldade }}-badge">
+                {% if cap_stat.dificuldade == 'beginner' %}Iniciante
+                {% elif cap_stat.dificuldade == 'intermediate' %}Intermediário
+                {% else %}Avançado{% endif %}
+            </span>
+            
+            <!-- CORREÇÃO: Novo gráfico circular -->
+            <div class="progress-ring-container">
+                <svg class="progress-ring" viewBox="0 0 36 36">
+                    <circle class="progress-ring-circle progress-ring-bg" cx="18" cy="18" r="16"></circle>
+                    <circle class="progress-ring-circle progress-ring-fill" 
+                            cx="18" cy="18" r="16" 
+                            data-progress="{{ cap_stat.progresso_percentual }}"></circle>
+                </svg>
+                <div class="progress-percentage">{{ cap_stat.progresso_percentual }}%</div>
+            </div>
+        </div>
+        
+        <div class="chapter-content">
+            <div class="chapter-icon">
+                <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="{{ cap_stat.capitulo.titulo }}">
+            </div>
+            
+            <h3 class="chapter-title">{{ cap_stat.capitulo.titulo }}</h3>
+            
+            <p class="chapter-description">{{ cap_stat.capitulo.descricao }}</p>
+            
+            <div class="chapter-stats">
+                <span>Módulos: {{ cap_stat.total_modulos }}</span>
+                <span>Aulas: {{ cap_stat.total_aulas }}</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" data-progress="{{ cap_stat.progresso_percentual }}"></div>
+                </div>
+                <p class="progress-text">{{ cap_stat.modulos_concluidos }}/{{ cap_stat.total_modulos }} módulos ({{ cap_stat.progresso_percentual }}%)</p>
+            </div>
+            
+            <div class="time-badge">
+                <img src="{% static 'imagem/schedule_20dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Tempo">
+                <span>{{ cap_stat.tempo_formatado }}</span>
+            </div>
+            
+            <div class="chapter-footer">
+                <span class="text-xs text-blue-500 font-medium">
+                    Ordem {{ cap_stat.capitulo.ordem }}
+                </span>
+                <span class="action-btn">
+                    Continuar
+                    <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Avançar" class="w-4 h-4">
+                </span>
+            </div>
+        </div>
     </div>
-  </div>
-
-  {% else %}
-  <!-- Capítulo Disponível -->
-  <a href="{% url 'modulos' %}?capitulo={{ cap_stat.capitulo.id }}" class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-2xl shadow p-5 relative block">
-    <div class="flex items-center justify-between mb-3">
-      <span class="text-xs {% if cap_stat.dificuldade == 'beginner' %}bg-green-100 text-green-600
-                      {% elif cap_stat.dificuldade == 'intermediate' %}bg-yellow-100 text-yellow-600
-                      {% else %}bg-red-100 text-red-600{% endif %} font-bold px-3 py-1 rounded-full">
-          {% if cap_stat.dificuldade == 'beginner' %}Iniciante
-          {% elif cap_stat.dificuldade == 'intermediate' %}Intermediário
-          {% else %}Avançado{% endif %}
-      </span>
-      <div class="w-10 h-10">
-        <svg viewBox="0 0 36 36" class="circular-chart">
-          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <path class="circle" stroke-dasharray="{{ cap_stat.progresso_percentual }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <text x="18" y="20.35" class="percentage">{{ cap_stat.progresso_percentual }}%</text>
-        </svg>
-      </div>
-    </div>
-    
-    <div class="flex justify-center mb-4">
-      <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="{{ cap_stat.capitulo.titulo }}" class="w-16 h-16 floating-element">
-    </div>
-    
-    <h3 class="font-bold text-lg text-blue-800 mb-2">{{ cap_stat.capitulo.titulo }}</h3>
-    
-    <div class="descricao-container">
-      <p class="text-sm text-blue-600 mb-1 descricao-resumida">{{ cap_stat.capitulo.descricao|truncatewords:15 }}</p>
-      <p class="text-sm text-blue-600 mb-1 descricao-completa">{{ cap_stat.capitulo.descricao }}</p>
-      <span class="descricao-expandir" style="display: none;">Mostrar Mais</span>
-    </div>
-
-    <!-- Barra de progresso -->
-    <div class="mt-4">
-      <div class="w-full bg-blue-200 rounded-full h-2">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full" style="width: {{ cap_stat.progresso_percentual }}%"></div>
-      </div>
-      <p class="text-xs text-blue-500 mt-2">{{ cap_stat.modulos_concluidos }}/{{ cap_stat.total_modulos }} módulos</p>
-    </div>
-    
-    <div class="absolute bottom-3 right-3">
-      <img src="{% static 'imagem/arrow_forward_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Abrir" class="w-5 h-5 opacity-0 transition-opacity group-hover:opacity-100">
-    </div>
-  </a>
-  {% endif %}
-  
-  {% empty %}
-  <!-- Mensagem quando não há capítulos -->
-  <div class="col-span-3 text-center py-12">
-    <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem conteúdo" class="w-24 h-24 mx-auto mb-4 opacity-50">
-    <h3 class="text-xl font-bold text-blue-700 mb-2">Nenhum capítulo disponível</h3>
-    <p class="text-blue-600 mb-4">Os capítulos ainda não foram configurados.</p>
-    {% if user.groups.filter.name == 'professores' or user.is_staff %}
-    <a href="{% url 'criar_conteudo' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-      Criar Primeiro Capítulo
-    </a>
     {% endif %}
-  </div>
-  {% endfor %}
+    
+    {% empty %}
+    <!-- Mensagem quando não há capítulos -->
+    <div class="col-span-3 text-center py-12">
+        <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem conteúdo" class="w-24 h-24 mx-auto mb-4 opacity-50">
+        <h3 class="text-xl font-bold text-blue-700 mb-2">Nenhum capítulo disponível</h3>
+        <p class="text-blue-600 mb-4">Os capítulos ainda não foram configurados.</p>
+        {% if user.groups.filter.name == 'professores' or user.is_staff %}
+        <a href="{% url 'criar_conteudo' %}" class="action-btn">
+            Criar Primeiro Capítulo
+        </a>
+        {% endif %}
+    </div>
+    {% endfor %}
 </div>
-<!-- PAGINAÇÃO - ESTILO TAREFAS -->
+
+<!-- Paginação -->
 {% if is_paginated %}
-<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
-    <div class="text-sm text-blue-600">
-        Mostrando {{ page_obj.end_index }} de {{ page_obj.paginator.count }} capítulos
+<div class="pagination">
+    <div class="pagination-info">
+        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} capítulos
     </div>
     
-    <div class="flex items-center gap-4">
+    <div class="pagination-controls">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center">
-              ←
+            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">
+                <img src="{% static 'imagem/arrow_back_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Anterior">
+                Anterior
             </a>
+        {% else %}
+            <button class="pagination-btn" disabled>
+                <img src="{% static 'imagem/arrow_back_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Anterior">
+                Anterior
+            </button>
         {% endif %}
         
-        <span class="text-blue-600 font-medium">
+        <span class="text-blue-600 font-medium px-4 py-2">
             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
         </span>
         
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition flex items-center">
-              →
+            <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">
+                Próxima
+                <img src="{% static 'imagem/arrow_forward_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Próxima">
             </a>
+        {% else %}
+            <button class="pagination-btn" disabled>
+                Próxima
+                <img src="{% static 'imagem/arrow_forward_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Próxima">
+            </button>
         {% endif %}
     </div>
 </div>

@@ -5,219 +5,714 @@
 
 {% block extra_css %}
 <style>
-    .card-hover {
-      transition: all 0.3s ease;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    /* Variáveis de cores para consistência */
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-dark-blue: #1E40AF;
+        --light-blue: #EFF6FF;
+        --text-blue: #1E40AF;
+        --light-bg: #F8FAFC;
+        --primary-green: #10B981;
+        --dark-green: #059669;
+        --light-green: #ECFDF5;
     }
     
-    .card-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    }
-    
-    .module-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #3B82F6 0%, #1E40AF 100%);
-    }
-    
-    .floating-element {
-      animation: float 6s ease-in-out infinite;
+    /* Animações globais */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
     }
     
-    .shine-effect {
-      position: relative;
-      overflow: hidden;
+    /* Cabeçalho modernizado - MELHOR DISTRIBUIÇÃO */
+    .page-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
-    .shine-effect::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -75%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-      transform: skewX(-25deg);
-      pointer-events: none;
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: float 6s ease-in-out infinite;
     }
     
-    .shine-effect:hover::before {
-      animation: shine 1s forwards;
+    .header-content {
+        position: relative;
+        z-index: 2;
     }
     
-    @keyframes shine {
-      0% { left: -75%; }
-      100% { left: 125%; }
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
     }
     
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 400;
+        max-width: 100%;
+        line-height: 1.5;
+    }
+    
+    /* MELHOR DISTRIBUIÇÃO DO HEADER */
+    .header-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+    }
+    
+    .header-text {
+        flex: 1;
+        min-width: 0; /* Permite que o texto quebre corretamente */
+    }
+    
+    .header-progress {
+        flex-shrink: 0;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+    
+    /* CORREÇÃO: Progress badge no header - MAIOR E MAIS VISÍVEL, MELHOR CENTRALIZADO */
+    .progress-badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 120px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: fit-content;
+        margin-top: 1rem; /* CORREÇÃO: Mais espaço no topo para melhor centralização */
+    }
+    
+    /* CORREÇÃO: Ícone do foguete maior */
+    .module-icon {
+        width: 5rem;
+        height: 5rem;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+    
+    .floating-element {
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    /* CORREÇÃO: Cards de progresso resumo - MAIS COMPACTOS */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        border-radius: 1rem;
+        padding: 1rem; /* CORREÇÃO: Menos padding para cards mais compactos */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color-1, #3B82F6), var(--card-color-2, #1E40AF));
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-icon {
+        width: 2.25rem; /* CORREÇÃO: Ícone menor */
+        height: 2.25rem;
+        margin-bottom: 0.5rem; /* CORREÇÃO: Menos espaço */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-number {
+        font-size: 1.5rem; /* CORREÇÃO: Texto menor */
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.25rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-label {
+        font-size: 0.75rem; /* CORREÇÃO: Texto menor */
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+    
+    /* CORREÇÃO: XP em verde para prática */
+    .stat-xp {
+        margin-top: 0.25rem;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Cores específicas para cada card de estatística */
+    .stat-card-teoria {
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        --card-color-1: #3B82F6;
+        --card-color-2: #1E40AF;
+    }
+    
+    .stat-card-pratica {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        --card-color-1: #10B981;
+        --card-color-2: #059669;
+    }
+    
+    /* CORREÇÃO: Abas Teoria / Prática - ESTILO INVERTIDO */
+    .tab-container {
+        display: flex;
+        border-radius: 1rem;
+        background: var(--light-blue);
+        padding: 0.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.1);
+        border: 2px solid #E2E8F0;
+        gap: 0.5rem;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        text-align: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* CORREÇÃO: Estilo invertido - aba ativa SEM fundo, inativa COM fundo */
     .tab-active {
-      background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
-      color: white;
+        background: white;
+        color: var(--primary-blue);
+        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+        border: 2px solid var(--primary-blue);
+        transform: translateY(-1px);
     }
     
     .tab-inactive {
-      background-color: #EFF6FF;
-      color: #3B82F6;
+        background: rgba(59, 130, 246, 0.1);
+        color: #64748B;
+        border: 2px solid transparent;
     }
     
     .tab-inactive:hover {
-      background-color: #DBEAFE;
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--primary-blue);
+        transform: translateY(-1px);
     }
-
-    /* Estilo para conteúdo escondido */
+    
+    /* CORREÇÃO: Estilo específico para a aba de prática quando ativa */
+    .tab-pratica-active {
+        background: white;
+        color: var(--primary-green);
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+        border: 2px solid var(--primary-green);
+        transform: translateY(-1px);
+    }
+    
+    .tab-pratica-inactive {
+        background: rgba(16, 185, 129, 0.1);
+        color: #64748B;
+        border: 2px solid transparent;
+    }
+    
+    .tab-pratica-inactive:hover {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--primary-green);
+        transform: translateY(-1px);
+    }
+    
+    /* Dica de aprendizado - MAIS COMPACTA */
+    .learning-tip {
+        background: linear-gradient(135deg, var(--light-blue) 0%, #EDF2FF 100%);
+        border: 2px solid #3B82F6;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+    
+    .tip-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        flex-shrink: 0;
+    }
+    
+    .tip-text {
+        color: var(--text-blue);
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin: 0;
+    }
+    
+    /* Cartões de aulas - MAIS COMPACTOS E MELHOR DELINEADOS */
+    .lesson-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
+        border: 2px solid #E2E8F0;
+        margin-bottom: 1rem;
+        padding: 1.25rem;
+    }
+    
+    .lesson-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px -5px rgba(59, 130, 246, 0.2), 0 4px 8px -2px rgba(59, 130, 246, 0.1);
+        border-color: #3B82F6;
+    }
+    
+    .lesson-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+    
+    .lesson-icon-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .lesson-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: var(--light-blue);
+        flex-shrink: 0;
+    }
+    
+    .lesson-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-blue);
+        margin: 0;
+        line-height: 1.3;
+    }
+    
+    .xp-badge {
+        background: var(--primary-blue);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        flex-shrink: 0;
+    }
+    
+    /* CORREÇÃO: XP badge verde para prática */
+    .xp-badge-pratica {
+        background: var(--primary-green);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        flex-shrink: 0;
+    }
+    
+    .lesson-description {
+        color: #64748B;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .time-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: rgb(5, 150, 105);
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: var(--primary-blue);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        background: var(--primary-dark-blue);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* CORREÇÃO: Botão verde para prática */
+    .action-btn-pratica {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: var(--primary-green);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .action-btn-pratica:hover {
+        background: var(--dark-green);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Conteúdo escondido */
     .hidden-content {
-      display: none;
+        display: none;
+    }
+    
+    .visible-content {
+        display: block;
+    }
+    
+    /* Animações de entrada para os cards */
+    .lesson-card:nth-child(1) { animation-delay: 0.1s; }
+    .lesson-card:nth-child(2) { animation-delay: 0.2s; }
+    .lesson-card:nth-child(3) { animation-delay: 0.3s; }
+    .lesson-card:nth-child(4) { animation-delay: 0.4s; }
+    .lesson-card:nth-child(5) { animation-delay: 0.5s; }
+    .lesson-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    /* Botão voltar - MAIS COMPACTO */
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8rem;
+        color: #64748B;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+        text-decoration: none;
+    }
+    
+    .back-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-1px);
+    }
+    
+    /* Responsividade melhorada */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+        }
+        
+        .header-main {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .header-progress {
+            text-align: left;
+            width: 100%;
+        }
+        
+        .progress-badge {
+            width: 100%;
+            text-align: center;
+            margin-top: 0;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .tab-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .lesson-header {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        
+        .lesson-footer {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+        
+        .action-btn, .action-btn-pratica {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* CORREÇÃO: Ajuste do ícone do foguete em mobile */
+        .module-icon {
+            width: 4rem;
+            height: 4rem;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
+        
+        .lesson-card {
+            padding: 1rem;
+        }
+        
+        /* CORREÇÃO: Ajuste adicional do ícone do foguete em telas pequenas */
+        .module-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+        }
+        
+        /* CORREÇÃO: Cards de estatística ainda mais compactos em mobile */
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card {
+            padding: 0.875rem;
+        }
     }
 
-    .visible-content {
-      display: block;
+/* Botão voltar */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #CBD5E1;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748B;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
     }
+    
+    .back-button:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-  <!-- BOTÃO VOLTAR FIXO NO TOPO -->
-  <div class="mb-4">
-    <a href="{% url 'modulos' %}?capitulo={{ modulo.capitulo.id }}" class="text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-2 transition-colors">
-      <img src="{% static 'imagem/arrow_back_35dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Voltar" class="w-5 h-5">
-      <span class="text-sm">Voltar aos módulos</span>
-    </a>
-  </div>
+  <!-- BOTÃO VOLTAR FIXO NO TOPO - MAIS COMPACTO -->
+  <a href="{% url 'modulos' %}" class="back-button">
+    <img src="{% static 'imagem/arrow_back_20dp_64748B_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Voltar" class="w-4 h-4">
+    <span>Voltar aos Modulos</span>
+</a>
 
-  <!-- Cabeçalho do Módulo DINÂMICO -->
-  <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
-    <div class="flex items-center gap-6 z-10">
-      <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="w-16 h-16 floating-element">
-      <div>
-        <h2 class="text-2xl font-bold">{{ modulo.titulo }}</h2>
-        <p class="text-blue-100">{{ modulo.descricao }}</p>
-      </div>
-    </div>
-    <div class="text-right font-bold text-lg z-10 mt-4 md:mt-0">{{ progresso_geral }}% Concluído</div>
-    
-    <!-- Elementos decorativos de fundo -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-      <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white"></div>
-      <div class="absolute top-10 right-20 w-16 h-16 rounded-full bg-white"></div>
-      <div class="absolute bottom-5 left-20 w-12 h-12 rounded-full bg-white"></div>
-    </div>
-  </div>
-
-  <!-- Cards de progresso resumo DINÂMICOS -->
-  <div class="grid md:grid-cols-2 gap-4">
-    <div class="bg-white border border-blue-200 rounded-xl p-4 shadow-md card-hover">
-      <div class="flex justify-between items-center mb-2">
-        <div class="flex items-center gap-2">
-          <div class="bg-blue-600 p-2 rounded-lg">
-            <img src="{% static 'imagem/menu_book_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Teoria" class="w-5 h-5">
+  <!-- Cabeçalho do Módulo DINÂMICO - MELHOR DISTRIBUIÇÃO -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-main">
+        <div class="header-text">
+          <div class="flex items-center gap-4 mb-3">
+            <!-- CORREÇÃO: Ícone do foguete maior -->
+            <img src="{% static 'imagem/rocket_launch_100dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Python" class="module-icon floating-element">
+            <div>
+              <h1 class="page-title">{{ modulo.titulo }}</h1>
+              <p class="page-subtitle">{{ modulo.descricao }}</p>
+            </div>
           </div>
-          <span class="font-semibold text-blue-800">Teoria</span>
         </div>
-        <span class="text-blue-600 font-bold">{{ total_aulas_concluidas_teoria }}/{{ total_aulas_teoria }} Lições</span>
-      </div>
-      <div class="w-full h-2 bg-blue-200 rounded-full">
-        <div class="h-2 bg-blue-600 rounded-full" style="width: {{ progresso_teoria }}%"></div>
-      </div>
-      <div class="text-xs text-blue-600 mt-1">{{ total_xp_teoria }} XP Total</div>
-    </div>
-
-    <div class="bg-white border-blue-200 rounded-xl p-4 shadow-md card-hover">
-      <div class="flex justify-between items-center mb-2">
-        <div class="flex items-center gap-2">
-          <div class="bg-blue-600 p-2 rounded-lg">
-            <img src="{% static 'imagem/code_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Prática" class="w-5 h-5">
-          </div>
-          <span class="font-semibold text-blue-800">Prática</span>
+        <div class="header-progress">
+          <!-- CORREÇÃO: Badge de progresso melhor centralizado verticalmente -->
+          <div class="progress-badge">{{ progresso_geral }}% Concluído</div>
         </div>
-        <span class="text-blue-600 font-bold">{{ total_aulas_concluidas_pratica }}/{{ total_aulas_pratica }} Lições</span>
       </div>
-      <div class="w-full h-2 bg-blue-200 rounded-full">
-        <div class="h-2 bg-blue-600 rounded-full" style="width: {{ progresso_pratica }}%"></div>
-      </div>
-      <div class="text-xs text-blue-600 mt-1">{{ total_xp_pratica }} XP Total</div>
     </div>
   </div>
 
-  <!-- Abas Teoria / Prática -->
-  <div class="flex border-b border-blue-200 mt-4">
-    <button id="tab-teoria" class="flex-1 py-3 font-semibold tab-active rounded-t-xl transition-colors">
+  <!-- CORREÇÃO: Cards de progresso resumo DINÂMICOS - MAIS COMPACTOS -->
+  <div class="stats-grid">
+    <div class="stat-card stat-card-teoria">
+      <div class="stat-icon">
+        <img src="{% static 'imagem/menu_book_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Teoria">
+      </div>
+      <div class="stat-number">{{ total_aulas_concluidas_teoria }}/{{ total_aulas_teoria }}</div>
+      <div class="stat-label">Lições de Teoria</div>
+      <div class="stat-xp">{{ total_xp_teoria }} XP</div>
+    </div>
+
+    <div class="stat-card stat-card-pratica">
+      <div class="stat-icon">
+        <img src="{% static 'imagem/code_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Prática">
+      </div>
+      <div class="stat-number">{{ total_aulas_concluidas_pratica }}/{{ total_aulas_pratica }}</div>
+      <div class="stat-label">Lições Práticas</div>
+      <div class="stat-xp">{{ total_xp_pratica }} XP</div>
+    </div>
+  </div>
+
+  <!-- Dica de aprendizado - MAIS COMPACTA -->
+  <div class="learning-tip">
+    <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Dica" class="tip-icon">
+    <p class="tip-text" id="texto-abas-conteudo">Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática.</p>
+  </div>
+
+  <!-- Abas Teoria / Prática - ESTILO INVERTIDO E CORES DIFERENCIADAS -->
+  <div class="tab-container">
+    <!-- CORREÇÃO: Abas com estilo invertido - ativa SEM fundo, inativa COM fundo -->
+    <button id="tab-teoria" class="tab-btn tab-active">
       Teoria ({{ total_aulas_teoria }})
     </button>
-    <button id="tab-pratica" class="flex-1 py-3 font-semibold tab-inactive rounded-t-xl transition-colors">
+    <button id="tab-pratica" class="tab-btn tab-pratica-inactive">
       Prática ({{ total_aulas_pratica }})
     </button>
   </div>
 
-  <!-- Texto dinâmico após as abas -->
-  <div class="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 text-blue-700 text-sm rounded-r-xl p-4 mb-6 shadow flex items-center gap-3">
-    <img src="{% static 'imagem/lightbulb_2_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Ícone" class="w-6 h-6">
-    <span id="texto-abas-conteudo">Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática.</span>
-  </div>
-
   <!-- Conteúdo das Tabs DINÂMICO -->
-  <div id="conteudo-teoria" class="space-y-4 mt-4">
+  <div id="conteudo-teoria" class="space-y-3">
     {% for aula_data in aulas_com_dados %}
       {% if aula_data.total_topicos > 0 %}
-      <!-- Card de Teoria DINÂMICO -->
-      <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
-        <div class="flex justify-between items-start mb-3">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-100 p-2 rounded-lg">
+      <!-- Card de Teoria DINÂMICO - MAIS COMPACTO E MELHOR DELINEADO -->
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <div class="lesson-icon-container">
+            <div class="lesson-icon">
               {% if aula_data.concluida_teoria %}
-                <!-- Ícone de check quando concluída -->
-                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-5 h-5">
               {% else %}
-                <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+                <img src="{% static 'imagem/hourglass_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-5 h-5">
               {% endif %}
             </div>
-            <h3 class="font-semibold text-blue-800">{{ aula_data.aula.titulo_teoria|default:aula_data.aula.titulo_aula }}</h3>
+            <h3 class="lesson-title">{{ aula_data.aula.titulo_teoria|default:aula_data.aula.titulo_aula }}</h3>
           </div>
-          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <div class="xp-badge">
             {% if aula_data.concluida_teoria %}
-              +5 XP <!-- SEMPRE 5 XP depois da primeira vez -->
+              +5 XP
             {% else %}
-              +{{ aula_data.xp_teoria }} XP <!-- XP normal na primeira vez -->
+              +{{ aula_data.xp_teoria }} XP
             {% endif %}
           </div>
         </div>
         
         {% if aula_data.aula.descricao_breve %}
-        <p class="text-blue-600 text-sm mb-4">{{ aula_data.aula.descricao_breve }}</p>
+        <p class="lesson-description">{{ aula_data.aula.descricao_breve }}</p>
         {% else %}
-        <p class="text-blue-600 text-sm mb-4">Aprenda os conceitos fundamentais de {{ aula_data.aula.titulo_aula }} através de explicações detalhadas e exemplos práticos.</p>
+        <p class="lesson-description">Aprenda os conceitos fundamentais de {{ aula_data.aula.titulo_aula }} através de explicações detalhadas e exemplos práticos.</p>
         {% endif %}
         
-        <div class="flex justify-between items-center">
-          <span class="text-blue-500 text-xs">{{ aula_data.tempo_teoria }} min</span>
+        <div class="lesson-footer">
+          <div class="time-badge">
+            <img src="{% static 'imagem/schedule_20dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Tempo">
+            <span>{{ aula_data.tempo_teoria }} min</span>
+          </div>
           <a href="{% url 'teoria' %}?aula_id={{ aula_data.aula.id }}">
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+            <button class="action-btn">
               {% if aula_data.concluida_teoria %}
                 Revisar
               {% else %}
                 Iniciar
               {% endif %}
+              <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Avançar" class="w-3 h-3">
             </button>
           </a>
         </div>
@@ -225,55 +720,60 @@
       {% endif %}
     {% empty %}
     <!-- Mensagem quando não há aulas de teoria -->
-    <div class="text-center py-8">
-      <img src="{% static 'imagem/menu_book_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem teoria" class="w-16 h-16 mx-auto mb-4 opacity-50">
-      <h3 class="text-lg font-bold text-blue-700 mb-2">Nenhuma aula teórica disponível</h3>
-      <p class="text-blue-600">Este módulo ainda não possui conteúdo teórico.</p>
+    <div class="text-center py-6">
+      <img src="{% static 'imagem/menu_book_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem teoria" class="w-12 h-12 mx-auto mb-3 opacity-50">
+      <h3 class="text-base font-bold text-blue-700 mb-1">Nenhuma aula teórica disponível</h3>
+      <p class="text-blue-600 text-sm">Este módulo ainda não possui conteúdo teórico.</p>
     </div>
     {% endfor %}
   </div>
 
-  <div id="conteudo-pratica" class="space-y-4 mt-4 hidden-content">
+  <div id="conteudo-pratica" class="space-y-3 hidden-content">
     {% for aula_data in aulas_com_dados %}
       {% if aula_data.total_questoes > 0 %}
-      <!-- Card de Prática DINÂMICO -->
-      <div class="module-card bg-gradient-to-b from-white to-blue-50 border border-blue-200 rounded-xl p-5 shadow-md">
-        <div class="flex justify-between items-start mb-3">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-100 p-2 rounded-lg">
+      <!-- Card de Prática DINÂMICO - MAIS COMPACTO E MELHOR DELINEADO -->
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <div class="lesson-icon-container">
+            <div class="lesson-icon">
               {% if aula_data.concluida_pratica %}
-                <!-- Ícone de check quando concluída -->
-                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-6 h-6">
+                <img src="{% static 'imagem/check_small_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Concluído" class="w-5 h-5">
               {% else %}
-                <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-6 h-6">
+                <img src="{% static 'imagem/code_blocks_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Em progresso" class="w-5 h-5">
               {% endif %}
             </div>
-            <h3 class="font-semibold text-blue-800">{{ aula_data.aula.titulo_pratica|default:"Exercícios Práticos" }}</h3>
+            <h3 class="lesson-title">{{ aula_data.aula.titulo_pratica|default:"Exercícios Práticos" }}</h3>
           </div>
-          <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <!-- CORREÇÃO: XP badge verde para prática -->
+          <div class="xp-badge-pratica">
             {% if aula_data.concluida_pratica %}
-              +5 XP <!-- SEMPRE 5 XP depois da primeira vez -->
+              +5 XP
             {% else %}
-              +{{ aula_data.xp_pratica }} XP <!-- XP normal na primeira vez -->
+              +{{ aula_data.xp_pratica }} XP
             {% endif %}
           </div>
         </div>
         
         {% if aula_data.aula.conteudo_pratico %}
-        <p class="text-blue-600 text-sm mb-4">{{ aula_data.aula.conteudo_pratico }}</p>
+        <p class="lesson-description">{{ aula_data.aula.conteudo_pratico }}</p>
         {% else %}
-        <p class="text-blue-600 text-sm mb-4">Pratique os conceitos aprendidos sobre {{ aula_data.aula.titulo_aula }} através de exercícios e desafios práticos.</p>
+        <p class="lesson-description">Pratique os conceitos aprendidos sobre {{ aula_data.aula.titulo_aula }} através de exercícios e desafios práticos.</p>
         {% endif %}
         
-        <div class="flex justify-between items-center">
-          <span class="text-blue-500 text-xs">{{ aula_data.tempo_pratica }} min</span>
+        <div class="lesson-footer">
+          <div class="time-badge">
+            <img src="{% static 'imagem/schedule_20dp_2682EA_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Tempo">
+            <span>{{ aula_data.tempo_pratica }} min</span>
+          </div>
           <a href="{% url 'pratica' %}?aula_id={{ aula_data.aula.id }}">
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+            <!-- CORREÇÃO: Botão verde para prática -->
+            <button class="action-btn-pratica">
               {% if aula_data.concluida_pratica %}
                 Revisar
               {% else %}
                 Iniciar
               {% endif %}
+              <img src="{% static 'imagem/arrow_forward_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Avançar" class="w-3 h-3">
             </button>
           </a>
         </div>
@@ -281,10 +781,10 @@
       {% endif %}
     {% empty %}
     <!-- Mensagem quando não há aulas práticas -->
-    <div class="text-center py-8">
-      <img src="{% static 'imagem/code_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem prática" class="w-16 h-16 mx-auto mb-4 opacity-50">
-      <h3 class="text-lg font-bold text-blue-700 mb-2">Nenhuma aula prática disponível</h3>
-      <p class="text-blue-600">Este módulo ainda não possui exercícios práticos.</p>
+    <div class="text-center py-6">
+      <img src="{% static 'imagem/code_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Sem prática" class="w-12 h-12 mx-auto mb-3 opacity-50">
+      <h3 class="text-base font-bold text-blue-700 mb-1">Nenhuma aula prática disponível</h3>
+      <p class="text-blue-600 text-sm">Este módulo ainda não possui exercícios práticos.</p>
     </div>
     {% endfor %}
   </div>
@@ -302,12 +802,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const textoAbas = document.getElementById('texto-abas-conteudo');
 
   // Função para alternar entre abas
-  function alternarAba(abaAtiva, conteudoAtivo, texto) {
+  function alternarAba(abaAtiva, abaInativa, conteudoAtivo, conteudoInativo, texto, isPratica) {
     // Resetar todas as abas
-    tabTeoria.classList.remove('tab-active');
-    tabTeoria.classList.add('tab-inactive');
-    tabPratica.classList.remove('tab-active');
-    tabPratica.classList.add('tab-inactive');
+    if (isPratica) {
+      // Se estamos ativando a prática
+      tabTeoria.classList.remove('tab-active');
+      tabTeoria.classList.add('tab-inactive');
+      tabPratica.classList.remove('tab-pratica-inactive');
+      tabPratica.classList.add('tab-pratica-active');
+    } else {
+      // Se estamos ativando a teoria
+      tabTeoria.classList.remove('tab-inactive');
+      tabTeoria.classList.add('tab-active');
+      tabPratica.classList.remove('tab-pratica-active');
+      tabPratica.classList.add('tab-pratica-inactive');
+    }
     
     // Esconder todos os conteúdos
     conteudoTeoria.classList.remove('visible-content');
@@ -315,9 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
     conteudoPratica.classList.remove('visible-content');
     conteudoPratica.classList.add('hidden-content');
     
-    // Ativar aba e conteúdo selecionado
-    abaAtiva.classList.remove('tab-inactive');
-    abaAtiva.classList.add('tab-active');
+    // Ativar conteúdo selecionado
     conteudoAtivo.classList.remove('hidden-content');
     conteudoAtivo.classList.add('visible-content');
     
@@ -329,16 +836,22 @@ document.addEventListener('DOMContentLoaded', function() {
   tabTeoria.addEventListener('click', function() {
     alternarAba(
       tabTeoria, 
+      tabPratica,
       conteudoTeoria, 
-      "Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática."
+      conteudoPratica,
+      "Aqui você encontrará todas as explicações teóricas necessárias para compreender os conceitos de Python antes de partir para a prática.",
+      false
     );
   });
 
   tabPratica.addEventListener('click', function() {
     alternarAba(
-      tabPratica, 
+      tabPratica,
+      tabTeoria,
       conteudoPratica, 
-      "Aqui você poderá praticar os conceitos aprendidos na teoria, resolvendo exercícios, desafios e projetos práticos."
+      conteudoTeoria,
+      "Aqui você poderá praticar os conceitos aprendidos na teoria, resolvendo exercícios, desafios e projetos práticos.",
+      true
     );
   });
 

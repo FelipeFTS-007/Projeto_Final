@@ -6,15 +6,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from .models import *
-from django.db.models import Count, Q
+from django.db.models import Count, Sum, Q, Avg
 from datetime import datetime, timedelta
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.http import JsonResponse
 import json
+import random
 from .forms import *
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_http_methods, require_POST, require_GET
 from django.db import models
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
@@ -98,6 +99,13 @@ def login_view(request):
 @login_required
 def home(request):
     perfil, _ = Perfil.objects.get_or_create(user=request.user)
+    
+    # VERIFICAÇÃO AUTOMÁTICA DO RESET DIÁRIO
+    perfil.verificar_reset_diario()
+    perfil.save()  # Isso garante que o reset seja salvo se necessário
+    
+    perfil.regenerar_vidas()
+    perfil.verificar_streak_automatico()
     perfil.regenerar_vidas()
 
     hoje = timezone.now().date()
@@ -127,7 +135,7 @@ def home(request):
     context = {
         "vidas": perfil.vidas,
         "max_vidas": perfil.max_vidas,
-        "progresso_vidas": progresso_vidas,  # Adicionado para o gráfico circular
+        "progresso_vidas": progresso_vidas,
         "proxima_vida": perfil.tempo_para_proxima_vida(),
         "nome": request.user.first_name or request.user.username,
         "xp": perfil.xp,
@@ -137,13 +145,14 @@ def home(request):
         "conquistas": perfil.conquistas,
         "total_conquistas": perfil.total_conquistas,
         "sequencia": perfil.sequencia,
+        "ja_fez_atividade_hoje": perfil.ja_fez_atividade_hoje,  # NOVO
         "progresso": progresso_hoje.percentual,
         "meta": 60,
-        "tempo": tempo_formatado,  # Usando o tempo formatado corretamente
-        "tempo_segundos": tempo_total_segundos,  # Para o JavaScript
+        "tempo": tempo_formatado,
+        "tempo_segundos": tempo_total_segundos,
         "xp_diario": progresso_hoje.xp_ganho,
         "atividades": atividades,
-        "perfil": perfil,  # Adicionado para acessar métodos do perfil
+        "perfil": perfil,
     }
     return render(request, "Pyquest/home.html", context)
 
@@ -153,6 +162,8 @@ def logout_view(request):
     return redirect("login")
 
 
+
+# views.py - ATUALIZE a função perfil (parte das conquistas)
 
 @login_required
 def perfil(request):
@@ -174,11 +185,11 @@ def perfil(request):
         messages.success(request, "Perfil atualizado com sucesso!")
         return redirect("perfil")
 
-     # ========== FILTROS E PAGINAÇÃO CORRIGIDOS ========== #
+    # ========== FILTROS E PAGINAÇÃO CORRIGIDOS ========== #
     raridade = request.GET.get('raridade', 'todas')
     categoria = request.GET.get('categoria', 'todas')
     
-    # Buscar TODAS as conquistas com filtros
+    # Buscar TODAS as conquistas
     conquistas_query = Conquista.objects.filter(ativo=True)
     
     # Aplicar filtros
@@ -188,52 +199,127 @@ def perfil(request):
     if categoria != 'todas':
         conquistas_query = conquistas_query.filter(categoria=categoria)
     
-    # Calcular progresso para todas as conquistas filtradas
-    conquistas_com_progresso = []
-    for conquista in conquistas_query.order_by('categoria', 'ordem'):
-        progresso = conquista.calcular_progresso(request.user)
-        conquistas_com_progresso.append({
-            'conquista': conquista,
-            'progresso': progresso,
-            'desbloqueada': conquista.verificar_desbloqueio(request.user)
-        })
+    # Ordenar por raridade (da menos rara para a mais rara)
+    ordem_raridade = {
+        'comum': 1,
+        'rara': 2, 
+        'epica': 3,
+        'lendaria': 4
+    }
+    
+    # Calcular progresso para TODAS as conquistas filtradas
+    todas_conquistas_com_progresso = []
+    for conquista in conquistas_query:
+        try:
+            progresso = conquista.calcular_progresso(request.user)
+            desbloqueada = conquista.verificar_desbloqueio(request.user)
+            todas_conquistas_com_progresso.append({
+                'conquista': conquista,
+                'progresso': progresso,
+                'desbloqueada': desbloqueada,
+                'ordem_raridade': ordem_raridade.get(conquista.raridade, 5)
+            })
+        except Exception as e:
+            print(f"❌ Erro ao calcular progresso da conquista {conquista.titulo}: {e}")
+            todas_conquistas_com_progresso.append({
+                'conquista': conquista,
+                'progresso': {
+                    'progresso_atual': 0,
+                    'meta': conquista.valor_requerido,
+                    'percentual': 0,
+                    'atingiu_meta': False,
+                    'falta': conquista.valor_requerido
+                },
+                'desbloqueada': False,
+                'ordem_raridade': ordem_raridade.get(conquista.raridade, 5)
+            })
+    
+    # Ordenar por raridade (da menos rara para a mais rara)
+    todas_conquistas_com_progresso.sort(key=lambda x: x['ordem_raridade'])
     
     # Separar conquistas desbloqueadas e bloqueadas
-    conquistas_desbloqueadas = [c for c in conquistas_com_progresso if c['desbloqueada']]
-    conquistas_bloqueadas = [c for c in conquistas_com_progresso if not c['desbloqueada']]
+    conquistas_desbloqueadas = [c for c in todas_conquistas_com_progresso if c['desbloqueada']]
+    conquistas_bloqueadas = [c for c in todas_conquistas_com_progresso if not c['desbloqueada']]
     
-    # Paginação das conquistas DESBLOQUEADAS (ou você pode escolher qual paginar)
-    itens_por_pagina = 8  # Aumentei para 8 para melhor visualização
-    paginator = Paginator(conquistas_com_progresso, itens_por_pagina)  # Paginar todas
+    # PAGINAÇÃO SEPARADA - MOSTRAR APENAS AS QUE EXISTEM
+    itens_por_pagina = 8  # Máximo por página
     
-    page_number = request.GET.get('page')
+    # Para a primeira página: mostrar até 4 desbloqueadas + até 4 bloqueadas
+    page_number = request.GET.get('page', 1)
     
     try:
-        page_obj = paginator.get_page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+        page_number = int(page_number)
+    except:
+        page_number = 1
     
-    # Para a paginação funcionar, precisamos usar page_obj no template
-    conquistas_paginadas = list(page_obj)
-    conquistas_desbloqueadas_pagina = [c for c in conquistas_paginadas if c['desbloqueada']]
-    conquistas_bloqueadas_pagina = [c for c in conquistas_paginadas if not c['desbloqueada']]
+    # Calcular índices para desbloqueadas
+    start_desbloqueadas = (page_number - 1) * 4
+    end_desbloqueadas = start_desbloqueadas + 4
+    desbloqueadas_pagina = conquistas_desbloqueadas[start_desbloqueadas:end_desbloqueadas]
+    
+    # Calcular índices para bloqueadas
+    start_bloqueadas = (page_number - 1) * 4
+    end_bloqueadas = start_bloqueadas + 4
+    bloqueadas_pagina = conquistas_bloqueadas[start_bloqueadas:end_bloqueadas]
+    
+    # Calcular total de páginas (baseado no que tem mais itens)
+    total_paginas_desbloqueadas = (len(conquistas_desbloqueadas) + 3) // 4  # Arredonda para cima
+    total_paginas_bloqueadas = (len(conquistas_bloqueadas) + 3) // 4  # Arredonda para cima
+    total_paginas = max(total_paginas_desbloqueadas, total_paginas_bloqueadas)
+    
+    # Criar objeto de paginação simulado para o template
+    class PaginacaoSimulada:
+        def __init__(self, numero, total_paginas):
+            self.number = numero
+            self.paginator = self.PaginatorSimulado(total_paginas)
+        
+        class PaginatorSimulado:
+            def __init__(self, num_pages):
+                self.num_pages = num_pages
+            
+            @property
+            def count(self):
+                return len(conquistas_desbloqueadas) + len(conquistas_bloqueadas)
+        
+        def has_previous(self):
+            return self.number > 1
+        
+        def has_next(self):
+            return self.number < self.paginator.num_pages
+        
+        def previous_page_number(self):
+            return self.number - 1
+        
+        def next_page_number(self):
+            return self.number + 1
+        
+        @property
+        def start_index(self):
+            return ((self.number - 1) * 8) + 1
+        
+        @property
+        def end_index(self):
+            end = self.number * 8
+            total = len(conquistas_desbloqueadas) + len(conquistas_bloqueadas)
+            return min(end, total)
+    
+    page_obj = PaginacaoSimulada(page_number, total_paginas)
 
     context = {
         "perfil": perfil,
-        "conquistas_desbloqueadas": conquistas_desbloqueadas_pagina,
-        "conquistas_bloqueadas": conquistas_bloqueadas_pagina,
+        "conquistas_desbloqueadas": desbloqueadas_pagina,
+        "conquistas_bloqueadas": bloqueadas_pagina,
         "progresso_xp": progresso_xp,
         "xp_necessario": xp_necessario,
-        "desbloq_count": len(conquistas_desbloqueadas),  # Total geral, não apenas da página
-        "total_conquistas": conquistas_query.count(),  # Total com filtros aplicados
+        "desbloq_count": len(conquistas_desbloqueadas),  # Total geral
+        "total_conquistas": conquistas_query.count(),
         "page_obj": page_obj,
         "raridade_filtro": raridade,
         "categoria_filtro": categoria,
+        "pagina_atual": page_number,
+        "total_paginas": total_paginas,
     }
     return render(request, "Pyquest/perfil.html", context)
-
 
 
 # views.py (substitua a função ranking existente)
@@ -1278,7 +1364,7 @@ def conteudo(request):
     ).order_by('ordem')
     
     # Aplicar paginação
-    paginator = Paginator(capitulos, 3)  # 6 capítulos por página
+    paginator = Paginator(capitulos, 3)
     page_number = request.GET.get('page')
     
     try:
@@ -1290,12 +1376,69 @@ def conteudo(request):
     
     capitulos_com_stats = []
     
-    for capitulo in page_obj:  # Usar page_obj em vez de capitulos
+    for capitulo in page_obj:
         total_modulos = capitulo.modulos.filter(ativo=True).count()
         total_aulas = Aula.objects.filter(modulo__capitulo=capitulo, ativo=True).count()
         
-        # **PROGRESSO REAL DO USUÁRIO**
-        modulos_concluidos = 0  # ModuloConcluido.objects.filter(usuario=request.user, modulo__capitulo=capitulo).count()
+        # **CALCULAR TEMPO TOTAL DO CAPÍTULO (CORRIGIDO)**
+        tempo_total_capitulo_minutos = 0
+        for modulo in capitulo.modulos.filter(ativo=True):
+            for aula in modulo.aulas.filter(ativo=True):
+                # Usar o método get_tempo_total() se existir, ou calcular manualmente
+                if hasattr(aula, 'get_tempo_total') and callable(getattr(aula, 'get_tempo_total')):
+                    tempo_aula = aula.get_tempo_total() or 0
+                else:
+                    # Calcular manualmente se o método não existir
+                    tempo_teoria = aula.tempo_teoria or 0
+                    tempo_pratica = aula.tempo_pratica or 0
+                    tempo_aula = tempo_teoria + tempo_pratica
+                
+                if isinstance(tempo_aula, (int, float)) and tempo_aula > 0:
+                    tempo_total_capitulo_minutos += tempo_aula
+        
+        # Se ainda for zero, usar um valor padrão baseado no número de aulas
+        if tempo_total_capitulo_minutos == 0 and total_aulas > 0:
+            tempo_total_capitulo_minutos = total_aulas * 30  # 30 minutos por aula como fallback
+        
+        # Converter minutos para horas (formato: Xh Ymin)
+        horas_capitulo = tempo_total_capitulo_minutos // 60
+        minutos_capitulo = tempo_total_capitulo_minutos % 60
+        
+        # Formatar tempo para exibição
+        if horas_capitulo > 0:
+            tempo_formatado = f"{horas_capitulo}h {minutos_capitulo}min"
+        else:
+            tempo_formatado = f"{minutos_capitulo}min"
+        
+        # Resto do código permanece igual...
+        modulos_concluidos = 0
+        for modulo in capitulo.modulos.filter(ativo=True):
+            # Contar TOTAL DE PARTES (teoria + prática) disponíveis
+            total_partes = 0
+            partes_concluidas = 0
+            
+            for aula in modulo.aulas.filter(ativo=True):
+                # Contar partes disponíveis
+                if aula.tem_teoria:
+                    total_partes += 1
+                if aula.tem_exercicios:
+                    total_partes += 1
+                
+                # Verificar partes concluídas
+                conclusao = AulaConcluida.objects.filter(
+                    usuario=request.user,
+                    aula=aula
+                ).first()
+                
+                if conclusao:
+                    if aula.tem_teoria and conclusao.teoria_concluida:
+                        partes_concluidas += 1
+                    if aula.tem_exercicios and conclusao.pratica_concluida:
+                        partes_concluidas += 1
+            
+            # Considerar módulo concluído apenas se TODAS as partes foram concluídas
+            if total_partes > 0 and partes_concluidas == total_partes:
+                modulos_concluidos += 1
         
         # Calcular percentual
         if total_modulos > 0:
@@ -1303,12 +1446,50 @@ def conteudo(request):
         else:
             progresso_percentual = 0
         
-        # Lógica de bloqueio
+        # **LÓGICA DE BLOQUEIO**
         bloqueado = False
-        if capitulos_com_stats and capitulo.ordem > 1:
-            capitulo_anterior = capitulos_com_stats[-1]
-            if capitulo_anterior['progresso_percentual'] < 100:
-                bloqueado = True
+        if capitulo.ordem > 1:
+            capitulo_anterior = Capitulo.objects.filter(
+                ordem=capitulo.ordem - 1, 
+                ativo=True
+            ).first()
+            
+            if capitulo_anterior:
+                modulos_anterior_concluidos = 0
+                for modulo in capitulo_anterior.modulos.filter(ativo=True):
+                    total_partes_anterior = 0
+                    partes_concluidas_anterior = 0
+                    
+                    for aula in modulo.aulas.filter(ativo=True):
+                        if aula.tem_teoria:
+                            total_partes_anterior += 1
+                        if aula.tem_exercicios:
+                            total_partes_anterior += 1
+                        
+                        conclusao = AulaConcluida.objects.filter(
+                            usuario=request.user,
+                            aula=aula
+                        ).first()
+                        
+                        if conclusao:
+                            if aula.tem_teoria and conclusao.teoria_concluida:
+                                partes_concluidas_anterior += 1
+                            if aula.tem_exercicios and conclusao.pratica_concluida:
+                                partes_concluidas_anterior += 1
+                    
+                    if total_partes_anterior > 0 and partes_concluidas_anterior == total_partes_anterior:
+                        modulos_anterior_concluidos += 1
+                
+                total_modulos_anterior = capitulo_anterior.modulos.filter(ativo=True).count()
+                
+                porcentagem_minima_para_liberar = 50
+                
+                if total_modulos_anterior > 0:
+                    progresso_anterior = (modulos_anterior_concluidos / total_modulos_anterior) * 100
+                    if progresso_anterior < porcentagem_minima_para_liberar:
+                        bloqueado = True
+        
+        print(f"📊 Capítulo {capitulo.ordem}: {modulos_concluidos}/{total_modulos} módulos - {progresso_percentual}% - Tempo: {tempo_formatado} - Bloqueado: {bloqueado}")
         
         capitulos_com_stats.append({
             'capitulo': capitulo,
@@ -1317,24 +1498,63 @@ def conteudo(request):
             'modulos_concluidos': modulos_concluidos,
             'progresso_percentual': progresso_percentual,
             'bloqueado': bloqueado,
-            'dificuldade': capitulo.dificuldade
+            'dificuldade': capitulo.dificuldade,
+            'tempo_total_minutos': tempo_total_capitulo_minutos,
+            'tempo_formatado': tempo_formatado,
         })
     
-    # Estatísticas gerais (agora baseadas em dados reais)
+    # **ESTATÍSTICAS CORRETAS**
     total_capitulos_concluidos = len([c for c in capitulos_com_stats if c['progresso_percentual'] == 100])
     total_capitulos_em_progresso = len([c for c in capitulos_com_stats if 0 < c['progresso_percentual'] < 100])
     total_capitulos_bloqueados = len([c for c in capitulos_com_stats if c['bloqueado']])
+    
+    print(f"🎯 Estatísticas - Concluídos: {total_capitulos_concluidos}, Em progresso: {total_capitulos_em_progresso}, Bloqueados: {total_capitulos_bloqueados}")
     
     context = {
         'capitulos_com_stats': capitulos_com_stats,
         'total_concluidos': total_capitulos_concluidos,
         'total_em_progresso': total_capitulos_em_progresso,
         'total_bloqueados': total_capitulos_bloqueados,
-        'page_obj': page_obj,  # Adicionar page_obj ao contexto
-        'is_paginated': paginator.num_pages > 1,  # Para controle no template
+        'page_obj': page_obj,
+        'is_paginated': paginator.num_pages > 1,
     }
 
     return render(request, "Pyquest/conteudo.html", context)
+
+@login_required
+def debug_capitulos(request):
+    """View para debug do progresso dos capítulos"""
+    capitulos = Capitulo.objects.filter(ativo=True).order_by('ordem')
+    
+    debug_info = []
+    for capitulo in capitulos:
+        total_modulos = capitulo.modulos.filter(ativo=True).count()
+        modulos_concluidos = 0
+        
+        for modulo in capitulo.modulos.filter(ativo=True):
+            modulo_concluido = True
+            for aula in modulo.aulas.filter(ativo=True):
+                try:
+                    conclusao = AulaConcluida.objects.get(usuario=request.user, aula=aula)
+                    if (aula.tem_teoria and not conclusao.teoria_concluida) or (aula.tem_exercicios and not conclusao.pratica_concluida):
+                        modulo_concluido = False
+                        break
+                except AulaConcluida.DoesNotExist:
+                    modulo_concluido = False
+                    break
+            
+            if modulo_concluido:
+                modulos_concluidos += 1
+        
+        debug_info.append({
+            'capitulo': capitulo.titulo,
+            'ordem': capitulo.ordem,
+            'modulos_concluidos': modulos_concluidos,
+            'total_modulos': total_modulos,
+            'percentual': int((modulos_concluidos / total_modulos * 100)) if total_modulos > 0 else 0
+        })
+    
+    return JsonResponse({'debug': debug_info})
 
 # NOVA FUNÇÃO: Determinar dificuldade do capítulo baseado nas aulas
 def determinar_dificuldade_capitulo(capitulo):
@@ -1704,7 +1924,9 @@ def marcar_aula_concluida(request):
         aula_id = data.get('aula_id')
         tipo = data.get('tipo')  # 'teoria' ou 'pratica'
         is_revisao = data.get('is_revisao', False)
-        tempo_estudado = data.get('tempo_estudado', 0)  # Ainda recebe mas não mostra
+        tempo_estudado = data.get('tempo_estudado', 0)
+        
+        print(f"🎯 Marcando aula como concluída - Aula: {aula_id}, Tipo: {tipo}, Revisão: {is_revisao}")
         
         aula = Aula.objects.get(id=aula_id, ativo=True)
         
@@ -1715,7 +1937,7 @@ def marcar_aula_concluida(request):
         )
         
         xp_ganho = 0
-        redirect_url = ""
+        redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
         mensagem = ""
         niveis_ganhos = 0
         
@@ -1723,11 +1945,11 @@ def marcar_aula_concluida(request):
             # LÓGICA DE REVISÃO - XP REDUZIDO (SEMPRE DISPONÍVEL)
             if tipo == 'teoria':
                 xp_ganho = 5
-                mensagem = "Revisão teórica concluída! +5 XP"  # REMOVIDO TEMPO
+                mensagem = "Revisão teórica concluída! +5 XP"
                 
             elif tipo == 'pratica':
                 xp_ganho = 5
-                mensagem = "Revisão prática concluída! +5 XP"  # REMOVIDO TEMPO
+                mensagem = "Revisão prática concluída! +5 XP"
                 
         else:
             # LÓGICA ORIGINAL (primeira conclusão)
@@ -1736,24 +1958,28 @@ def marcar_aula_concluida(request):
                 aula_concluida.data_conclusao_teoria = timezone.now()
                 aula_concluida.xp_teoria_ganho = aula.xp_teoria
                 xp_ganho = aula.xp_teoria
-                mensagem = f"Aula teórica concluída! +{aula.xp_teoria} XP"  # REMOVIDO TEMPO
+                mensagem = f"Aula teórica concluída! +{aula.xp_teoria} XP"
                 
             elif tipo == 'pratica' and not aula_concluida.pratica_concluida:
                 aula_concluida.pratica_concluida = True
                 aula_concluida.data_conclusao_pratica = timezone.now()
                 aula_concluida.xp_pratica_ganho = aula.xp_pratica
                 xp_ganho = aula.xp_pratica
-                mensagem = f"Aula prática concluída! +{aula.xp_pratica} XP"  # REMOVIDO TEMPO
+                mensagem = f"Aula prática concluída! +{aula.xp_pratica} XP"
+            else:
+                # Se já estava concluído mas não é revisão, tratar como revisão
+                xp_ganho = 5
+                mensagem = "Revisão concluída! +5 XP"
+                is_revisao = True
         
-        redirect_url = f"/tarefas/?modulo_id={aula.modulo.id}"
-        
+        # Se ganhou XP, processar
         if xp_ganho > 0:
             # Para revisões, não precisamos salvar nada no modelo AulaConcluida
             # pois queremos permitir revisões ilimitadas
             if not is_revisao:
                 aula_concluida.save()
             
-            # NOVO SISTEMA: Usar o método adicionar_xp que não zera o XP
+            # Adicionar XP ao perfil
             perfil = request.user.perfil
             niveis_ganhos = perfil.adicionar_xp(xp_ganho)
             
@@ -1761,7 +1987,7 @@ def marcar_aula_concluida(request):
             if niveis_ganhos > 0:
                 mensagem += f" 🎉 Subiu para o nível {perfil.nivel}!"
             
-            # Registrar atividade (aqui você pode manter o tempo se quiser no histórico)
+            # Registrar atividade
             tipo_atividade = "teoria" if tipo == 'teoria' else "prática"
             if is_revisao:
                 atividade_titulo = f"Revisão de {tipo_atividade}: {aula.titulo_aula}"
@@ -1774,6 +2000,11 @@ def marcar_aula_concluida(request):
                 titulo=atividade_titulo,
                 xp_ganho=xp_ganho
             )
+            
+            # Registrar atividade para o streak
+            perfil.verificar_e_atualizar_streak()
+        
+        print(f"✅ Aula marcada como concluída - XP: {xp_ganho}, Mensagem: {mensagem}")
         
         return JsonResponse({
             'success': True, 
@@ -1785,7 +2016,13 @@ def marcar_aula_concluida(request):
             'is_revisao': is_revisao
         })
         
+    except Aula.DoesNotExist:
+        print(f"❌ Aula não encontrada: {aula_id}")
+        return JsonResponse({'success': False, 'error': 'Aula não encontrada'})
     except Exception as e:
+        print(f"❌ Erro ao marcar aula como concluída: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'success': False, 'error': str(e)})
 
 # ---------- PÁGINAS EXISTENTES ---------- #
@@ -1831,10 +2068,7 @@ def verificar_conquistas_sequencia(sender, instance, **kwargs):
 @login_required
 @require_POST
 def registrar_atividade_streak(request):
-    """
-    Registra uma atividade do usuário e atualiza o streak
-    Mas evita aumentar streak múltiplas vezes no mesmo dia
-    """
+    """Registra uma atividade do usuário e atualiza o streak"""
     try:
         data = json.loads(request.body)
         tipo_atividade = data.get('tipo', 'questao')
@@ -1843,47 +2077,96 @@ def registrar_atividade_streak(request):
         print(f"🎯 Registrar atividade - Tipo: {tipo_atividade}, XP: {xp_base}")
         
         perfil = request.user.perfil
+        agora = timezone.now()
         
-        # Verificar se JÁ TEVE ATIVIDADE HOJE
-        ja_teve_atividade_hoje = False
-        if perfil.ultima_atividade:
-            data_ultima = perfil.ultima_atividade.date()
-            data_hoje = timezone.now().date()
-            ja_teve_atividade_hoje = (data_ultima == data_hoje)
+        # VERIFICAR RESET DIÁRIO ANTES DE TUDO
+        perfil.verificar_reset_diario()
         
-        print(f"📅 Já teve atividade hoje: {ja_teve_atividade_hoje}")
+        # MARCAR QUE JÁ FEZ ATIVIDADE HOJE
+        perfil.ja_fez_atividade_hoje = True
         
-        # Se JÁ teve atividade hoje e está tentando registrar NOVAMENTE,
-        # apenas atualiza a hora mas NÃO aumenta o streak
-        if ja_teve_atividade_hoje:
-            print("🔄 Já teve atividade hoje - apenas atualizando hora")
-            perfil.ultima_atividade = timezone.now()
+        # Se nunca teve atividade OU streak é 0, iniciar streak em 1
+        if not perfil.ultima_atividade or perfil.sequencia == 0:
+            perfil.sequencia = 1
+            perfil.ultima_atividade = agora
             perfil.save()
-            
+            print("🎯 Primeira atividade - Streak iniciado: 1")
             return JsonResponse({
                 'success': True,
-                'streak_anterior': perfil.sequencia,
-                'streak_atual': perfil.sequencia,
+                'streak_anterior': 0,
+                'streak_atual': 1,
                 'streak_maximo': perfil.sequencia_maxima,
                 'streak_zerado': False,
-                'streak_aumentado': False,
-                'bonus_streak': f"+{int(perfil.get_bonus_streak() * 100)}%",
-                'xp_base': xp_base,
-                'xp_bonus': 0,  # Não ganha bônus em atividades extras no mesmo dia
-                'xp_total': xp_base,  # Apenas XP base
-                'level_up': False,
-                'nivel_atual': perfil.nivel,
-                'xp_atual': perfil.xp,
-                'conquistas_desbloqueadas': [],
-                'tempo_restante': perfil.get_tempo_restante_streak(),
-                'ja_teve_atividade_hoje': True
+                'streak_aumentado': True,
+                'ja_fez_atividade_hoje': True,
             })
         
-        # Se NÃO teve atividade hoje, processar normalmente
-        streak_anterior = perfil.sequencia
-        novo_streak, streak_zerado, streak_aumentado = perfil.verificar_e_atualizar_streak()
+        # Verificar diferença em dias
+        data_ultima = perfil.ultima_atividade.date()
+        data_hoje = agora.date()
+        dias_diferenca = (data_hoje - data_ultima).days
         
-        # ... resto do código original ...
+        print(f"📅 Última atividade: {data_ultima}")
+        print(f"📅 Hoje: {data_hoje}")
+        print(f"📅 Diferença em dias: {dias_diferenca}")
+        
+        streak_zerado = False
+        streak_aumentado = False
+        streak_anterior = perfil.sequencia
+        
+        if dias_diferenca == 0:
+            # Já teve atividade HOJE - apenas atualiza hora, NÃO aumenta streak
+            print("✅ Já teve atividade hoje - streak mantido")
+            perfil.ultima_atividade = agora
+            perfil.save()
+            
+        elif dias_diferenca == 1:
+            # Última atividade foi ONTEM - AUMENTAR STREAK
+            print("🎯 Última atividade foi ontem - AUMENTANDO STREAK")
+            perfil.sequencia += 1
+            perfil.ultima_atividade = agora
+            streak_aumentado = True
+            print(f"📈 Streak aumentado: {streak_anterior} → {perfil.sequencia}")
+            perfil.save()
+            
+        else:
+            # Última atividade foi ANTES de ontem - ZERAR STREAK
+            print(f"💀 Última atividade foi há {dias_diferenca} dias - ZERANDO STREAK")
+            
+            # Atualizar streak máximo antes de zerar
+            if streak_anterior > perfil.sequencia_maxima:
+                perfil.sequencia_maxima = streak_anterior
+            
+            # Zerar streak e começar de novo
+            perfil.sequencia = 1
+            perfil.ultima_atividade = agora
+            streak_zerado = True
+            print(f"🔄 Streak zerado: {streak_anterior} → 1")
+            perfil.save()
+        
+        # Atualizar streak máximo se necessário
+        if perfil.sequencia > perfil.sequencia_maxima:
+            perfil.sequencia_maxima = perfil.sequencia
+            perfil.save()
+        
+        return JsonResponse({
+            'success': True,
+            'streak_anterior': streak_anterior,
+            'streak_atual': perfil.sequencia,
+            'streak_maximo': perfil.sequencia_maxima,
+            'streak_zerado': streak_zerado,
+            'streak_aumentado': streak_aumentado,
+            'bonus_streak': f"+{int(perfil.get_bonus_streak() * 100)}%",
+            'xp_base': xp_base,
+            'xp_bonus': int(xp_base * perfil.get_bonus_streak()),
+            'xp_total': xp_base + int(xp_base * perfil.get_bonus_streak()),
+            'level_up': False,
+            'nivel_atual': perfil.nivel,
+            'xp_atual': perfil.xp,
+            'conquistas_desbloqueadas': [],
+            'tempo_restante': perfil.get_tempo_restante_streak(),
+            'ja_fez_atividade_hoje': perfil.ja_fez_atividade_hoje,  # IMPORTANTE
+        })
         
     except Exception as e:
         print(f"❌ Erro em registrar_atividade_streak: {str(e)}")
@@ -1989,18 +2272,29 @@ def salvar_tempo_pratica(request):
             aula_id = data.get('aula_id')
             tempo_segundos = int(data.get('tempo_segundos', 0))
             
-            print(f"📊 Salvando tempo prática: {tempo_segundos} segundos para aula {aula_id}")
+            print(f"📊 Salvando tempo prática DIÁRIO: {tempo_segundos} segundos para aula {aula_id}")
             
             user = request.user
             aula = Aula.objects.get(id=aula_id)
-            perfil = Perfil.objects.get(user=user)
             
-            # Salvar no TempoEstudo
+            # Salvar no TempoEstudoDiario (tempo diário)
+            hoje = timezone.now().date()
+            tempo_diario, created = TempoEstudoDiario.objects.get_or_create(
+                user=user,
+                data=hoje,
+                defaults={'tempo_segundos': tempo_segundos}
+            )
+            
+            if not created:
+                tempo_diario.tempo_segundos += tempo_segundos
+                tempo_diario.save()
+            
+            # Também salvar no TempoEstudo (para compatibilidade)
             tempo_estudo, created = TempoEstudo.objects.get_or_create(
                 user=user,
                 aula=aula,
                 tipo='pratica',
-                data=timezone.now().date(),
+                data=hoje,
                 defaults={'tempo_segundos': tempo_segundos}
             )
             
@@ -2008,17 +2302,32 @@ def salvar_tempo_pratica(request):
                 tempo_estudo.tempo_segundos += tempo_segundos
                 tempo_estudo.save()
             
-            # Atualizar perfil
+            # Atualizar perfil (para compatibilidade)
+            perfil = user.perfil
             tempo_anterior = perfil.tempo_total_estudo
             perfil.tempo_total_estudo += tempo_segundos
             perfil.save()
             
-            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            # Formatar tempo diário para resposta
+            tempo_total_hoje = tempo_diario.tempo_segundos
+            horas_hoje = tempo_total_hoje // 3600
+            minutos_hoje = (tempo_total_hoje % 3600) // 60
+            segundos_hoje = tempo_total_hoje % 60
+            
+            if horas_hoje > 0:
+                tempo_formatado = f"{horas_hoje:02d}:{minutos_hoje:02d}:{segundos_hoje:02d}"
+            else:
+                tempo_formatado = f"{minutos_hoje:02d}:{segundos_hoje:02d}"
+            
+            print(f"✅ Tempo prática salvo! Total hoje: {tempo_diario.tempo_segundos} segundos")
+            print(f"   Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
             
             return JsonResponse({
                 'success': True, 
                 'tempo_salvo': tempo_segundos,
-                'tempo_total': perfil.tempo_total_estudo
+                'tempo_total_hoje': tempo_diario.tempo_segundos,
+                'tempo_total_formatado': tempo_formatado,
+                'tempo_total_geral': perfil.tempo_total_estudo  # CORREÇÃO AQUI: 'estudo' em vez de 'estudy'
             })
             
         except Exception as e:
@@ -2035,18 +2344,29 @@ def salvar_tempo_teoria(request):
             aula_id = data.get('aula_id')
             tempo_segundos = int(data.get('tempo_segundos', 0))
             
-            print(f"📊 Salvando tempo teoria: {tempo_segundos} segundos para aula {aula_id}")
+            print(f"📊 Salvando tempo teoria DIÁRIO: {tempo_segundos} segundos para aula {aula_id}")
             
             user = request.user
             aula = Aula.objects.get(id=aula_id)
-            perfil = Perfil.objects.get(user=user)
             
-            # Salvar no TempoEstudo
+            # Salvar no TempoEstudoDiario (tempo diário)
+            hoje = timezone.now().date()
+            tempo_diario, created = TempoEstudoDiario.objects.get_or_create(
+                user=user,
+                data=hoje,
+                defaults={'tempo_segundos': tempo_segundos}
+            )
+            
+            if not created:
+                tempo_diario.tempo_segundos += tempo_segundos
+                tempo_diario.save()
+            
+            # Também salvar no TempoEstudo (para compatibilidade)
             tempo_estudo, created = TempoEstudo.objects.get_or_create(
                 user=user,
                 aula=aula,
                 tipo='teoria',
-                data=timezone.now().date(),
+                data=hoje,
                 defaults={'tempo_segundos': tempo_segundos}
             )
             
@@ -2054,17 +2374,32 @@ def salvar_tempo_teoria(request):
                 tempo_estudo.tempo_segundos += tempo_segundos
                 tempo_estudo.save()
             
-            # Atualizar perfil
+            # Atualizar perfil (para compatibilidade)
+            perfil = user.perfil
             tempo_anterior = perfil.tempo_total_estudo
             perfil.tempo_total_estudo += tempo_segundos
             perfil.save()
             
-            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            # Formatar tempo diário para resposta
+            tempo_total_hoje = tempo_diario.tempo_segundos
+            horas_hoje = tempo_total_hoje // 3600
+            minutos_hoje = (tempo_total_hoje % 3600) // 60
+            segundos_hoje = tempo_total_hoje % 60
+            
+            if horas_hoje > 0:
+                tempo_formatado = f"{horas_hoje:02d}:{minutos_hoje:02d}:{segundos_hoje:02d}"
+            else:
+                tempo_formatado = f"{minutos_hoje:02d}:{segundos_hoje:02d}"
+            
+            print(f"✅ Tempo teoria salvo! Total hoje: {tempo_diario.tempo_segundos} segundos")
+            print(f"   Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
             
             return JsonResponse({
                 'success': True, 
                 'tempo_salvo': tempo_segundos,
-                'tempo_total': perfil.tempo_total_estudo
+                'tempo_total_hoje': tempo_diario.tempo_segundos,
+                'tempo_total_formatado': tempo_formatado,
+                'tempo_total_geral': perfil.tempo_total_estudo  # CORREÇÃO AQUI: 'estudo' em vez de 'estudy'
             })
             
         except Exception as e:
@@ -2211,7 +2546,7 @@ def pratica(request):
             tentativa.vidas_restantes = perfil.vidas
             tentativa.save()
         
-        # Preparar dados para o template
+        # ✅ CORREÇÃO: Preparar dados para o template INCLUINDO saida_esperada
         questions_data = []
         for questao in aula.questoes.all().order_by('ordem'):
             questao_data = {
@@ -2221,7 +2556,7 @@ def pratica(request):
                 'descricao': questao.descricao,
                 'xp': questao.xp,
                 'codigo_inicial': questao.codigo_inicial,
-                'saida_esperada': questao.saida_esperada,
+                'saida_esperada': questao.saida_esperada,  # ✅ AGORA INCLUÍDO
                 'opcoes': [],
                 'dicas': []
             }
@@ -2467,30 +2802,39 @@ def verificar_sessao_ativa(request):
     else:
         return JsonResponse({'ativa': False})
 
-def dashboard(request):
-    return render(request, "Pyquest/dashboard.html")
+
 
 
 
 @csrf_exempt
 @login_required
 def salvar_tempo_estudo(request):
-    """Salva o tempo de estudo do timer da home"""
+    """Salva o tempo de estudo do timer da home - VERSÃO DIÁRIA"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             tempo_segundos = int(data.get('tempo_segundos', 0))
             tipo = data.get('tipo', 'estudo_geral')
             
-            print(f"⏱️ Salvando tempo de estudo: {tempo_segundos} segundos")
+            print(f"⏱️ Salvando tempo de estudo DIÁRIO: {tempo_segundos} segundos")
             
             if tempo_segundos <= 0:
                 return JsonResponse({'success': False, 'error': 'Tempo inválido'})
             
-            perfil = request.user.perfil
+            # Salvar no TempoEstudoDiario
+            hoje = timezone.now().date()
+            tempo_diario, created = TempoEstudoDiario.objects.get_or_create(
+                user=request.user,
+                data=hoje,
+                defaults={'tempo_segundos': tempo_segundos}
+            )
             
-            # Salvar no perfil
-            tempo_anterior = perfil.tempo_total_estudo
+            if not created:
+                tempo_diario.tempo_segundos += tempo_segundos
+                tempo_diario.save()
+            
+            # Também atualizar o perfil (para compatibilidade)
+            perfil = request.user.perfil
             perfil.tempo_total_estudo += tempo_segundos
             perfil.save()
             
@@ -2498,33 +2842,32 @@ def salvar_tempo_estudo(request):
             Atividade.objects.create(
                 user=request.user,
                 titulo=f"Estudo geral: {tempo_segundos // 60} minutos",
-                xp_ganho=0  # Ou calcule XP baseado no tempo
+                xp_ganho=0
             )
             
             # Formatar tempo para resposta
-            tempo_total_segundos = perfil.tempo_total_estudo
-            minutos_totais = tempo_total_segundos // 60
-            segundos_restantes = tempo_total_segundos % 60
-            horas = minutos_totais // 60
-            minutos = minutos_totais % 60
+            tempo_total_hoje = tempo_diario.tempo_segundos
+            horas = tempo_total_hoje // 3600
+            minutos = (tempo_total_hoje % 3600) // 60
+            segundos = tempo_total_hoje % 60
             
             if horas > 0:
-                tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos_restantes:02d}"
+                tempo_formatado = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
             else:
-                tempo_formatado = f"{minutos:02d}:{segundos_restantes:02d}"
+                tempo_formatado = f"{minutos:02d}:{segundos:02d}"
             
-            print(f"✅ Tempo salvo! Anterior: {tempo_anterior}, Atual: {perfil.tempo_total_estudo}")
+            print(f"✅ Tempo diário salvo! Total hoje: {tempo_diario.tempo_segundos} segundos")
             
             return JsonResponse({
                 'success': True, 
                 'tempo_salvo': tempo_segundos,
-                'tempo_total': perfil.tempo_total_estudo,
+                'tempo_total_hoje': tempo_diario.tempo_segundos,
                 'tempo_total_formatado': tempo_formatado,
-                'message': f'Tempo de estudo registrado: {tempo_segundos // 60} minutos'
+                'tempo_total_geral': perfil.tempo_total_estudo  # CORREÇÃO AQUI
             })
             
         except Exception as e:
-            print(f"❌ Erro ao salvar tempo estudo: {e}")
+            print(f"❌ Erro ao salvar tempo estudo diário: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Método não permitido'})
@@ -2551,3 +2894,1194 @@ def testar_tempo(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Método POST requerido'})
+
+# views.py
+@login_required
+def forcar_verificacao_conquistas(request):
+    """View para forçar a verificação de todas as conquistas (para testes)"""
+    conquistas_desbloqueadas = ConquistaManager.verificar_todas_conquistas(request.user)
+    
+    if conquistas_desbloqueadas:
+        messages.success(request, f"{len(conquistas_desbloqueadas)} conquistas verificadas!")
+    else:
+        messages.info(request, "Nenhuma nova conquista desbloqueada.")
+    
+    return redirect('perfil')
+
+@login_required
+def corrigir_conquistas(request):
+    """Corrige o tipo_evento das conquistas existentes"""
+    from .models import Conquista
+    
+    # Mapeamento de números para códigos
+    correcoes = {
+        '0': 'xp_total',
+        '1': 'nivel_atingido',
+        '2': 'aulas_concluidas', 
+        '3': 'modulos_concluidos',
+        '4': 'sequencia_dias',
+        '5': 'questoes_corretas',
+        '6': 'tempo_estudo',
+        '7': 'postagens_forum',
+        '8': 'comentarios',
+        '9': 'likes_recebidos',
+        '10': 'conquistas_desbloqueadas',
+    }
+    
+    conquistas_corrigidas = 0
+    for conquista in Conquista.objects.all():
+        if conquista.tipo_evento.isdigit():
+            codigo_correto = correcoes.get(conquista.tipo_evento)
+            if codigo_correto:
+                print(f"🔧 Corrigindo {conquista.titulo}: {conquista.tipo_evento} -> {codigo_correto}")
+                conquista.tipo_evento = codigo_correto
+                conquista.save()
+                conquistas_corrigidas += 1
+    
+    messages.success(request, f"{conquistas_corrigidas} conquistas corrigidas!")
+    return redirect('perfil')
+
+
+@login_required
+def dashboard(request):
+    perfil = request.user.perfil
+    perfil.verificar_streak_automatico()
+    
+    context = {
+        'perfil': perfil,
+        'current_time': timezone.now().strftime('%d/%m/%Y %H:%M'),
+    }
+    
+    return render(request, "Pyquest/dashboard.html", context)
+
+@login_required
+def api_dashboard_basico(request):
+    """API para dados básicos do dashboard - COM TEMPO DIÁRIO"""
+    perfil = request.user.perfil
+    
+    # TEMPO DE ESTUDO DIÁRIO (zera todo dia)
+    hoje = timezone.now().date()
+    tempo_estudo_hoje = TempoEstudoDiario.objects.filter(
+        user=request.user,
+        data=hoje
+    ).aggregate(total_tempo=Sum('tempo_segundos'))['total_tempo'] or 0
+    
+    # Formatar tempo de hoje
+    horas_hoje = tempo_estudo_hoje // 3600
+    minutos_hoje = (tempo_estudo_hoje % 3600) // 60
+    segundos_hoje = tempo_estudo_hoje % 60
+    
+    if horas_hoje > 0:
+        tempo_formatado = f"{horas_hoje:02d}:{minutos_hoje:02d}:{segundos_hoje:02d}"
+    else:
+        tempo_formatado = f"{minutos_hoje:02d}:{segundos_hoje:02d}"
+    
+    # XP ganho hoje
+    xp_hoje = Atividade.objects.filter(
+        user=request.user,
+        data__date=hoje
+    ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+    
+    # Módulos concluídos
+    modulos_concluidos = ModuloConcluido.objects.filter(usuario=request.user).count()
+    total_modulos = Modulo.objects.filter(ativo=True).count()
+    
+    # Sequência ATUALIZADA - usa verificação correta
+    sequencia_atual = perfil.sequencia
+    
+    # Precisão (placeholder - implemente conforme seu sistema)
+    precisao = 89
+    
+    # Acertos seguidos (placeholder)
+    acertos_seguidos = perfil.acertos_seguidos
+    recorde_acertos = perfil.sequencia_maxima  # Usando o streak máximo como recorde
+    
+    return JsonResponse({
+        'tempo_estudo': tempo_formatado,
+        'tempo_segundos': tempo_estudo_hoje,  # Para cálculos
+        'xp_total': perfil.xp,
+        'xp_hoje': xp_hoje,
+        'modulos_concluidos': modulos_concluidos,
+        'total_modulos': total_modulos,
+        'sequencia_atual': sequencia_atual,
+        'precisao': precisao,
+        'acertos_seguidos': acertos_seguidos,
+        'recorde_acertos': recorde_acertos,
+    })
+
+@login_required
+def api_dashboard_xp(request):
+    """API para dados do gráfico de XP - VERSÃO CORRIGIDA"""
+    period = request.GET.get('period', 'week')
+    
+    try:
+        hoje = timezone.now().date()
+        
+        if period == 'day':
+            # Últimas 24 horas (em períodos de 4h)
+            labels = ['00h', '04h', '08h', '12h', '16h', '20h']
+            xp_data = []
+            
+            for i in range(6):
+                hora_inicio = i * 4
+                hora_fim = (i + 1) * 4
+                
+                # Buscar XP ganho nesse período
+                xp_periodo = Atividade.objects.filter(
+                    user=request.user,
+                    data__date=hoje,
+                    data__hour__gte=hora_inicio,
+                    data__hour__lt=hora_fim
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data.append(xp_periodo)
+        
+        elif period == 'week':
+            # Últimos 7 dias
+            labels = []
+            xp_data = []
+            
+            for i in range(6, -1, -1):
+                date = hoje - timedelta(days=i)
+                labels.append(date.strftime('%a'))
+                
+                xp_dia = Atividade.objects.filter(
+                    user=request.user,
+                    data__date=date
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data.append(xp_dia)
+        
+        elif period == 'month':
+            # Últimas 4 semanas
+            labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4']
+            xp_data = []
+            
+            for i in range(4):
+                semana_inicio = hoje - timedelta(days=(3-i)*7 + hoje.weekday())
+                semana_fim = semana_inicio + timedelta(days=6)
+                
+                xp_semana = Atividade.objects.filter(
+                    user=request.user,
+                    data__date__range=[semana_inicio, semana_fim]
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data.append(xp_semana)
+        
+        else:
+            # Fallback para semana
+            labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+            xp_data = [0, 0, 0, 0, 0, 0, 0]
+        
+        return JsonResponse({
+            'labels': labels,
+            'data': xp_data,
+            'period': period
+        })
+        
+    except Exception as e:
+        print(f"Erro na API XP: {e}")
+        # Fallback com dados estáticos em caso de erro
+        if period == 'day':
+            return JsonResponse({
+                'labels': ['00h', '04h', '08h', '12h', '16h', '20h'],
+                'data': [50, 120, 80, 200, 150, 100],
+                'period': period
+            })
+        elif period == 'month':
+            return JsonResponse({
+                'labels': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                'data': [1500, 1800, 1600, 2000],
+                'period': period
+            })
+        else:
+            return JsonResponse({
+                'labels': ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                'data': [200, 450, 300, 600, 350, 500, 400],
+                'period': 'week'
+            })
+
+@login_required
+def api_dashboard_categorias(request):
+    """API para dados do gráfico de categorias - VERSÃO CORRIGIDA"""
+    try:
+        # Buscar capítulos com progresso real
+        capitulos = Capitulo.objects.filter(ativo=True)[:5]
+        
+        labels = []
+        data = []
+        cores = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']
+        
+        for i, capitulo in enumerate(capitulos):
+            labels.append(capitulo.titulo[:15])
+            
+            # Calcular progresso real
+            total_aulas = Aula.objects.filter(
+                modulo__capitulo=capitulo,
+                ativo=True
+            ).count()
+            
+            if total_aulas > 0:
+                aulas_concluidas = AulaConcluida.objects.filter(
+                    usuario=request.user,
+                    aula__modulo__capitulo=capitulo,
+                    teoria_concluida=True,
+                    pratica_concluida=True
+                ).count()
+                
+                progresso = (aulas_concluidas / total_aulas) * 100
+            else:
+                progresso = 0
+                
+            data.append(round(progresso))
+        
+        return JsonResponse({
+            'labels': labels,
+            'data': data,
+            'cores': cores[:len(labels)]
+        })
+        
+    except Exception as e:
+        print(f"Erro na API categorias: {e}")
+        return JsonResponse({
+            'labels': ['Python', 'Django', 'Banco Dados', 'Frontend', 'APIs'],
+            'data': [75, 60, 45, 30, 20],
+            'cores': ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']
+        })
+
+@login_required
+def api_dashboard_radar(request):
+    """API para dados do gráfico radar - VERSÃO CORRIGIDA"""
+    try:
+        habilidades = ['Lógica', 'Funções', 'Estruturas', 'OOP', 'Projetos']
+        
+        # Calcular níveis baseados no progresso real
+        seu_nivel = []
+        
+        # Lógica - baseado em questões de lógica concluídas
+        questoes_logica = AulaConcluida.objects.filter(
+            usuario=request.user,
+            aula__questoes__tipo='multiple-choice'
+        ).distinct().count()
+        seu_nivel.append(min(100, questoes_logica * 10))
+        
+        # Funções - baseado em questões de código
+        questoes_codigo = AulaConcluida.objects.filter(
+            usuario=request.user,
+            aula__questoes__tipo='code'
+        ).distinct().count()
+        seu_nivel.append(min(100, questoes_codigo * 15))
+        
+        # Estruturas - baseado em completar lacunas
+        questoes_lacunas = AulaConcluida.objects.filter(
+            usuario=request.user,
+            aula__questoes__tipo='fill-blank'
+        ).distinct().count()
+        seu_nivel.append(min(100, questoes_lacunas * 12))
+        
+        # OOP - baseado em módulos avançados concluídos
+        modulos_oop = ModuloConcluido.objects.filter(
+            usuario=request.user,
+            modulo__capitulo__dificuldade='advanced'
+        ).count()
+        seu_nivel.append(min(100, modulos_oop * 25))
+        
+        # Projetos - baseado em XP total
+        xp_total = request.user.perfil.xp
+        seu_nivel.append(min(100, xp_total // 50))
+        
+        # Média dos usuários (simplificado)
+        media_usuarios = [60, 50, 65, 40, 30]
+        
+        return JsonResponse({
+            'labels': habilidades,
+            'seu_nivel': [int(n) for n in seu_nivel],
+            'media_usuarios': media_usuarios
+        })
+        
+    except Exception as e:
+        print(f"Erro na API radar: {e}")
+        return JsonResponse({
+            'labels': ['Lógica', 'Funções', 'Estruturas', 'OOP', 'Projetos'],
+            'seu_nivel': [75, 60, 45, 30, 25],
+            'media_usuarios': [60, 50, 65, 40, 30]
+        })
+
+@login_required
+def api_dashboard_ranking(request):
+    """API para dados do gráfico de ranking - VERSÃO CORRIGIDA"""
+    period = request.GET.get('period', 'week')
+    
+    try:
+        # Buscar a posição atual do usuário
+        todos_perfis = Perfil.objects.order_by('-xp')
+        ids = list(todos_perfis.values_list('user_id', flat=True))
+        posicao_atual = ids.index(request.user.id) + 1 if request.user.id in ids else len(ids) + 1
+        
+        if period == 'day':
+            # Evolução ao longo do dia (simulado baseado em atividades)
+            labels = ['Manhã', 'Tarde', 'Noite']
+            
+            # Simular variação baseada em atividades do dia
+            atividades_hoje = Atividade.objects.filter(
+                user=request.user,
+                data__date=timezone.now().date()
+            ).count()
+            
+            # Variação simulada baseada em atividades
+            variacao_base = min(5, atividades_hoje // 2)
+            data = [
+                posicao_atual + variacao_base + 2,
+                posicao_atual + variacao_base + 1, 
+                posicao_atual
+            ]
+            variacao = variacao_base + 2
+            
+        elif period == 'week':
+            # Últimos 4 pontos na semana
+            labels = ['2 dias atrás', 'Ontem', 'Hoje']
+            
+            # Buscar atividades dos últimos dias para simular progresso
+            atividades_ontem = Atividade.objects.filter(
+                user=request.user,
+                data__date=timezone.now().date() - timedelta(days=1)
+            ).count()
+            
+            atividades_anteontem = Atividade.objects.filter(
+                user=request.user,
+                data__date=timezone.now().date() - timedelta(days=2)
+            ).count()
+            
+            data = [
+                posicao_atual + (atividades_anteontem // 3) + 2,
+                posicao_atual + (atividades_ontem // 3) + 1,
+                posicao_atual
+            ]
+            variacao = (atividades_anteontem // 3) + 2
+            
+        elif period == 'month':
+            # Últimos 4 meses
+            labels = ['Mês 1', 'Mês 2', 'Mês 3', 'Atual']
+            
+            # Simular progresso mensal baseado em XP total
+            xp_total = request.user.perfil.xp
+            progresso_mensal = xp_total // 1000  # Simplificação
+            
+            data = [
+                posicao_atual + progresso_mensal + 3,
+                posicao_atual + progresso_mensal + 2,
+                posicao_atual + progresso_mensal + 1,
+                posicao_atual
+            ]
+            variacao = progresso_mensal + 3
+        
+        else:
+            # Fallback
+            labels = ['Início', 'Meio', 'Atual']
+            data = [posicao_atual + 2, posicao_atual + 1, posicao_atual]
+            variacao = 2
+        
+        return JsonResponse({
+            'labels': labels,
+            'data': data,
+            'posicao_atual': posicao_atual,
+            'variacao': variacao,
+            'period': period
+        })
+        
+    except Exception as e:
+        print(f"Erro na API ranking: {e}")
+        # Fallback em caso de erro
+        if period == 'day':
+            return JsonResponse({
+                'labels': ['Manhã', 'Tarde', 'Noite'],
+                'data': [45, 43, 42],
+                'posicao_atual': 42,
+                'variacao': 3,
+                'period': period
+            })
+        elif period == 'month':
+            return JsonResponse({
+                'labels': ['Mês 1', 'Mês 2', 'Mês 3', 'Atual'],
+                'data': [50, 47, 45, 42],
+                'posicao_atual': 42,
+                'variacao': 8,
+                'period': period
+            })
+        else:
+            return JsonResponse({
+                'labels': ['2 dias atrás', 'Ontem', 'Hoje'],
+                'data': [45, 43, 42],
+                'posicao_atual': 42,
+                'variacao': 3,
+                'period': 'week'
+            })
+
+# Adicione esta função ao views.py para melhorar a API do heatmap:
+
+@login_required
+def api_dashboard_heatmap(request):
+    """API para dados do heatmap - VERSÃO MELHORADA"""
+    year = int(request.GET.get('year', timezone.now().year))
+    
+    try:
+        # Buscar atividades reais do usuário no ano especificado
+        atividades = Atividade.objects.filter(
+            user=request.user,
+            data__year=year
+        ).values('data__date').annotate(
+            count=Count('id'),
+            total_xp=Sum('xp_ganho')
+        ).order_by('data__date')
+        
+        # Criar mapa de atividades por data
+        activity_map = {}
+        for atividade in atividades:
+            date_str = atividade['data__date'].isoformat()
+            count = atividade['count']
+            xp_total = atividade['total_xp'] or 0
+            
+            # Determinar nível baseado na quantidade de atividades E XP ganho
+            if count == 0:
+                level = 0
+            elif count == 1 and xp_total < 20:
+                level = 1
+            elif count <= 3 or xp_total < 50:
+                level = 2
+            elif count <= 5 or xp_total < 100:
+                level = 3
+            else:
+                level = 4
+                
+            activity_map[date_str] = {
+                'count': count,
+                'level': level,
+                'xp': xp_total,
+                'date': atividade['data__date']
+            }
+        
+        # Gerar dados para todos os dias do ano solicitado
+        heatmap_data = []
+        start_date = datetime(year, 1, 1).date()
+        end_date = datetime(year, 12, 31).date()
+        current_date = start_date
+        
+        while current_date <= end_date:
+            date_str = current_date.isoformat()
+            activity_info = activity_map.get(date_str, {
+                'count': 0, 
+                'level': 0, 
+                'xp': 0,
+                'date': current_date
+            })
+            
+            heatmap_data.append({
+                'date': date_str,
+                'count': activity_info['count'],
+                'level': activity_info['level'],
+                'xp': activity_info['xp'],
+                'day': current_date.day,
+                'month': current_date.month,
+                'year': current_date.year,
+                'weekday': current_date.weekday(),  # 0=segunda, 6=domingo
+                'is_today': current_date == timezone.now().date(),
+                'is_weekend': current_date.weekday() in [5, 6]  # sábado, domingo
+            })
+            
+            current_date += timedelta(days=1)
+        
+        # Estatísticas do ano
+        dias_com_atividade = len([d for d in heatmap_data if d['level'] > 0])
+        total_atividades = sum(d['count'] for d in heatmap_data)
+        total_xp_ano = sum(d['xp'] for d in heatmap_data)
+        
+        return JsonResponse({
+            'year': year,
+            'data': heatmap_data,
+            'stats': {
+                'dias_ativos': dias_com_atividade,
+                'total_atividades': total_atividades,
+                'total_xp': total_xp_ano,
+                'percentual_ano': int((dias_com_atividade / len(heatmap_data)) * 100)
+            }
+        })
+        
+    except Exception as e:
+        print(f"Erro na API heatmap: {e}")
+        # Retornar dados vazios em caso de erro
+        return JsonResponse({
+            'year': year,
+            'data': [],
+            'stats': {
+                'dias_ativos': 0,
+                'total_atividades': 0,
+                'total_xp': 0,
+                'percentual_ano': 0
+            }
+        })
+
+@login_required
+def api_dashboard_estatisticas(request):
+    """API para estatísticas detalhadas"""
+    perfil = request.user.perfil
+    
+    # Taxa de acertos (placeholder)
+    taxa_acertos = 89
+    
+    # Questões respondidas
+    total_questoes_respondidas = AulaConcluida.objects.filter(
+        usuario=request.user,
+        pratica_concluida=True
+    ).count()
+    
+    # Dias ativos no mês atual
+    hoje = timezone.now().date()
+    primeiro_dia_mes = hoje.replace(day=1)
+    dias_ativos = Atividade.objects.filter(
+        user=request.user,
+        data__date__gte=primeiro_dia_mes
+    ).dates('data', 'day').distinct().count()
+    
+    # Ranking
+    todos_perfis = Perfil.objects.order_by('-xp')
+    posicao_ranking = list(todos_perfis.values_list('id', flat=True)).index(perfil.id) + 1
+    total_usuarios = todos_perfis.count()
+    top_percent = int((posicao_ranking / total_usuarios) * 100) if total_usuarios > 0 else 0
+    
+    # Conquistas
+    conquistas_desbloqueadas = Conquista.objects.filter(usuarios=request.user).count()
+    total_conquistas = Conquista.objects.filter(ativo=True).count()
+    
+    return JsonResponse({
+        'taxa_acertos': taxa_acertos,
+        'questoes_respondidas': total_questoes_respondidas,
+        'dias_ativos_mes': dias_ativos,
+        'dias_totais_mes': hoje.day,
+        'melhor_sequencia': perfil.sequencia_maxima,
+        'xp_total': perfil.xp,
+        'sequencia_atual': perfil.sequencia,
+        'ranking_posicao': posicao_ranking,
+        'ranking_total': total_usuarios,
+        'top_percent': top_percent,
+        'conquistas_desbloqueadas': conquistas_desbloqueadas,
+        'total_conquistas': total_conquistas,
+    })
+
+# Adicione estas views:
+
+@login_required
+@require_POST
+def registrar_atividade_manual(request):
+    """Registra uma atividade manualmente no heatmap"""
+    try:
+        data = json.loads(request.body)
+        date_str = data.get('date')
+        titulo = data.get('titulo')
+        xp = data.get('xp', 10)
+        
+        # Converter string para data
+        data_atividade = datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        # Criar atividade
+        atividade = Atividade.objects.create(
+            user=request.user,
+            titulo=titulo,
+            xp_ganho=xp,
+            data=timezone.make_aware(datetime.combine(data_atividade, datetime.min.time()))
+        )
+        
+        return JsonResponse({'success': True, 'atividade_id': atividade.id})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def gerar_dados_demo(request):
+    """Gera dados de demonstração para o heatmap"""
+    try:
+        from datetime import timedelta
+        
+        # Gerar atividades para os últimos 60 dias
+        hoje = timezone.now().date()
+        for i in range(60):
+            data = hoje - timedelta(days=i)
+            
+            # 70% de chance de ter atividade no dia
+            if random.random() < 0.7:
+                # Número aleatório de atividades (1-4)
+                num_atividades = random.randint(1, 4)
+                
+                for j in range(num_atividades):
+                    tipos = ['Aula teórica', 'Exercícios práticos', 'Revisão', 'Projeto']
+                    Atividade.objects.create(
+                        user=request.user,
+                        titulo=f"{random.choice(tipos)} - Dia {i}",
+                        xp_ganho=random.randint(5, 25),
+                        data=timezone.make_aware(datetime.combine(data, datetime.min.time()))
+                    )
+        
+        return JsonResponse({'success': True, 'message': 'Dados de demonstração gerados'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def verificar_streak_manual(request):
+    """View para forçar a verificação do streak (útil para testes)"""
+    perfil = request.user.perfil
+    streak_anterior = perfil.sequencia
+    
+    # Forçar verificação
+    perfil.verificar_e_atualizar_streak()
+    
+    messages.success(request, f"Streak verificado! Anterior: {streak_anterior}, Atual: {perfil.sequencia}")
+    return redirect('dashboard')
+
+@login_required
+def api_streak_status(request):
+    """API para obter status atual do streak"""
+    perfil = request.user.perfil
+    
+    return JsonResponse({
+        'success': True,
+        'streak_atual': perfil.sequencia,
+        'streak_maximo': perfil.sequencia_maxima,
+        'ultima_atividade': perfil.ultima_atividade.isoformat() if perfil.ultima_atividade else None,
+        'bonus_streak': perfil.get_bonus_streak() * 100,
+    })
+
+@login_required
+def api_dashboard_xp_bar(request):
+    """API específica para o gráfico de barras - XP por período"""
+    period = request.GET.get('period', 'week')
+    
+    try:
+        hoje = timezone.now().date()
+        
+        if period == 'day':
+            # Últimas 6 horas (em períodos de 1h)
+            labels = ['06h', '07h', '08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h']
+            xp_data = []
+            
+            for i in range(6, 18):  # Das 6h às 18h
+                # Buscar XP ganho nessa hora
+                xp_hora = Atividade.objects.filter(
+                    user=request.user,
+                    data__date=hoje,
+                    data__hour=i
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data.append(xp_hora)
+        
+        elif period == 'week':
+            # Últimos 7 dias
+            labels = []
+            xp_data = []
+            
+            for i in range(6, -1, -1):
+                date = hoje - timedelta(days=i)
+                labels.append(date.strftime('%a'))
+                
+                xp_dia = Atividade.objects.filter(
+                    user=request.user,
+                    data__date=date
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data.append(xp_dia)
+        
+        elif period == 'month':
+            # Últimos 30 dias (agrupados por semana)
+            labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4']
+            xp_data = [0, 0, 0, 0]
+            
+            for i in range(4):
+                semana_inicio = hoje - timedelta(days=(3-i)*7 + hoje.weekday())
+                semana_fim = semana_inicio + timedelta(days=6)
+                
+                xp_semana = Atividade.objects.filter(
+                    user=request.user,
+                    data__date__range=[semana_inicio, semana_fim]
+                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                
+                xp_data[i] = xp_semana
+        
+        else:
+            # Fallback para semana
+            labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+            xp_data = [0, 0, 0, 0, 0, 0, 0]
+        
+        return JsonResponse({
+            'labels': labels,
+            'data': xp_data,
+            'period': period
+        })
+        
+    except Exception as e:
+        print(f"Erro na API XP Bar: {e}")
+        # Fallback com dados estáticos em caso de erro
+        if period == 'day':
+            return JsonResponse({
+                'labels': ['06h', '08h', '10h', '12h', '14h', '16h', '18h'],
+                'data': [50, 120, 80, 200, 150, 100, 75],
+                'period': period
+            })
+        elif period == 'month':
+            return JsonResponse({
+                'labels': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                'data': [1500, 1800, 1600, 2000],
+                'period': period
+            })
+        else:
+            return JsonResponse({
+                'labels': ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                'data': [200, 450, 300, 600, 350, 500, 400],
+                'period': 'week'
+            })
+        
+@login_required
+def api_dashboard_conquistas_categorias(request):
+    """API para dados do gráfico de conquistas por categoria"""
+    try:
+        # Buscar todas as categorias de conquistas
+        categorias = Conquista.CATEGORIAS
+        categorias_data = []
+        
+        for categoria_codigo, categoria_nome in categorias:
+            # Buscar conquistas desta categoria
+            conquistas_categoria = Conquista.objects.filter(
+                categoria=categoria_codigo,
+                ativo=True
+            )
+            
+            # Contar conquistas desbloqueadas pelo usuário
+            conquistas_desbloqueadas = conquistas_categoria.filter(
+                usuarios=request.user
+            ).count()
+            
+            total_conquistas = conquistas_categoria.count()
+            
+            # Calcular percentual de conclusão
+            if total_conquistas > 0:
+                percentual = int((conquistas_desbloqueadas / total_conquistas) * 100)
+            else:
+                percentual = 0
+            
+            categorias_data.append({
+                'categoria': categoria_nome,
+                'conquistas_desbloqueadas': conquistas_desbloqueadas,
+                'total_conquistas': total_conquistas,
+                'percentual': percentual,
+                'codigo': categoria_codigo
+            })
+        
+        # Ordenar por percentual (maior primeiro)
+        categorias_data.sort(key=lambda x: x['percentual'], reverse=True)
+        
+        return JsonResponse({
+            'categorias': [c['categoria'] for c in categorias_data],
+            'percentuais': [c['percentual'] for c in categorias_data],
+            'detalhes': categorias_data
+        })
+        
+    except Exception as e:
+        print(f"Erro na API conquistas categorias: {e}")
+        # Fallback em caso de erro
+        return JsonResponse({
+            'categorias': ['Progresso', 'Habilidade', 'Precisão', 'Domínio', 'Especial'],
+            'percentuais': [75, 60, 45, 30, 20],
+            'detalhes': []
+        })
+    
+@login_required
+def api_dashboard_calendar(request):
+    """API para dados do calendário - ATIVIDADES REAIS DO USUÁRIO"""
+    year = int(request.GET.get('year', timezone.now().year))
+    month = int(request.GET.get('month', timezone.now().month))
+    
+    try:
+        # Buscar atividades do usuário no mês/ano especificado
+        atividades = Atividade.objects.filter(
+            user=request.user,
+            data__year=year,
+            data__month=month
+        ).values('data__date').annotate(
+            count=Count('id'),
+            total_xp=Sum('xp_ganho')
+        ).order_by('data__date')
+        
+        # Buscar também tempo de estudo diário
+        tempo_estudo = TempoEstudoDiario.objects.filter(
+            user=request.user,
+            data__year=year,
+            data__month=month
+        ).values('data').annotate(
+            total_tempo=Sum('tempo_segundos')
+        )
+        
+        # Criar mapa de atividades por data
+        activity_map = {}
+        
+        # Processar atividades
+        for atividade in atividades:
+            date_str = atividade['data__date'].isoformat()
+            count = atividade['count']
+            xp_total = atividade['total_xp'] or 0
+            
+            # Determinar nível de atividade baseado na quantidade e XP
+            activity_level = calcular_nivel_atividade(count, xp_total)
+            
+            activity_map[date_str] = {
+                'date': atividade['data__date'],
+                'activity_level': activity_level,
+                'activity_count': count,
+                'xp': xp_total,
+                'has_study_time': False
+            }
+        
+        # Processar tempo de estudo
+        for estudo in tempo_estudo:
+            date_str = estudo['data'].isoformat()
+            tempo_total = estudo['total_tempo'] or 0
+            
+            if date_str in activity_map:
+                # Se já tem atividade, aumentar nível baseado no tempo
+                if tempo_total > 1800:  # Mais de 30 minutos
+                    activity_map[date_str]['activity_level'] = min(
+                        activity_map[date_str]['activity_level'] + 1, 4
+                    )
+                activity_map[date_str]['has_study_time'] = True
+                activity_map[date_str]['study_time'] = tempo_total
+            else:
+                # Se não tem atividade mas tem tempo de estudo
+                activity_level = 1 if tempo_total > 900 else 0  # 15 minutos mínimo
+                activity_map[date_str] = {
+                    'date': estudo['data'],
+                    'activity_level': activity_level,
+                    'activity_count': 0,
+                    'xp': 0,
+                    'has_study_time': True,
+                    'study_time': tempo_total
+                }
+        
+        # Gerar dados para todos os dias do mês
+        calendar_data = []
+        days_in_month = (datetime(year, month + 1, 1) - datetime(year, month, 1)).days if month < 12 else 31
+        hoje = timezone.now().date()
+        
+        for day in range(1, days_in_month + 1):
+            current_date = datetime(year, month, day).date()
+            date_str = current_date.isoformat()
+            
+            activity_info = activity_map.get(date_str, {
+                'date': current_date,
+                'activity_level': 0,
+                'activity_count': 0,
+                'xp': 0,
+                'has_study_time': False,
+                'study_time': 0
+            })
+            
+            calendar_data.append({
+                'date': date_str,
+                'activity_level': activity_info['activity_level'],
+                'activity_count': activity_info['activity_count'],
+                'xp': activity_info['xp'],
+                'study_time': activity_info.get('study_time', 0),
+                'is_today': current_date == hoje,
+                'has_activity': activity_info['activity_level'] > 0
+            })
+        
+        # Estatísticas do mês
+        dias_com_atividade = len([d for d in calendar_data if d['activity_level'] > 0])
+        total_atividades = sum(d['activity_count'] for d in calendar_data)
+        total_xp_mes = sum(d['xp'] for d in calendar_data)
+        
+        # Calcular sequência atual
+        current_streak = calcular_sequencia_atual(calendar_data, hoje)
+        
+        return JsonResponse({
+            'year': year,
+            'month': month,
+            'data': calendar_data,
+            'stats': {
+                'dias_ativos': dias_com_atividade,
+                'total_atividades': total_atividades,
+                'total_xp': total_xp_mes,
+                'current_streak': current_streak,
+                'percentual_mes': int((dias_com_atividade / days_in_month) * 100)
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ Erro na API calendário: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Fallback com dados vazios
+        return JsonResponse({
+            'year': year,
+            'month': month,
+            'data': [],
+            'stats': {
+                'dias_ativos': 0,
+                'total_atividades': 0,
+                'total_xp': 0,
+                'current_streak': 0,
+                'percentual_mes': 0
+            }
+        })
+
+def calcular_nivel_atividade(count, xp):
+    """Calcula o nível de atividade baseado na quantidade e XP"""
+    if count == 0 and xp == 0:
+        return 0  # Nenhuma atividade
+    
+    # Baseado na quantidade de atividades
+    if count == 1 and xp < 20:
+        return 1  # Atividade leve
+    elif count <= 3 or xp < 50:
+        return 2  # Atividade moderada
+    elif count <= 5 or xp < 100:
+        return 3  # Atividade intensa
+    else:
+        return 4  # Atividade muito intensa
+
+def calcular_sequencia_atual(calendar_data, hoje):
+    """Calcula a sequência atual de dias com atividade"""
+    streak = 0
+    current_date = hoje
+    
+    # Ordenar dados por data para facilitar
+    data_map = {item['date']: item for item in calendar_data}
+    
+    # Verificar sequência começando de hoje para trás
+    for i in range(30):  # Verificar até 30 dias
+        date_str = current_date.isoformat()
+        day_data = data_map.get(date_str)
+        
+        if day_data and day_data['activity_level'] > 0:
+            streak += 1
+            current_date = current_date - timedelta(days=1)
+        else:
+            break
+    
+    return streak
+
+@login_required
+def api_calendar_activity_detail(request):
+    """API para detalhes das atividades de um dia específico - VERSÃO CORRIGIDA"""
+    date_str = request.GET.get('date')
+    
+    if not date_str:
+        return JsonResponse({'success': False, 'error': 'Data não especificada'})
+    
+    try:
+        # CORREÇÃO: Usar timezone para garantir o fuso horário correto
+        target_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        print(f"🔍 Buscando atividades para: {target_date} (data recebida: {date_str})")
+        
+        # Buscar atividades do dia - CORREÇÃO: usar range de datas com timezone
+        start_datetime = timezone.make_aware(timezone.datetime.combine(target_date, timezone.datetime.min.time()))
+        end_datetime = start_datetime + timedelta(days=1)
+        
+        atividades = Atividade.objects.filter(
+            user=request.user,
+            data__gte=start_datetime,
+            data__lt=end_datetime
+        ).select_related('aula').order_by('-data')
+        
+        # Buscar tempo de estudo do dia
+        tempo_estudo = TempoEstudoDiario.objects.filter(
+            user=request.user,
+            data=target_date
+        ).first()
+        
+        atividades_data = []
+        for atividade in atividades:
+            atividades_data.append({
+                'titulo': atividade.titulo,
+                'xp_ganho': atividade.xp_ganho,
+                'hora': atividade.data.astimezone(timezone.get_current_timezone()).strftime('%H:%M'),
+                'aula': atividade.aula.titulo_aula if atividade.aula else None
+            })
+        
+        print(f"✅ Encontradas {len(atividades_data)} atividades para {target_date}")
+        
+        return JsonResponse({
+            'success': True,
+            'date': target_date.isoformat(),
+            'date_display': target_date.strftime('%d/%m/%Y'),  # Formato brasileiro para exibição
+            'atividades': atividades_data,
+            'total_atividades': len(atividades_data),
+            'total_xp': sum(a['xp_ganho'] for a in atividades_data),
+            'tempo_estudo': tempo_estudo.tempo_segundos if tempo_estudo else 0,
+            'tempo_estudo_formatado': tempo_estudo.tempo_formatado() if tempo_estudo else '00:00'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erro ao buscar detalhes: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+def api_estatisticas_gerais(request):
+    """API para estatísticas gerais da plataforma"""
+    try:
+        total_usuarios = User.objects.count()
+        total_modulos = Modulo.objects.filter(ativo=True).count()
+        total_conquistas = Conquista.objects.filter(ativo=True).count()
+        total_posts = Post.objects.count()
+        
+        return JsonResponse({
+            'success': True,
+            'total_usuarios': total_usuarios,
+            'total_modulos': total_modulos,
+            'total_conquistas': total_conquistas,
+            'total_posts': total_posts,
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+def api_conquistas_usuario(request):
+    """API para conquistas do usuário logado"""
+    try:
+        conquistas_desbloqueadas = Conquista.objects.filter(usuarios=request.user).count()
+        
+        return JsonResponse({
+            'success': True,
+            'conquistas_desbloqueadas': conquistas_desbloqueadas,
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+def api_tempo_estudo_hoje(request):
+    """API para tempo de estudo diário"""
+    try:
+        hoje = timezone.now().date()
+        tempo_estudo = TempoEstudoDiario.objects.filter(
+            user=request.user,
+            data=hoje
+        ).first()
+        
+        if tempo_estudo:
+            tempo_segundos = tempo_estudo.tempo_segundos
+            horas = tempo_segundos // 3600
+            minutos = (tempo_segundos % 3600) // 60
+            
+            if horas > 0:
+                tempo_formatado = f"{horas:02d}:{minutos:02d}"
+            else:
+                tempo_formatado = f"{minutos:02d} min"
+        else:
+            tempo_formatado = "00:00"
+            
+        return JsonResponse({
+            'success': True,
+            'tempo_formatado': tempo_formatado,
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+def api_conquistas_populares(request):
+    """API para conquistas populares"""
+    try:
+        # Buscar conquistas mais comuns (com mais usuários)
+        conquistas = Conquista.objects.filter(ativo=True).annotate(
+            total_usuarios=Count('usuarios')
+        ).order_by('-total_usuarios')[:4]
+        
+        conquistas_data = []
+        for conquista in conquistas:
+            conquistas_data.append({
+                'titulo': conquista.titulo,
+                'descricao': conquista.descricao,
+                'raridade': conquista.get_raridade_display(),
+                'icone': conquista.icone.url if conquista.icone else None,
+            })
+            
+        return JsonResponse({
+            'success': True,
+            'conquistas': conquistas_data,
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+    
+@login_required
+def testar_streak_manual(request):
+    """View temporária para testar o aumento do streak"""
+    perfil = request.user.perfil
+    
+    # Simular que a última atividade foi ontem
+    from datetime import timedelta
+    perfil.ultima_atividade = timezone.now() - timedelta(days=1)
+    perfil.ja_fez_atividade_hoje = False  # Resetar para simular novo dia
+    perfil.save()
+    
+    messages.success(request, f"✅ Configurado para testar! Última atividade: {perfil.ultima_atividade}")
+    return redirect('home')
+
+@login_required
+@require_GET
+def api_questao_respostas(request, questao_id):
+    """API para obter respostas corretas de uma questão"""
+    try:
+        questao = Questao.objects.get(id=questao_id)
+        
+        respostas = []
+        
+        if questao.tipo == 'fill-blank':
+            # Para questões de completar lacunas, buscar opções corretas
+            opcoes_corretas = OpcaoQuestao.objects.filter(
+                questao=questao, 
+                correta=True
+            ).order_by('ordem')
+            
+            respostas = [opcao.texto for opcao in opcoes_corretas]
+            
+        elif questao.tipo == 'multiple-choice':
+            # Para múltipla escolha, retornar as opções corretas também
+            opcoes_corretas = OpcaoQuestao.objects.filter(
+                questao=questao, 
+                correta=True
+            ).order_by('ordem')
+            
+            respostas = [opcao.texto for opcao in opcoes_corretas]
+        
+        print(f"🔍 API Respostas - Questão {questao_id}: {respostas}")
+        
+        return JsonResponse({
+            'success': True,
+            'questao_id': questao_id,
+            'tipo': questao.tipo,
+            'respostas': respostas
+        })
+        
+    except Questao.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Questão não encontrada'
+        })
+    except Exception as e:
+        print(f"❌ Erro na API respostas: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

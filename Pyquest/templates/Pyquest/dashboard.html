@@ -463,6 +463,27 @@
             font-size: 0.65rem;
         }
     }
+
+/* Ajustes específicos para o gráfico de conquistas */
+.chart-container:nth-child(1) .chart-container-inner {
+    height: 180px; /* Altura maior para caber todas as barras */
+}
+
+/* Aumentar o espaçamento inferior do título */
+.chart-container h2 {
+    margin-bottom: 1.5rem;
+}
+
+/* Ajustar a legenda para não sobrepor */
+#conquistas-legenda {
+    margin-top: 1rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+.chart-container-inner {
+    height: 300px; /* Ou o valor que preferir */
+    position: relative;
+}
 </style>
 {% endblock %}
 

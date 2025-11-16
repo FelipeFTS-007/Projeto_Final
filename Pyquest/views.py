@@ -2595,39 +2595,30 @@ def pratica(request):
 @login_required
 @require_POST
 def usar_vida_pratica(request):
-    """Usa uma vida durante a prática"""
+    """Usa uma vida durante a prática - VERSÃO CORRIGIDA"""
     try:
         data = json.loads(request.body)
         aula_id = data.get('aula_id')
         
-        aula = get_object_or_404(Aula, id=aula_id)
-        perfil = request.user.perfil
+        # Usar a API centralizada de vidas
+        response = api_usar_vida(request)
+        response_data = json.loads(response.content)
         
-        # Verificar se tem vidas disponíveis
-        if perfil.vidas <= 0:
-            return JsonResponse({
-                'success': False, 
-                'error': 'Sem vidas disponíveis',
-                'vidas_restantes': 0
-            })
+        if response_data['success'] and aula_id:
+            # Atualizar tentativa específica da aula
+            try:
+                aula = Aula.objects.get(id=aula_id)
+                tentativa, created = TentativaPratica.objects.get_or_create(
+                    usuario=request.user,
+                    aula=aula
+                )
+                tentativa.vidas_usadas += 1
+                tentativa.vidas_restantes = response_data['vidas_restantes']
+                tentativa.save()
+            except Aula.DoesNotExist:
+                pass
         
-        # Usar vida
-        perfil.usar_vida()
-        
-        # Atualizar tentativa
-        tentativa, created = TentativaPratica.objects.get_or_create(
-            usuario=request.user,
-            aula=aula
-        )
-        tentativa.vidas_usadas += 1
-        tentativa.vidas_restantes = perfil.vidas
-        tentativa.save()
-        
-        return JsonResponse({
-            'success': True,
-            'vidas_restantes': perfil.vidas,
-            'max_vidas': perfil.max_vidas
-        })
+        return JsonResponse(response_data)
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
@@ -4085,3 +4076,64 @@ def api_questao_respostas(request, questao_id):
             'success': False,
             'error': str(e)
         })
+    
+# Adicione estas views ao views.py
+
+@login_required
+@require_GET
+def api_vidas_status(request):
+    """API para obter status atual das vidas"""
+    try:
+        perfil = request.user.perfil
+        perfil.regenerar_vidas()  # Sempre verificar regeneração ao acessar
+        
+        return JsonResponse({
+            'success': True,
+            'vidas': perfil.vidas,
+            'max_vidas': perfil.max_vidas,
+            'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida(),
+            'progresso_vidas': int((perfil.vidas / perfil.max_vidas) * 100) if perfil.max_vidas > 0 else 0
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def api_usar_vida(request):
+    """API para usar uma vida"""
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id', None)
+        
+        perfil = request.user.perfil
+        
+        if perfil.usar_vida():
+            # Registrar uso de vida se tiver aula associada
+            if aula_id:
+                try:
+                    aula = Aula.objects.get(id=aula_id)
+                    tentativa, created = TentativaPratica.objects.get_or_create(
+                        usuario=request.user,
+                        aula=aula
+                    )
+                    tentativa.vidas_usadas += 1
+                    tentativa.vidas_restantes = perfil.vidas
+                    tentativa.save()
+                except Aula.DoesNotExist:
+                    pass
+            
+            return JsonResponse({
+                'success': True,
+                'vidas_restantes': perfil.vidas,
+                'max_vidas': perfil.max_vidas,
+                'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida()
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Sem vidas disponíveis'
+            })
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

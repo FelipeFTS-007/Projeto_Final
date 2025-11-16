@@ -78,4 +78,6 @@ urlpatterns = [
     path('debug-capitulos/', views.debug_capitulos, name='debug_capitulos'),
     path('testar-streak/', views.testar_streak_manual, name='testar_streak'),
     path('api/questao/<int:questao_id>/respostas/', views.api_questao_respostas, name='api_questao_respostas'),
+    path('api/vidas/status/', views.api_vidas_status, name='api_vidas_status'),
+    path('api/vidas/usar/', views.api_usar_vida, name='api_usar_vida'),
     ]

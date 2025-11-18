@@ -2194,7 +2194,29 @@ def verificar_conquistas_sequencia(sender, instance, **kwargs):
     """Verifica conquistas relacionadas a sequência de dias"""
     ConquistaManager.verificar_conquistas_usuario(instance.user, 'sequencia_dias')
 
-
+# views.py
+@csrf_exempt
+def atualizar_vida(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            aula_id = data.get('aula_id')
+            vida_perdida = data.get('vida_perdida')
+            vidas_restantes = data.get('vidas_restantes')
+            question_id = data.get('question_id')
+            
+            # Aqui você salva no banco de dados
+            # Exemplo: atualizar perfil do usuário
+            perfil = request.perfil
+            perfil.vidas = vidas_restantes
+            perfil.save()
+            
+            return JsonResponse({'success': True, 'vidas_restantes': vidas_restantes})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
 
 
 # ===== VIEWS DO SISTEMA DE STREAK =====
@@ -4239,45 +4261,6 @@ def api_vidas_status(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-@login_required
-@require_POST
-def api_usar_vida(request):
-    """API para usar uma vida"""
-    try:
-        data = json.loads(request.body)
-        aula_id = data.get('aula_id', None)
-        
-        perfil = request.user.perfil
-        
-        if perfil.usar_vida():
-            # Registrar uso de vida se tiver aula associada
-            if aula_id:
-                try:
-                    aula = Aula.objects.get(id=aula_id)
-                    tentativa, created = TentativaPratica.objects.get_or_create(
-                        usuario=request.user,
-                        aula=aula
-                    )
-                    tentativa.vidas_usadas += 1
-                    tentativa.vidas_restantes = perfil.vidas
-                    tentativa.save()
-                except Aula.DoesNotExist:
-                    pass
-            
-            return JsonResponse({
-                'success': True,
-                'vidas_restantes': perfil.vidas,
-                'max_vidas': perfil.max_vidas,
-                'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida()
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': 'Sem vidas disponíveis'
-            })
-            
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
     
 
 def esqueci_senha(request):
@@ -4384,5 +4367,115 @@ def api_vidas_status(request):
             'progresso_vidas': int((perfil.vidas / perfil.max_vidas) * 100) if perfil.max_vidas > 0 else 0
         })
         
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+
+@login_required
+@require_GET
+def api_questao_respostas(request, questao_id):
+    """API para obter respostas corretas de uma questão"""
+    try:
+        questao = Questao.objects.get(id=questao_id)
+        
+        respostas = []
+        
+        if questao.tipo == 'fill-blank':
+            # Para questões de completar lacunas, buscar opções corretas
+            opcoes_corretas = OpcaoQuestao.objects.filter(
+                questao=questao, 
+                correta=True
+            ).order_by('ordem')
+            
+            respostas = [opcao.texto for opcao in opcoes_corretas]
+            
+        elif questao.tipo == 'multiple-choice':
+            # Para múltipla escolha, retornar as opções corretas também
+            opcoes_corretas = OpcaoQuestao.objects.filter(
+                questao=questao, 
+                correta=True
+            ).order_by('ordem')
+            
+            respostas = [opcao.texto for opcao in opcoes_corretas]
+        
+        print(f"🔍 API Respostas - Questão {questao_id}: {respostas}")
+        
+        return JsonResponse({
+            'success': True,
+            'questao_id': questao_id,
+            'tipo': questao.tipo,
+            'respostas': respostas
+        })
+        
+    except Questao.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Questão não encontrada'
+        })
+    except Exception as e:
+        print(f"❌ Erro na API respostas: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+    
+# Adicione estas views ao views.py
+
+@login_required
+@require_GET
+def api_vidas_status(request):
+    """API para obter status atual das vidas"""
+    try:
+        perfil = request.user.perfil
+        perfil.regenerar_vidas()  # Sempre verificar regeneração ao acessar
+        
+        return JsonResponse({
+            'success': True,
+            'vidas': perfil.vidas,
+            'max_vidas': perfil.max_vidas,
+            'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida(),
+            'progresso_vidas': int((perfil.vidas / perfil.max_vidas) * 100) if perfil.max_vidas > 0 else 0
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def api_usar_vida(request):
+    """API para usar uma vida"""
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id', None)
+        
+        perfil = request.user.perfil
+        
+        if perfil.usar_vida():
+            # Registrar uso de vida se tiver aula associada
+            if aula_id:
+                try:
+                    aula = Aula.objects.get(id=aula_id)
+                    tentativa, created = TentativaPratica.objects.get_or_create(
+                        usuario=request.user,
+                        aula=aula
+                    )
+                    tentativa.vidas_usadas += 1
+                    tentativa.vidas_restantes = perfil.vidas
+                    tentativa.save()
+                except Aula.DoesNotExist:
+                    pass
+            
+            return JsonResponse({
+                'success': True,
+                'vidas_restantes': perfil.vidas,
+                'max_vidas': perfil.max_vidas,
+                'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida()
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Sem vidas disponíveis'
+            })
+            
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})

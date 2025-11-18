@@ -374,7 +374,7 @@ class Perfil(models.Model):
                 super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"Perfil de {self.user.username}"
+            return f"Perfil de {self.user.username}"
 
 
 class Progresso(models.Model):

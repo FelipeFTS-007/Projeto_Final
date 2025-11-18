@@ -944,7 +944,7 @@
     // Variáveis globais
     let questions = [];
     let currentQuestionIndex = 0;
-    let totalQuestions = "{{ aula.questoes.count }}";
+    let totalQuestions = {{ aula.questoes.count }};
     let seconds = 0;
     let timerInterval;
     let totalXP = 0;
@@ -953,8 +953,8 @@
     let isReviewMode = document.getElementById('pratica-concluida').value === 'true';
     
     // ✅ SISTEMA DE VIDAS CORRIGIDO - USANDO PERFIL REAL
-    let lives = "{{ vidas_restantes }}"; // Usando vidas reais do perfil
-    let maxLives = "{{ perfil.max_vidas }}";
+    let lives = {{ vidas_restantes }}; // Usando vidas reais do perfil
+    let maxLives = {{ perfil.max_vidas }};
     
     // ✅ SISTEMA DE CONTROLE CORRIGIDO
     let answeredCorrectly = new Set();
@@ -2114,7 +2114,7 @@
 
     // ===== CALCULAR BÔNUS DE TEMPO =====
     function calculateTimeBonus(elapsedTime, totalXP) {
-        const tempoMaximo = "{{ aula.tempo_pratica }}" * 60; // converter minutos para segundos
+        const tempoMaximo = {{ aula.tempo_pratica }} * 60; // converter minutos para segundos
         const percentualTempo = Math.max(0, (tempoMaximo - elapsedTime) / tempoMaximo);
         
         // Bônus de até 20% do XP total por tempo rápido

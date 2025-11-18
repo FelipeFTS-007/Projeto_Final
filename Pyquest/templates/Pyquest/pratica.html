@@ -5,6 +5,114 @@
 
 {% block extra_css %}
 <style>
+    /* ✅ ESTILOS MELHORADOS PARA LACUNAS */
+    .blank-input {
+        border-bottom: 2px solid #3B82F6;
+        text-align: center;
+        padding: 2px 4px !important;
+        margin: 0 2px !important;
+        background: transparent;
+        outline: none;
+        min-width: 70px !important;
+        max-width: 100px !important;
+        font-weight: 500;
+        display: inline-block;
+        vertical-align: baseline;
+        font-family: inherit;
+        font-size: 14px !important;
+        border-radius: 3px;
+        height: 22px !important;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+
+    .blank-input:focus {
+        border-color: #1E40AF;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .blank-input.filled {
+        background: #f0f9ff !important;
+        border-color: #10b981 !important;
+        color: #047857 !important;
+        font-weight: 600;
+    }
+
+    .blank-input.shake {
+        border-color: #ef4444 !important;
+        background: #fef2f2 !important;
+    }
+
+    /* Container de texto com lacunas */
+    .fill-blank-container {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.6 !important;
+        font-family: inherit;
+        font-size: 15px;
+        letter-spacing: normal;
+        word-spacing: normal;
+    }
+    
+    /* ✅ SISTEMA DE VIDAS DISCRETO */
+    .lives-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fef2f2;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid #fecaca;
+    }
+    
+    .life-indicator {
+        width: 24px;
+        height: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .life-lost {
+        animation: lifeLost 0.5s ease-in-out;
+    }
+    
+    @keyframes lifeLost {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* MENSAGEM DE PERDA DE VIDA */
+    .life-lost-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    .life-lost-message.fade-out {
+        animation: slideOutRight 0.5s ease-in forwards;
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
     /* ESTILOS OTIMIZADOS E FLUIDOS */
     .fade-in {
         animation: fadeIn 0.5s ease-in;
@@ -59,18 +167,6 @@
         display: block;
     }
     
-    .correct-answer {
-        background-color: #d1fae5 !important;
-        border-color: #10b981 !important;
-        color: #065f46 !important;
-    }
-    
-    .wrong-answer {
-        background-color: #fee2e2 !important;
-        border-color: #ef4444 !important;
-        color: #7f1d1d !important;
-    }
-    
     .blank-input {
         border-bottom: 2px solid #3B82F6;
         text-align: center;
@@ -88,9 +184,9 @@
     }
     
     .blank-filled {
-        background: #d1fae5;
-        border-color: #10b981;
-        color: #065f46;
+        background: #f0f9ff;
+        border-color: #3B82F6;
+        color: #1E40AF;
         font-weight: 600;
     }
     
@@ -116,6 +212,11 @@
         transform: translateY(-2px);
     }
     
+    .option-button.selected {
+        border-color: #3B82F6;
+        background: #f0f9ff;
+    }
+    
     .feedback-message {
         padding: 1rem;
         border-radius: 0.5rem;
@@ -125,15 +226,15 @@
     }
     
     .feedback-correct {
-        background-color: #d1fae5;
-        color: #065f46;
-        border: 2px solid #10b981;
+        background-color: #f0f9ff;
+        color: #1E40AF;
+        border: 2px solid #3B82F6;
     }
     
     .feedback-incorrect {
-        background-color: #fee2e2;
-        color: #7f1d1d;
-        border: 2px solid #ef4444;
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 2px solid #fecaca;
     }
     
     /* Botão voltar */
@@ -199,8 +300,8 @@
         transform: scale(1.2);
     }
     
-    .question-dot.wrong {
-        background: #ef4444;
+    .question-dot.pending {
+        background: #f59e0b;
     }
     
     /* EDITOR DE CÓDIGO */
@@ -375,67 +476,92 @@
         animation: spin 1s linear infinite;
     }
 
-/* ✅ CONTAINER COM ESPAÇOS COMPACTOS */
-.fill-blank-container {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.4 !important;      /* ✅ LINHAS MAIS JUNTAS */
-    font-family: inherit;
-    font-size: 14px;
-    letter-spacing: -0.2px;           /* ✅ ESPAÇO ENTRE LETRAS REDUZIDO */
-    word-spacing: -0.5px;             /* ✅ ESPAÇO ENTRE PALAVRAS REDUZIDO */
-}
+    /* ✅ CONTAINER COM ESPAÇOS COMPACTOS */
+    .fill-blank-container {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.4 !important;
+        font-family: inherit;
+        font-size: 14px;
+        letter-spacing: -0.2px;
+        word-spacing: -0.5px;
+    }
 
-/* ✅ ESPAÇOS ENTRE PARÁGRAFOS MENORES */
-.fill-blank-container br {
-    line-height: 0.8 !important;      /* ✅ QUEBRAS MAIS COMPACTAS */
-    margin-bottom: 2px !important;
-}
+    /* ✅ ESPAÇOS ENTRE PARÁGRAFOS MENORES */
+    .fill-blank-container br {
+        line-height: 0.8 !important;
+        margin-bottom: 2px !important;
+    }
 
-/* Classe para preservar espaços de forma natural */
-.preserve-spaces {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    display: inline;
-}
+    /* Classe para preservar espaços de forma natural */
+    .preserve-spaces {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        display: inline;
+    }
 
-/* Inputs de lacuna - TAMANHO REDUZIDO */
-.blank-input {
-    border-bottom: 2px solid #3B82F6;
-    text-align: center;
-    padding: 1px 3px !important; 
-    margin: 0 1px !important;
-    background: transparent;
-    outline: none;
-    min-width: 60px !important;      
-    max-width: 80px !important;       
-    font-weight: 500;
-    display: inline-block;
-    vertical-align: baseline;
-    font-family: inherit;
-    font-size: 13px !important;
-    border-radius: 2px;
-    height: 20px !important;
-    line-height: 1;
-}
+    /* Inputs de lacuna - TAMANHO REDUZIDO */
+    .blank-input {
+        border-bottom: 2px solid #3B82F6;
+        text-align: center;
+        padding: 1px 3px !important; 
+        margin: 0 1px !important;
+        background: transparent;
+        outline: none;
+        min-width: 60px !important;      
+        max-width: 80px !important;       
+        font-weight: 500;
+        display: inline-block;
+        vertical-align: baseline;
+        font-family: inherit;
+        font-size: 13px !important;
+        border-radius: 2px;
+        height: 20px !important;
+        line-height: 1;
+    }
 
-.blank-input:focus {
-    border-color: #1E40AF;
-    background: #f0f9ff;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
+    .blank-input:focus {
+        border-color: #1E40AF;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
 
-.blank-input.correct-answer {
-    background: #d1fae5 !important;
-    border-color: #10b981 !important;
-    color: #065f46 !important;
-}
+    .blank-input.filled {
+        background: #f0f9ff !important;
+        border-color: #3B82F6 !important;
+        color: #1E40AF !important;
+    }
 
-.blank-input.wrong-answer {
-    background: #fee2e2 !important;
-    border-color: #ef4444 !important;
-    color: #7f1d1d !important;
-}
+    /* ✅ BOTÃO DE FINALIZAR REVISÃO SEMPRE VISÍVEL */
+    .finalizar-revisao-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 24px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .finalizar-revisao-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    }
+
+    /* ✅ MENSAGEM DE FEEDBACK NEUTRA */
+    .feedback-neutral {
+        background: #f0f9ff;
+        color: #1E40AF;
+        border: 2px solid #3B82F6;
+    }
     
     @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -446,7 +572,7 @@
 
 {% block content %}
 <div class="space-y-6 fade-in">
-    <!-- Topo: Botão voltar + Cronômetro + Streak + Vidas -->
+    <!-- Topo: Botão voltar + Cronômetro + VIDAS -->
     <div class="flex items-center justify-between border-b border-blue-100 pb-4">
         <!-- Botão Voltar -->
         <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}" class="back-button">
@@ -454,27 +580,36 @@
             <span>Voltar as Tarefas</span>
         </a>
 
-        <!-- Cronômetro -->
-        <div class="flex items-center gap-3 bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold">
-            <div class="relative w-8 h-8">
-                <svg class="progress-ring w-8 h-8" width="32" height="32">
-                    <circle class="progress-ring__circle" stroke="#3B82F6" stroke-width="3" fill="transparent" r="14" cx="16" cy="16"
-                        stroke-dasharray="88" stroke-dashoffset="52.8"></circle>
-                </svg>
-                <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="w-4 h-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div class="flex items-center gap-4">
+            <!-- ✅ SISTEMA DE VIDAS (APENAS NO MODO NORMAL) -->
+            {% if not pratica_concluida %}
+            <div id="lives-container" class="lives-container">
+                
+                {% for i in "123" %}
+                
+                {% endfor %}
             </div>
-            <span id="timer">00:00</span>
-            <span class="text-xs">/ {{ aula.tempo_pratica }}:00</span>
+            {% endif %}
+
+            <!-- Cronômetro -->
+            <div class="flex items-center gap-3 bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold">
+                <div class="relative w-8 h-8">
+                    <svg class="progress-ring w-8 h-8" width="32" height="32">
+                        <circle class="progress-ring__circle" stroke="#3B82F6" stroke-width="3" fill="transparent" r="14" cx="16" cy="16"
+                            stroke-dasharray="88" stroke-dashoffset="52.8"></circle>
+                    </svg>
+                    <img src="{% static 'imagem/timer_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="Tempo" class="w-4 h-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                </div>
+                <span id="timer">00:00</span>
+                <span class="text-xs">/ {{ aula.tempo_pratica }}:00</span>
+            </div>
         </div>
     </div>
 
     <!-- Campos hidden para controle -->
-    <input type="hidden" id="vidas-restantes" value="{{ vidas_restantes }}">
-    <input type="hidden" id="max-vidas" value="{{ max_vidas }}">
     <input type="hidden" id="aula-id" value="{{ aula.id }}">
     <input type="hidden" id="pratica-concluida" value="{{ pratica_concluida|yesno:'true,false' }}">
     <input type="hidden" id="xp-revisao" value="5">
-    <input type="hidden" id="questoes_json" value='{{ questoes_json|escapejs }}'>
 
     <!-- Cabeçalho da Prática -->
     <div class="flex items-center justify-between">
@@ -637,15 +772,13 @@
                 </div>
 
                 {% elif questao.tipo == 'code' %}
-                <!-- EDITOR DE CÓDIGO COM PYODIDE - CORRIGIDO -->
+                <!-- EDITOR DE CÓDIGO -->
                 <div class="space-y-4">
-                    <!-- ✅ ELEMENTO OCULTO COM SAÍDA ESPERADA - AGORA FUNCIONAL -->
                     <div id="saida-esperada-{{ questao.id }}" 
                          data-saida-esperada="{{ questao.saida_esperada|default:'' }}" 
                          style="display: none;">
                     </div>
                     
-                    <!-- EDITOR DE CÓDIGO -->
                     <div>
                         <h4 class="font-bold text-gray-800 mb-2">Escreva seu código Python:</h4>
                         <div class="code-editor-container" id="editor-container-{{ questao.id }}">
@@ -674,7 +807,6 @@
                         </div>
                     </div>
 
-                    <!-- TERMINAL DE SAÍDA -->
                     <div class="terminal" id="terminal-{{ questao.id }}">
                         <div class="terminal-header">
                             <img src="{% static 'imagem/terminal_35dp_FFFFFF_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Terminal" class="w-4 h-4">
@@ -695,16 +827,15 @@
                     <h4 class="font-bold text-gray-800 mb-2">Complete as lacunas no texto abaixo:</h4>
                     
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 leading-relaxed whitespace-pre-line">
-                            {{ questao.enunciado }}
+                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 leading-relaxed whitespace-pre-line fill-blank-container">
+                            {{ questao.texto_com_lacunas|default:questao.enunciado }}
                         </div>
                     </div>
 
-                    <!-- ✅ DIV OCULTA COM AS RESPOSTAS CORRETAS -->
+                    <!-- ✅ DIV COM AS RESPOSTAS CORRETAS -->
                     <div id="respostas-{{ questao.id }}" 
-                        data-questao-id="{{ questao.id }}"
-                        data-respostas='{{ questao.respostas_corretas|default:"[]" }}'
-                        style="display: none;">
+                         data-respostas='{{ questao.respostas_corretas|default:"[]" }}'
+                         style="display: none;">
                     </div>
 
                     <button class="check-blank bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
@@ -731,6 +862,14 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- ✅ BOTÃO FINALIZAR REVISÃO -->
+    {% if pratica_concluida %}
+    <button id="finalizar-revisao-btn" class="finalizar-revisao-btn">
+        <img src="{% static 'imagem/check_circle_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Finalizar" class="w-5 h-5">
+        Finalizar Revisão
+    </button>
+    {% endif %}
 
     <!-- Tela de Resultados -->
     <div id="result-screen" class="hidden bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg p-8 text-center space-y-6 border border-green-200">
@@ -769,7 +908,6 @@
             </div>
         </div>
 
-        <!-- ✅ CORREÇÃO: ADICIONAR BÔNUS DE REVISÃO -->
         {% if pratica_concluida %}
         <div class="bg-purple-100 border border-purple-300 rounded-xl p-4 mt-4">
             <div class="flex items-center justify-center gap-2 mb-2">
@@ -801,33 +939,41 @@
 <!-- ✅ CARREGAR PYODIDE - PYTHON REAL NO NAVEGADOR -->
 <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 <script>
-    // ===== SISTEMA DE LOOP DE QUESTÕES =====
+    // ===== SISTEMA DE LOOP DE QUESTÕES COM VIDAS =====
     
     // Variáveis globais
     let questions = [];
     let currentQuestionIndex = 0;
-    let totalQuestions = {{ aula.questoes.count }};
+    let totalQuestions = "{{ aula.questoes.count }}";
     let seconds = 0;
     let timerInterval;
     let totalXP = 0;
     let correctAnswers = 0;
     let usedHints = {};
-    let userLives = parseInt(document.getElementById('vidas-restantes').value);
-    let maxLives = parseInt(document.getElementById('max-vidas').value);
     let isReviewMode = document.getElementById('pratica-concluida').value === 'true';
+    
+    // ✅ SISTEMA DE VIDAS CORRIGIDO - USANDO PERFIL REAL
+    let lives = "{{ vidas_restantes }}"; // Usando vidas reais do perfil
+    let maxLives = "{{ perfil.max_vidas }}";
+    
+    // ✅ SISTEMA DE CONTROLE CORRIGIDO
+    let answeredCorrectly = new Set();
+    let pendingQuestions = new Set();
     
     // ✅ VARIÁVEL PARA PYODIDE
     let pyodide = null;
     let isPyodideLoaded = false;
-    
-    // Questões respondidas corretamente
-    let answeredQuestions = new Set();
-    // Questões que ainda precisam ser respondidas
-    let pendingQuestions = new Set();
-    
+
+    // ✅ CONTROLE PARA EVITAR DUPLO REGISTRO NO MODO REVISÃO
+    let revisaoRegistrada = false;
+
     // ===== INICIALIZAÇÃO =====
     document.addEventListener('DOMContentLoaded', async function() {
-        console.log("🎯 Iniciando sistema de loop de questões...");
+        console.log("🎯 Iniciando sistema com vidas...");
+        console.log(`💓 Vidas iniciais: ${lives}/${maxLives}`);
+        
+        // ✅ INICIALIZAR SISTEMA DE VIDAS
+        initializeLivesSystem();
         
         // ✅ INICIALIZAR PYODIDE PRIMEIRO
         await initializePyodide();
@@ -841,8 +987,130 @@
         startTimer();
         updateProgress();
         
-        console.log(`✅ Sistema inicializado com ${totalQuestions} questões`);
+        // ✅ INICIALIZAR BOTÃO DE FINALIZAR REVISÃO
+        initializeFinalizarRevisao();
+        
+        console.log(`✅ Sistema inicializado com ${totalQuestions} questões e ${lives} vidas`);
+        console.log(`🎯 Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
     });
+
+    // ===== SISTEMA DE VIDAS CORRIGIDO =====
+    function initializeLivesSystem() {
+        // ✅ SÓ MOSTRAR VIDAS NO MODO NORMAL (NÃO REVISÃO)
+        if (!isReviewMode) {
+            const livesContainer = document.getElementById('lives-container');
+            livesContainer.style.display = 'flex';
+            updateLivesDisplay();
+        } else {
+            // ✅ NO MODO REVISÃO, VIDAS ILIMITADAS (NÃO MOSTRAR)
+            lives = 999; // Virtualmente ilimitado
+        }
+    }
+
+    function updateLivesDisplay() {
+        if (isReviewMode) return; // Não mostrar vidas no modo revisão
+        
+        const livesContainer = document.getElementById('lives-container');
+        const lifeIcons = livesContainer.querySelectorAll('.life-indicator');
+        
+        lifeIcons.forEach((icon, index) => {
+            if (index < lives) {
+                icon.style.display = 'block';
+                icon.style.opacity = '1';
+            } else {
+                icon.style.display = 'none';
+            }
+        });
+    }
+
+    // ✅ FUNÇÃO CORRIGIDA: PERDER VIDA ATUALIZANDO BACKEND
+    async function loseLife() {
+        if (isReviewMode) return false; // ✅ NO MODO REVISÃO NÃO PERDE VIDA
+        
+        if (lives > 0) {
+            try {
+                // ✅ ATUALIZAR NO BACKEND PRIMEIRO
+                const aulaId = document.getElementById('aula-id').value;
+                const response = await fetch("{% url 'api_usar_vida' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        aula_id: aulaId
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // ✅ ATUALIZAR VIDAS LOCAIS COM DADOS DO BACKEND
+                    lives = data.vidas_restantes;
+                    updateLivesDisplay();
+                    
+                    // ✅ MOSTRAR MENSAGEM DE PERDA DE VIDA
+                    showLifeLostMessage();
+                    
+                    console.log(`💔 Vida perdida! Vidas restantes: ${lives}`);
+                    
+                    // ✅ VERIFICAR SE ACABARAM AS VIDAS
+                    if (lives === 0) {
+                        setTimeout(() => {
+                            finishPractice();
+                        }, 2000);
+                        return true;
+                    }
+                } else {
+                    console.error('❌ Erro ao usar vida:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Erro na requisição de vida:', error);
+            }
+        }
+        return false;
+    }
+
+    // ✅ FUNÇÃO PARA MOSTRAR MENSAGEM DE PERDA DE VIDA
+    function showLifeLostMessage() {
+        // Remover mensagem anterior se existir
+        const existingMessage = document.querySelector('.life-lost-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // Criar nova mensagem
+        const message = document.createElement('div');
+        message.className = 'life-lost-message';
+        message.innerHTML = `
+            <img src="{% static 'imagem/favorite_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Vida" class="w-5 h-5">
+            <span>Você perdeu uma vida! ${lives} restante(s)</span>
+        `;
+        
+        document.body.appendChild(message);
+        
+        // Remover mensagem após 3 segundos
+        setTimeout(() => {
+            message.classList.add('fade-out');
+            setTimeout(() => {
+                if (message.parentNode) {
+                    message.parentNode.removeChild(message);
+                }
+            }, 500);
+        }, 3000);
+    }
+
+    // ===== INICIALIZAR BOTÃO FINALIZAR REVISÃO =====
+    function initializeFinalizarRevisao() {
+        const finalizarBtn = document.getElementById('finalizar-revisao-btn');
+        if (finalizarBtn) {
+            finalizarBtn.addEventListener('click', function() {
+                if (isReviewMode) {
+                    finishPractice();
+                }
+            });
+        }
+    }
 
     // ===== INICIALIZAR PYODIDE =====
     async function initializePyodide() {
@@ -864,34 +1132,13 @@
                 indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
             });
             
-            // ✅ CORREÇÃO: Configurar input/output corretamente
+            // ✅ Configurar input/output corretamente
             await pyodide.runPythonAsync(`
                 import sys
-                import js
+                import io
                 
-                class PythonInput:
-                    def __init__(self):
-                        self.buffer = ""
-                    
-                    def readline(self):
-                        # Para input() - retorna string vazia por enquanto
-                        return "\\\\n"
-                
-                class PythonOutput:
-                    def __init__(self):
-                        self.content = ""
-                    
-                    def write(self, text):
-                        self.content += text
-                        # Enviar para o terminal JavaScript
-                        js.console.log("Python output:", text)
-                    
-                    def flush(self):
-                        pass
-                
-                # Configurar stdin e stdout
-                sys.stdin = PythonInput()
-                output_capture = PythonOutput()
+                # Configurar captura de output
+                output_capture = io.StringIO()
                 sys.stdout = output_capture
                 sys.stderr = output_capture
             `);
@@ -919,60 +1166,55 @@
         }
         
         try {
-            // ✅ CORREÇÃO: Configurar output capture de forma correta
+            console.log("🐍 Executando código Python...");
+            
+            // Configurar captura de output
             await pyodide.runPythonAsync(`
                 import sys
-                import io
-                
-                # Criar um StringIO para capturar output
-                output_capture = io.StringIO()
-                sys.stdout = output_capture
-                sys.stderr = output_capture
+                from io import StringIO
+                sys.stdout = StringIO()
+                sys.stderr = StringIO()
             `);
             
-            // ✅ EXECUTAR CÓDIGO E CAPTURAR OUTPUT
+            // Executar código do usuário
             await pyodide.runPythonAsync(code);
             
-            // ✅ PEGAR O OUTPUT CAPTURADO
+            // Pegar o output
             const output = await pyodide.runPythonAsync(`
-                output_text = output_capture.getvalue()
+                output = sys.stdout.getvalue()
+                error = sys.stderr.getvalue()
+                
                 # Restaurar stdout/stderr padrão
                 sys.stdout = sys.__stdout__
                 sys.stderr = sys.__stderr__
-                output_text
+                
+                # Retornar erro se houver, senão output
+                error if error else output
             `);
+            
+            // Se houve erro, lançar exceção
+            if (output && (output.includes("Error") || output.includes("Traceback") || output.includes("SyntaxError"))) {
+                throw new Error(output);
+            }
             
             return output || "";
             
         } catch (error) {
-            // ✅ CAPTURAR ERRO CORRETAMENTE
-            const errorOutput = await pyodide.runPythonAsync(`
-                try:
-                    # Tentar pegar o erro do output_capture
-                    error_text = output_capture.getvalue()
-                    sys.stdout = sys.__stdout__
-                    sys.stderr = sys.__stderr__
-                    error_text if error_text else "Erro durante a execução"
-                except:
-                    "Erro: ${error.message}"
-            `);
-            
-            throw new Error(errorOutput || error.message);
+            console.error("Erro no Python:", error);
+            throw new Error(error.message || "Erro de execução");
         }
     }
 
-    // ===== BUSCAR SAÍDA ESPERADA DA QUESTÃO - CORRIGIDO =====
+    // ===== BUSCAR SAÍDA ESPERADA DA QUESTÃO =====
     function getExpectedOutputForQuestion(questionId) {
         console.log(`🔍 Buscando saída esperada para questão ${questionId}`);
         
-        // Método 1: Buscar diretamente do elemento da questão
         const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
         if (!questionElement) {
             console.error("Elemento da questão não encontrado");
             return "";
         }
         
-        // Buscar do campo saida_esperada do modelo Questao (se estiver no HTML)
         const saidaEsperadaElement = document.getElementById(`saida-esperada-${questionId}`);
         if (saidaEsperadaElement && saidaEsperadaElement.dataset.saidaEsperada) {
             const saida = saidaEsperadaElement.dataset.saidaEsperada.trim();
@@ -980,23 +1222,9 @@
             return saida;
         }
         
-        // Buscar de elementos com classe específica
-        const outputElements = questionElement.querySelectorAll('.saida-esperada, .expected-output, [data-expected]');
-        for (let element of outputElements) {
-            if (element.value || element.textContent || element.dataset.expected) {
-                const saida = (element.value || element.textContent || element.dataset.expected).trim();
-                if (saida) {
-                    console.log("✅ Saída esperada encontrada em elemento:", saida);
-                    return saida;
-                }
-            }
-        }
-        
-        // Buscar do texto da questão (fallback)
-        const enunciado = questionElement.querySelector('.bg-gray-50, .enunciado, p');
+        const enunciado = questionElement.querySelector('.bg-gray-50');
         if (enunciado) {
             const texto = enunciado.textContent;
-            // Padrões comuns para identificar saída esperada
             const patterns = [
                 /saída esperada[:\s]*([^\n\.]+)/i,
                 /output esperado[:\s]*([^\n\.]+)/i,
@@ -1019,33 +1247,40 @@
         return "";
     }
 
-    // ===== COMPARAÇÃO RIGOROSA DE SAÍDAS - CORRIGIDA =====
+    // ===== COMPARAÇÃO FLEXÍVEL DE SAÍDAS =====
     function areOutputsEqual(userOutput, expectedOutput) {
-        if (!userOutput || !expectedOutput) {
-            console.log("❌ Uma das saídas está vazia");
-            return false;
-        }
+        if (!userOutput && !expectedOutput) return true;
+        if (!userOutput || !expectedOutput) return false;
         
         const user = userOutput.toString().trim();
         const expected = expectedOutput.toString().trim();
         
         console.log(`🔍 Comparando: "${user}" vs "${expected}"`);
         
-        // 1. Comparação exata (case-sensitive)
+        // 1. Comparação exata
         if (user === expected) {
             console.log("✅ Comparação exata - CORRETO");
             return true;
         }
         
-        // 2. Comparação case-insensitive
-        if (user.toLowerCase() === expected.toLowerCase()) {
+        // 2. Ignorar espaços extras e quebras de linha
+        const userClean = user.replace(/\s+/g, ' ').trim();
+        const expectedClean = expected.replace(/\s+/g, ' ').trim();
+        
+        if (userClean === expectedClean) {
+            console.log("✅ Comparação com espaços normalizados - CORRETO");
+            return true;
+        }
+        
+        // 3. Case-insensitive para texto
+        if (userClean.toLowerCase() === expectedClean.toLowerCase()) {
             console.log("✅ Comparação case-insensitive - CORRETO");
             return true;
         }
         
-        // 3. Para números: comparar valores numéricos
-        const userNum = parseFloat(user);
-        const expectedNum = parseFloat(expected);
+        // 4. Para números
+        const userNum = parseFloat(userClean);
+        const expectedNum = parseFloat(expectedClean);
         
         if (!isNaN(userNum) && !isNaN(expectedNum)) {
             if (userNum === expectedNum) {
@@ -1054,273 +1289,205 @@
             }
         }
         
-        // 4. Para múltiplas linhas: comparar linha por linha
-        const userLines = user.split('\n').map(line => line.trim()).filter(line => line !== '');
-        const expectedLines = expected.split('\n').map(line => line.trim()).filter(line => line !== '');
-        
-        if (userLines.length === expectedLines.length) {
-            let todasLinhasIguais = true;
-            for (let i = 0; i < userLines.length; i++) {
-                if (userLines[i] !== expectedLines[i]) {
-                    // Tentar comparação numérica para cada linha
-                    const userLineNum = parseFloat(userLines[i]);
-                    const expectedLineNum = parseFloat(expectedLines[i]);
-                    
-                    if (isNaN(userLineNum) || isNaN(expectedLineNum) || userLineNum !== expectedLineNum) {
-                        todasLinhasIguais = false;
-                        break;
-                    }
-                }
-            }
-            if (todasLinhasIguais) {
-                console.log("✅ Todas as linhas são iguais - CORRETO");
-                return true;
-            }
-        }
-        
         console.log("❌ Saídas diferentes - INCORRETO");
         return false;
     }
 
-    // ===== VERIFICAÇÃO DE CÓDIGO EDITOR - CORRIGIDA =====
-    async function handleCheckEditorCode(questionId) {
-        console.log("=== 🚨 INICIANDO VERIFICAÇÃO DE CÓDIGO ===");
-        
-        const textarea = document.getElementById(`code-input-${questionId}`);
-        const terminal = document.getElementById(`code-output-${questionId}`);
-        const questionContainer = document.querySelector(`[data-question-id="${questionId}"]`);
-        
-        if (!textarea || !terminal || !questionContainer) {
-            console.error("❌ Elementos não encontrados");
-            return;
-        }
-        
-        // ✅ BUSCAR SAÍDA ESPERADA - AGORA FUNCIONAL
-        const expectedOutput = getExpectedOutputForQuestion(questionId);
-        console.log("🚨 SAÍDA ESPERADA ENCONTRADA:", expectedOutput);
-        
-        const userCode = textarea.value.trim();
-        console.log("🚨 CÓDIGO DO USUÁRIO:", userCode);
-        
-        let isCorrect = false;
-        let output = "";
-        
-        try {
-            output = await runPythonCode(userCode);
-            output = output.trim();
-            console.log("🚨 SAÍDA DO USUÁRIO:", output);
-            
-            // ✅ COMPARAÇÃO EXATA E RIGOROSA - AGORA FUNCIONAL
-            if (expectedOutput && expectedOutput.trim() !== "") {
-                isCorrect = areOutputsEqual(output, expectedOutput);
-                console.log("🚨 RESULTADO DA COMPARAÇÃO:", isCorrect ? "CORRETO" : "INCORRETO");
-            } else {
-                console.log("🚨 SEM SAÍDA ESPERADA - APENAS EXECUTA");
-                isCorrect = true; // Se não há saída esperada, considera correto se executou sem erro
-            }
-            
-        } catch (error) {
-            console.log("🚨 ERRO NA EXECUÇÃO:", error);
-            isCorrect = false;
-            output = error.message;
-        }
-        
-        // ✅ FEEDBACK CLARO E CORRETO
-        if (isCorrect) {
-            showFeedback(questionId, 'correct', `✅ Correto!`, 10);
-            terminal.innerHTML = `<div class="text-green-400">${output}</div>`;
-            setTimeout(() => nextQuestion(true), 1500);
-        } else {
-            showFeedback(questionId, 'incorrect', `❌ Incorreto! Verifique sua solução.`, 0);
-            terminal.innerHTML = `<div class="text-red-400">${output}</div>`;
-            await loseLife();
-            setTimeout(() => nextQuestion(false), 1500);
-        }
-        
-        console.log("=== 🚨 VERIFICAÇÃO FINALIZADA ===");
-    }
-
-    // ===== EXECUTAR CÓDIGO EDITOR =====
-    async function handleRunEditorCode(questionId) {
-        const textarea = document.getElementById(`code-input-${questionId}`);
-        const terminal = document.getElementById(`code-output-${questionId}`);
-        
-        if (!textarea || !terminal) return;
-        
-        const code = textarea.value.trim();
-        
-        if (!code) {
-            terminal.innerHTML = '<div class="text-yellow-400">Digite algum código para executar.</div>';
-            return;
-        }
-        
-        if (!isPyodideLoaded) {
-            terminal.innerHTML = '<div class="text-yellow-400">Aguarde, Python ainda está carregando...</div>';
-            return;
-        }
-        
-        // Mostrar "executando..."
-        terminal.innerHTML = '<div class="text-yellow-400">🐍 Executando código Python...</div>';
-        terminal.classList.remove('error');
-        
-        try {
-            console.log("▶️ Executando código:", code);
-            const output = await runPythonCode(code);
-            console.log("✅ Output recebido:", output);
-            
-            // ✅ FORMATAR OUTPUT CORRETAMENTE
-            let formattedOutput = output;
-            if (!formattedOutput || formattedOutput.trim() === "") {
-                formattedOutput = "✅ Código executado sem output.";
-            }
-            
-            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-green-400">${formattedOutput}</div>`;
-            terminal.classList.remove('error');
-            
-        } catch (error) {
-            console.error("❌ Erro capturado:", error);
-            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-red-400">${error.message}</div>`;
-            terminal.classList.add('error');
-        }
-    }
-    
-    // ===== SIMPLES: PRIMEIRA LINHA SEM ESPAÇO =====
-    function initializeFillBlankQuestions() {
-        document.querySelectorAll('[id^="fill-blank-text-"]').forEach(container => {
-            const questionId = container.id.replace('fill-blank-text-', '');
-            
-            const originalText = container.textContent;
-            
-            // ✅ ENCONTRAR ONDE COMEÇA A PRIMEIRA LINHA
-            const firstLineStart = originalText.search(/\S/); // Primeiro caractere não-espaço
-            if (firstLineStart > 0) {
-                // ✅ REMOVER ESPAÇOS APENAS DO INÍCIO DO TEXTO TODO
-                const correctedText = originalText.substring(firstLineStart);
-                
-                const processedHTML = correctedText.replace(/\[_____\]/g, 
-                    '<input type="text" class="blank-input" placeholder="______">'
-                );
-                
-                container.innerHTML = processedHTML;
-            } else {
-                // ✅ JÁ ESTÁ CORRETO
-                const processedHTML = originalText.replace(/\[_____\]/g, 
-                    '<input type="text" class="blank-input" placeholder="______">'
-                );
-                container.innerHTML = processedHTML;
-            }
-            
-            container.style.whiteSpace = 'pre-wrap';
-            container.style.wordWrap = 'break-word';
-            container.style.fontFamily = 'monospace';
-        });
-    }
-        
-    // ===== SISTEMA DE QUESTÕES EM LOOP =====
+    // ===== SISTEMA DE QUESTÕES EM LOOP CORRIGIDO =====
     function initializeQuestions() {
-        // Coletar todas as questões
         document.querySelectorAll('.question-container').forEach(container => {
             const questionId = container.dataset.questionId;
             questions.push({
                 id: questionId,
                 element: container,
                 answered: false,
-                correct: false
+                correct: false,
+                xp: parseInt(container.querySelector('.bg-yellow-100').textContent.match(/\d+/)[0]) || 10
             });
             
-            // Adicionar à lista de questões pendentes
+            // ✅ INICIALIZAR TODAS COMO PENDENTES
             pendingQuestions.add(questionId);
         });
         
-        // Mostrar primeira questão
+        console.log(`✅ ${questions.length} questões inicializadas`);
+        console.log(`📝 Questões pendentes: ${pendingQuestions.size}`);
+        
         showQuestion(currentQuestionIndex);
     }
-    
+
     function showQuestion(index) {
         // Esconder todas as questões
         document.querySelectorAll('.question-container').forEach(container => {
             container.classList.remove('active');
         });
         
-        // Mostrar questão atual
         if (questions[index]) {
-            questions[index].element.classList.add('active');
+            const question = questions[index];
             
-            // Atualizar indicador visual
+            // ✅ CORREÇÃO: REDEFINIR ESTADO DOS BOTÕES AO MUDAR DE QUESTÃO
+            const optionButtons = question.element.querySelectorAll('.option-button');
+            optionButtons.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.disabled = false;
+            });
+            
+            // ✅ LIMPAR FEEDBACK ANTERIOR
+            const feedback = question.element.querySelector('.feedback-message');
+            if (feedback) {
+                feedback.classList.add('hidden');
+                feedback.innerHTML = '';
+            }
+            
+            question.element.classList.add('active');
             updateQuestionIndicator(index);
-            
-            // Scroll para o topo
             scrollToTop();
         }
     }
-    
-    function updateQuestionIndicator(currentIndex) {
-        // Atualizar dots de questões
-        document.querySelectorAll('.question-dot').forEach((dot, index) => {
-            dot.classList.remove('current', 'answered', 'wrong');
-            
-            if (index === currentIndex) {
-                dot.classList.add('current');
-            } else if (answeredQuestions.has(questions[index].id)) {
-                dot.classList.add('answered');
-            } else if (!pendingQuestions.has(questions[index].id)) {
-                dot.classList.add('wrong');
-            }
-        });
-    }
-    
+
+    // ===== SISTEMA DE LOOP CORRIGIDO =====
     function nextQuestion(isCorrect) {
-    const currentQuestion = questions[currentQuestionIndex];
-    
-    // ✅ CORREÇÃO MELHORADA: Modo revisão sempre marca como respondida e passa
-    if (isCorrect || isReviewMode) {
-        answeredQuestions.add(currentQuestion.id);
-        pendingQuestions.delete(currentQuestion.id);
-        currentQuestion.answered = true;
-        currentQuestion.correct = true;
+        const currentQuestion = questions[currentQuestionIndex];
+        const questionId = currentQuestion.id;
         
-        if (answeredQuestions.size === totalQuestions) {
+        console.log(`🔄 Próxima questão - Correto: ${isCorrect}, ID: ${questionId}`);
+        console.log(`📊 Status atual - Corretas: ${answeredCorrectly.size}, Pendentes: ${pendingQuestions.size}`);
+        
+        // ✅ ATUALIZAR STATUS DA QUESTÃO ATUAL
+        if (isCorrect) {
+            // ✅ VERIFICAR SE JÁ FOI CONTABILIZADA ANTES DE SOMAR XP
+            const alreadyCounted = answeredCorrectly.has(questionId);
+            
+            if (!alreadyCounted) {
+                // Resposta correta pela primeira vez: marca e soma XP
+                answeredCorrectly.add(questionId);
+                if (!isReviewMode) {
+                    totalXP += currentQuestion.xp;
+                }
+                console.log(`✅ Questão ${currentQuestionIndex + 1} respondida corretamente ${!isReviewMode ? '- +' + currentQuestion.xp + ' XP' : ''}`);
+            } else {
+                // Já foi contabilizada antes, não soma XP novamente
+                console.log(`🔁 Questão ${currentQuestionIndex + 1} já estava correta - XP não duplicado`);
+            }
+            
+            pendingQuestions.delete(questionId);
+            currentQuestion.answered = true;
+            currentQuestion.correct = true;
+            
+        } else {
+            // Resposta incorreta: mantém na lista de pendentes
+            currentQuestion.answered = false;
+            currentQuestion.correct = false;
+            pendingQuestions.add(questionId);
+            
+            console.log(`❌ Questão ${currentQuestionIndex + 1} incorreta.`);
+        }
+    
+        // ✅ VERIFICAR SE TODAS FORAM RESPONDIDAS CORRETAMENTE
+        if (answeredCorrectly.size === totalQuestions) {
+            console.log("🎉 Todas as questões respondidas corretamente!");
+            if (!isReviewMode) {
+                console.log(`💰 XP Total: ${totalXP}`);
+            }
             finishPractice();
             return;
         }
-    } else {
-        pendingQuestions.add(currentQuestion.id);
-    }
-    
-    // Resto do código permanece igual...
-    let nextIndex = -1;
-    for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
-        if (pendingQuestions.has(questions[i].id)) {
-            nextIndex = i;
-            break;
-        }
-    }
-    
-    if (nextIndex === -1) {
-        for (let i = 0; i < questions.length; i++) {
-            if (pendingQuestions.has(questions[i].id)) {
-                nextIndex = i;
-                break;
+        
+        // ✅ SEMPRE BUSCAR PRÓXIMA QUESTÃO PENDENTE
+        let nextIndex = findNextPendingQuestion();
+        
+        if (nextIndex === -1) {
+            // Verificar se realmente não há mais pendentes
+            if (pendingQuestions.size === 0 && answeredCorrectly.size > 0) {
+                console.log("🏁 Todas as questões foram respondidas corretamente!");
+                finishPractice();
+                return;
+            } else {
+                console.log("🔄 Nenhuma próxima questão encontrada, buscando primeira pendente");
+                nextIndex = findFirstPendingQuestion();
             }
         }
+        
+        if (nextIndex === -1) {
+            console.log("💀 Nenhuma questão pendente encontrada - finalizando prática");
+            finishPractice();
+            return;
+        }
+        
+        currentQuestionIndex = nextIndex;
+        showQuestion(currentQuestionIndex);
+        updateProgress();
+        
+        console.log(`➡️ Indo para questão ${currentQuestionIndex + 1} (ID: ${questions[currentQuestionIndex].id})`);
+        console.log(`📊 Progresso atualizado - Corretas: ${answeredCorrectly.size}/${totalQuestions}, Pendentes: ${pendingQuestions.size}`);
+        if (!isReviewMode) {
+            console.log(`💰 XP Acumulado: ${totalXP}`);
+        }
+        console.log('---');
     }
-    
-    if (nextIndex === -1) {
-        finishPractice();
-        return;
+
+    function findNextPendingQuestion() {
+        console.log(`🔍 Buscando próxima questão pendente a partir da posição ${currentQuestionIndex + 1}`);
+        
+        // Buscar da posição atual + 1 até o final
+        for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
+            const questionId = questions[i].id;
+            if (pendingQuestions.has(questionId)) {
+                console.log(`✅ Encontrada questão pendente na posição ${i + 1} (ID: ${questionId})`);
+                return i;
+            }
+        }
+        
+        // Buscar do início até a posição atual
+        for (let i = 0; i < currentQuestionIndex; i++) {
+            const questionId = questions[i].id;
+            if (pendingQuestions.has(questionId)) {
+                console.log(`✅ Encontrada questão pendente na posição ${i + 1} (ID: ${questionId})`);
+                return i;
+            }
+        }
+        
+        console.log("❌ Nenhuma questão pendente encontrada");
+        return -1;
     }
-    
-    currentQuestionIndex = nextIndex;
-    showQuestion(currentQuestionIndex);
-    updateProgress();
-}
-    
+
+    function findFirstPendingQuestion() {
+        console.log("🔍 Buscando primeira questão pendente...");
+        
+        for (let i = 0; i < questions.length; i++) {
+            const questionId = questions[i].id;
+            if (pendingQuestions.has(questionId)) {
+                console.log(`✅ Primeira questão pendente encontrada na posição ${i + 1} (ID: ${questionId})`);
+                return i;
+            }
+        }
+        
+        console.log("❌ Nenhuma questão pendente encontrada");
+        return -1;
+    }
+
     function updateProgress() {
-        const progress = (answeredQuestions.size / totalQuestions) * 100;
+        const progress = (answeredCorrectly.size / totalQuestions) * 100;
         document.getElementById('practice-progress-fill').style.width = `${progress}%`;
-        document.getElementById('progress-text').textContent = `${answeredQuestions.size}/${totalQuestions}`;
+        document.getElementById('progress-text').textContent = `${answeredCorrectly.size}/${totalQuestions}`;
+        updateQuestionIndicator(currentQuestionIndex);
     }
     
+    function updateQuestionIndicator(currentIndex) {
+        document.querySelectorAll('.question-dot').forEach((dot, index) => {
+            dot.classList.remove('current', 'answered', 'pending');
+            
+            const questionId = questions[index]?.id;
+            
+            if (index === currentIndex) {
+                dot.classList.add('current');
+            } else if (answeredCorrectly.has(questionId)) {
+                dot.classList.add('answered');
+            } else if (pendingQuestions.has(questionId)) {
+                dot.classList.add('pending');
+            }
+        });
+    }
+
     // ===== EDITOR DE CÓDIGO =====
     function initializeCodeEditors() {
         document.querySelectorAll('.code-textarea').forEach(textarea => {
@@ -1335,10 +1502,8 @@
         
         if (!textarea) return;
         
-        // Inicializar números de linha
         updateLineNumbers(textarea, lineNumbers);
         
-        // Event listeners para o editor
         textarea.addEventListener('input', () => {
             updateLineNumbers(textarea, lineNumbers);
         });
@@ -1349,7 +1514,6 @@
         
         textarea.addEventListener('keydown', handleEditorKeydown);
         
-        // Event listeners para os botões
         const runBtn = document.querySelector(`.run-editor-code[data-question-id="${questionId}"]`);
         const checkBtn = document.querySelector(`.check-editor-code[data-question-id="${questionId}"]`);
         
@@ -1377,18 +1541,15 @@
     function handleEditorKeydown(e) {
         const textarea = e.target;
         
-        // Tab com 4 espaços
         if (e.key === 'Tab') {
             e.preventDefault();
             
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             
-            // Inserir 4 espaços
             textarea.value = textarea.value.substring(0, start) + '    ' + textarea.value.substring(end);
             textarea.selectionStart = textarea.selectionEnd = start + 4;
             
-            // Atualizar números de linha
             const questionId = textarea.id.replace('code-input-', '');
             const lineNumbers = document.getElementById(`line-numbers-${questionId}`);
             updateLineNumbers(textarea, lineNumbers);
@@ -1396,32 +1557,194 @@
             return false;
         }
     }
-    
+
+    // ===== VERIFICAÇÃO DE CÓDIGO EDITOR - CORRIGIDA =====
+    async function handleCheckEditorCode(questionId) {
+        console.log("=== 🔧 VERIFICAÇÃO DE CÓDIGO INICIADA ===");
+        
+        const textarea = document.getElementById(`code-input-${questionId}`);
+        const terminal = document.getElementById(`code-output-${questionId}`);
+        const questionContainer = document.querySelector(`[data-question-id="${questionId}"]`);
+        
+        if (!textarea || !terminal) {
+            console.error("❌ Elementos não encontrados");
+            return;
+        }
+        
+        const userCode = textarea.value.trim();
+        console.log("📝 Código do usuário:", userCode);
+        
+        if (!userCode) {
+            showFeedback(questionId, 'incorrect', '❌ Digite algum código antes de verificar', 0);
+            return;
+        }
+        
+        // ✅ BUSCAR SAÍDA ESPERADA
+        const expectedOutput = getExpectedOutputForQuestion(questionId);
+        console.log("🎯 Saída esperada:", expectedOutput);
+        
+        const currentQuestion = questions.find(q => q.id === questionId);
+        const xp = currentQuestion ? currentQuestion.xp : 10;
+        
+        // ✅ EXECUTAR CÓDIGO
+        terminal.innerHTML = '<div class="text-yellow-400">🔧 Executando código...</div>';
+        
+        try {
+            const output = await runPythonCode(userCode);
+            const userOutput = output ? output.toString().trim() : "";
+            console.log("📤 Saída do usuário:", userOutput);
+            
+            // ✅ VERIFICAR SE ESTÁ CORRETO
+            let isCorrect = false;
+            
+            if (!expectedOutput || expectedOutput.trim() === "") {
+                // Se não há saída esperada, considera correto se executou sem erro
+                isCorrect = true;
+                console.log("✅ Sem saída esperada - considerado correto");
+            } else {
+                // Comparação flexível
+                isCorrect = areOutputsEqual(userOutput, expectedOutput);
+                console.log("🔍 Comparação:", isCorrect ? "CORRETO" : "INCORRETO");
+            }
+            
+            if (isCorrect) {
+                showFeedback(questionId, 'correct', '✅ Código correto! Parabéns!', xp);
+                terminal.innerHTML = `<div class="text-green-400">${userOutput || "✅ Executado com sucesso!"}</div>`;
+                
+                setTimeout(() => {
+                    nextQuestion(true);
+                }, 1500);
+            } else {
+                // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
+                if (!isReviewMode) {
+                    await loseLife();
+                }
+                
+                showFeedback(questionId, 'incorrect', '❌ Código incorreto. Tente novamente.', 0);
+                terminal.innerHTML = `<div class="text-red-400">
+                    <strong>Sua saída:</strong> ${userOutput || "(nenhuma saída)"}
+                    ${expectedOutput ? `\n<strong>Esperado:</strong> ${expectedOutput}` : ''}
+                </div>`;
+                
+                setTimeout(() => {
+                    nextQuestion(false);
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error("❌ Erro na execução:", error);
+            
+            // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
+            if (!isReviewMode) {
+                await loseLife();
+            }
+            
+            showFeedback(questionId, 'incorrect', '❌ Erro no código. Verifique a sintaxe.', 0);
+            terminal.innerHTML = `<div class="text-red-400">Erro: ${error.message}</div>`;
+            
+            setTimeout(() => {
+                nextQuestion(false);
+            }, 2000);
+        }
+        
+        console.log("=== 🔧 VERIFICAÇÃO FINALIZADA ===");
+    }
+
+    // ===== EXECUTAR CÓDIGO EDITOR =====
+    async function handleRunEditorCode(questionId) {
+        const textarea = document.getElementById(`code-input-${questionId}`);
+        const terminal = document.getElementById(`code-output-${questionId}`);
+        
+        if (!textarea || !terminal) return;
+        
+        const code = textarea.value.trim();
+        
+        if (!code) {
+            terminal.innerHTML = '<div class="text-yellow-400">Digite algum código para executar.</div>';
+            return;
+        }
+        
+        if (!isPyodideLoaded) {
+            terminal.innerHTML = '<div class="text-yellow-400">Aguarde, Python ainda está carregando...</div>';
+            return;
+        }
+        
+        terminal.innerHTML = '<div class="text-yellow-400">🐍 Executando código Python...</div>';
+        terminal.classList.remove('error');
+        
+        try {
+            console.log("▶️ Executando código:", code);
+            const output = await runPythonCode(code);
+            console.log("✅ Output recebido:", output);
+            
+            let formattedOutput = output;
+            if (!formattedOutput || formattedOutput.trim() === "") {
+                formattedOutput = "✅ Código executado sem output.";
+            }
+            
+            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-green-400">${formattedOutput}</div>`;
+            terminal.classList.remove('error');
+            
+        } catch (error) {
+            console.error("❌ Erro capturado:", error);
+            terminal.innerHTML = `<div style="white-space: pre-wrap; font-family: 'Courier New', monospace;" class="text-red-400">${error.message}</div>`;
+            terminal.classList.add('error');
+        }
+    }
+
     // ===== SISTEMA DE LACUNAS CORRIGIDO =====
+    function initializeFillBlankQuestions() {
+        document.querySelectorAll('[id^="fill-blank-text-"]').forEach(container => {
+            const questionId = container.id.replace('fill-blank-text-', '');
+            const originalText = container.textContent;
+            
+            const processedHTML = originalText.replace(/\[_____\]/g, 
+                '<input type="text" class="blank-input" placeholder="______">'
+            );
+            
+            container.innerHTML = processedHTML;
+            
+            container.style.whiteSpace = 'pre-wrap';
+            container.style.wordWrap = 'break-word';
+            container.style.lineHeight = '1.6';
+            container.classList.add('fill-blank-container');
+        });
+    }
+
+    // ===== FUNÇÃO CORRIGIDA PARA VERIFICAR LACUNAS =====
     async function handleCheckBlank(e) {
         const btn = e.currentTarget;
         const questionContainer = btn.closest('.question-container');
         const questionId = questionContainer.dataset.questionId;
-        const xpElement = questionContainer.querySelector('.bg-yellow-100');
-        const xp = xpElement ? parseInt(xpElement.textContent.match(/\d+/)[0]) : 10;
+        const currentQuestion = questions.find(q => q.id === questionId);
+        const xp = currentQuestion ? currentQuestion.xp : 10;
         
         console.log(`🔍 Verificando questão de lacunas: ${questionId}`);
         
+        // ✅ MODO REVISÃO: MOSTRAR RESPOSTA CORRETA
         if (isReviewMode) {
             const blankInputs = questionContainer.querySelectorAll('.blank-input');
-            const respostasCorretas = getCorrectAnswersForReview(questionId);
+            const respostasCorretas = await getCorrectAnswersForQuestion(questionId);
+            
+            console.log("📝 Modo Revisão - Respostas corretas:", respostasCorretas);
             
             blankInputs.forEach((input, index) => {
                 const respostaCorreta = respostasCorretas[index] || "Resposta não disponível";
                 input.value = respostaCorreta;
-                input.classList.add('blank-filled', 'correct-answer');
+                input.classList.add('blank-filled');
                 input.disabled = true;
             });
             
-            showFeedback(questionId, 'info', '📝 Modo revisão: Complete corretamente as lacunas', 0);
+            showFeedback(questionId, 'info', '📝 Modo revisão: Respostas corretas mostradas', 0);
+            
+            setTimeout(() => {
+                nextQuestion(true);
+            }, 2000);
+            
             return;
         }
         
+        // ✅ MODO NORMAL: VERIFICAR RESPOSTAS
         const blankInputs = questionContainer.querySelectorAll('.blank-input');
         let allFilled = true;
         
@@ -1439,100 +1762,164 @@
             return;
         }
         
-        // ✅ BUSCAR RESPOSTAS CORRETAS DE FORMA ROBUSTA
+        // ✅ BUSCAR RESPOSTAS CORRETAS
         const respostasCorretas = await getCorrectAnswersForQuestion(questionId);
-        console.log("Respostas corretas encontradas:", respostasCorretas);
-        console.log("Número de inputs:", blankInputs.length);
+        console.log("🎯 Respostas corretas encontradas:", respostasCorretas);
         
+        // ✅ VERIFICAR RESPOSTAS DO USUÁRIO
         let isCorrect = true;
-        let incorrectAnswers = [];
+        let incorrectCount = 0;
         
-        // Remover classes anteriores
         blankInputs.forEach(input => {
-            input.classList.remove('correct-answer', 'wrong-answer', 'blank-filled');
+            input.classList.remove('filled', 'shake');
         });
         
-        // Verificar cada lacuna
         blankInputs.forEach((input, index) => {
             const userAnswer = input.value.trim().toLowerCase();
             const correctAnswer = respostasCorretas[index] ? respostasCorretas[index].toString().toLowerCase() : "";
             
-            console.log(`Lacuna ${index}: Usuário="${userAnswer}", Correto="${correctAnswer}"`);
+            console.log(`📝 Lacuna ${index + 1}: Usuário="${userAnswer}", Correto="${correctAnswer}"`);
             
-            if (userAnswer === correctAnswer) {
-                input.classList.add('correct-answer', 'blank-filled', 'bounce-in');
+            if (correctAnswer && userAnswer === correctAnswer) {
+                input.classList.add('filled');
+                console.log(`✅ Lacuna ${index + 1} CORRETA`);
             } else {
                 isCorrect = false;
-                incorrectAnswers.push(index + 1);
-                input.classList.add('wrong-answer', 'shake');
+                incorrectCount++;
+                input.classList.add('shake');
+                console.log(`❌ Lacuna ${index + 1} INCORRETA`);
             }
         });
         
-        if (isCorrect) {
+        // ✅ MOSTRAR RESULTADO
+        if (isCorrect && respostasCorretas.length > 0) {
             showFeedback(questionId, 'correct', '✅ Todas as lacunas preenchidas corretamente!', xp);
-            correctAnswers++;
-            totalXP += xp;
             
             setTimeout(() => {
                 nextQuestion(true);
             }, 1500);
         } else {
-            let errorMessage = '❌ Algumas lacunas estão incorretas.';
-            if (incorrectAnswers.length > 0) {
-                errorMessage += ` Lacunas ${incorrectAnswers.join(', ')} estão erradas.`;
+            // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
+            if (!isReviewMode) {
+                await loseLife();
             }
             
+            const errorMessage = incorrectCount > 0 
+                ? `❌ ${incorrectCount} lacuna(s) incorreta(s). Tente novamente.`
+                : '❌ Respostas não conferem. Tente novamente.';
+                
             showFeedback(questionId, 'incorrect', errorMessage, 0);
-            
-            await loseLife();
             
             setTimeout(() => {
                 nextQuestion(false);
-            }, 1500);
+            }, 2000);
         }
     }
 
-    // ✅ FUNÇÃO MELHORADA PARA BUSCAR RESPOSTAS CORRETAS
+    // ===== FUNÇÃO PARA BUSCAR RESPOSTAS CORRETAS =====
     async function getCorrectAnswersForQuestion(questionId) {
         console.log(`🔍 Buscando respostas para questão ${questionId}`);
         
         try {
-            // Tentar buscar via API
-            const response = await fetch(`/api/questao/${questionId}/respostas/`);
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Respostas da API:", data.respostas);
-                return data.respostas || [];
-            }
-        } catch (error) {
-            console.log("API não disponível, usando método alternativo");
-        }
-        
-        // Método alternativo: buscar das opções corretas
-        const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
-        if (!questionElement) {
-            console.error("Elemento da questão não encontrado");
-            return [];
-        }
-        
-        // Buscar todas as opções marcadas como corretas
-        const opcoesCorretas = questionElement.querySelectorAll('.option-button[data-correct="true"]');
-        const respostas = Array.from(opcoesCorretas).map(opcao => {
-            return opcao.textContent.trim();
-        });
-        
-        console.log("Respostas das opções:", respostas);
-        
-        // Se não encontrou opções, tentar do data attribute
-        if (respostas.length === 0) {
-            const questaoData = questionElement.querySelector('[data-respostas]');
-            if (questaoData && questaoData.dataset.respostas) {
+            // ✅ PRIMEIRO: Tentar buscar do elemento de respostas
+            const respostasElement = document.getElementById(`respostas-${questionId}`);
+            if (respostasElement && respostasElement.dataset.respostas) {
                 try {
-                    const respostasData = JSON.parse(questaoData.dataset.respostas);
-                    console.log("Respostas do data attribute:", respostasData);
-                    return respostasData;
+                    const respostas = JSON.parse(respostasElement.dataset.respostas);
+                    console.log("✅ Respostas encontradas no data attribute:", respostas);
+                    
+                    // ✅ CORREÇÃO: Garantir que é um array e não está vazio
+                    if (Array.isArray(respostas) && respostas.length > 0) {
+                        return respostas;
+                    } else {
+                        console.warn("⚠️ Array de respostas vazio ou inválido");
+                    }
                 } catch (e) {
-                    console.error("Erro ao parsear respostas:", e);
+                    console.error("❌ Erro ao parsear respostas:", e);
+                }
+            }
+            
+            // ✅ SEGUNDO: Tentar buscar via API
+            try {
+                const response = await fetch(`/api/questao/${questionId}/respostas/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("✅ Respostas da API:", data.respostas);
+                    
+                    if (data.respostas && Array.isArray(data.respostas) && data.respostas.length > 0) {
+                        return data.respostas;
+                    }
+                }
+            } catch (apiError) {
+                console.log("🔶 API não disponível, usando métodos alternativos");
+            }
+            
+            // ✅ TERCEIRO: Tentar extrair do texto com lacunas
+            const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (questionElement) {
+                const textoComLacunas = questionElement.querySelector('[id^="fill-blank-text-"]');
+                if (textoComLacunas) {
+                    const respostasExtraidas = extractAnswersFromText(textoComLacunas.textContent);
+                    if (respostasExtraidas.length > 0) {
+                        console.log("✅ Respostas extraídas do texto:", respostasExtraidas);
+                        return respostasExtraidas;
+                    }
+                }
+            }
+            
+            // ✅ QUARTO: Fallback para opções de múltipla escolha (se aplicável)
+            const opcoesCorretas = questionElement?.querySelectorAll('.option-button[data-correct="true"]');
+            if (opcoesCorretas && opcoesCorretas.length > 0) {
+                const respostas = Array.from(opcoesCorretas).map(opcao => {
+                    return opcao.textContent.trim();
+                });
+                console.log("✅ Respostas das opções corretas:", respostas);
+                return respostas;
+            }
+            
+            console.warn("⚠️ Nenhuma resposta encontrada para a questão");
+            return ["resposta_padrao"]; // Fallback para evitar erro
+            
+        } catch (error) {
+            console.error("❌ Erro crítico ao buscar respostas:", error);
+            return ["resposta_padrao"]; // Fallback
+        }
+    }
+
+    // ===== FUNÇÃO AUXILIAR PARA EXTRAIR RESPOSTAS DO TEXTO =====
+    function extractAnswersFromText(texto) {
+        console.log("📝 Extraindo respostas do texto:", texto);
+        
+        const respostas = [];
+        
+        // Padrões para encontrar respostas no texto
+        const patterns = [
+            /resposta[:\s]*([^\n\.]+)/gi,
+            /preencha[:\s]*([^\n\.]+)/gi,
+            /deve ser[:\s]*([^\n\.]+)/gi,
+            /correto[:\s]*([^\n\.]+)/gi,
+            /preencha com[:\s]*([^\n\.]+)/gi
+        ];
+        
+        for (let pattern of patterns) {
+            const matches = texto.matchAll(pattern);
+            for (const match of matches) {
+                if (match[1]) {
+                    const resposta = match[1].trim();
+                    if (resposta && !respostas.includes(resposta)) {
+                        respostas.push(resposta);
+                    }
+                }
+            }
+        }
+        
+        // Se não encontrou padrões, tentar pegar palavras após "_____"
+        if (respostas.length === 0) {
+            const blankPattern = /_____\s*[:\-]?\s*([^\s\.\,]+)/g;
+            const blankMatches = texto.matchAll(blankPattern);
+            for (const match of blankMatches) {
+                if (match[1]) {
+                    respostas.push(match[1].trim());
                 }
             }
         }
@@ -1540,30 +1927,6 @@
         return respostas;
     }
 
-    // ✅ FUNÇÃO AUXILIAR PARA MODO REVISÃO (mantida para compatibilidade)
-    function getCorrectAnswersForReview(questionId) {
-        let respostas = [];
-        
-        // Tentar da variável global
-        if (window[`respostasQuestao${questionId}`]) {
-            respostas = window[`respostasQuestao${questionId}`];
-        }
-        // Tentar do data attribute
-        else {
-            const answersContainer = document.querySelector(`[data-questao-id="${questionId}"]`);
-            if (answersContainer && answersContainer.dataset.respostas) {
-                try {
-                    respostas = JSON.parse(answersContainer.dataset.respostas);
-                } catch (e) {
-                    console.error("❌ Erro ao parsear respostas:", e);
-                }
-            }
-        }
-        
-        console.log(`Respostas para questão ${questionId}:`, respostas);
-        return Array.isArray(respostas) ? respostas : [];
-    }
-        
     // ===== SISTEMA DE DICAS =====
     function initializeHints() {
         document.querySelectorAll('.question-container').forEach(container => {
@@ -1607,10 +1970,9 @@
             counter.classList.add('bg-red-500', 'text-white');
         }
     }
-    
+
     // ===== MANIPULADORES DE RESPOSTAS =====
     function initializeQuestionEvents() {
-        // Sistema de dicas
         document.querySelectorAll('.hint-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const questionId = e.currentTarget.dataset.questionId;
@@ -1618,106 +1980,106 @@
             });
         });
         
-        // Múltipla escolha
         document.querySelectorAll('.option-button').forEach(btn => {
             btn.addEventListener('click', handleMultipleChoice);
         });
         
-        // Completar lacunas
         document.querySelectorAll('.check-blank').forEach(btn => {
             btn.addEventListener('click', handleCheckBlank);
         });
     }
     
-    function handleMultipleChoice(e) {
-    const btn = e.currentTarget;
-    const questionContainer = btn.closest('.question-container');
-    const questionId = questionContainer.dataset.questionId;
-    const isCorrect = btn.dataset.correct === 'true';
-    const xp = parseInt(questionContainer.querySelector('.bg-yellow-100').textContent.match(/\d+/)[0]);
-    
-    if (isReviewMode) {
-        questionContainer.querySelectorAll('.option-button').forEach(option => {
-            if (option.dataset.correct === 'true') {
-                option.classList.add('correct-answer', 'bounce-in');
-            }
-            option.classList.add('opacity-70');
-        });
+    // ===== MÚLTIPLA ESCOLHA CORRIGIDA =====
+    async function handleMultipleChoice(e) {
+        const btn = e.currentTarget;
+        const questionContainer = btn.closest('.question-container');
+        const questionId = questionContainer.dataset.questionId;
+        const isCorrect = btn.dataset.correct === 'true';
+        const currentQuestion = questions.find(q => q.id === questionId);
+        const xp = currentQuestion ? currentQuestion.xp : 10;
         
-        showFeedback(questionId, 'info', '📝 Modo revisão: Aprenda com os erros anteriores', 0);
-        
-        // ✅ CORREÇÃO: No modo revisão, passar automaticamente para próxima questão após 2 segundos
-        setTimeout(() => {
-            nextQuestion(true); // true porque no modo revisão sempre passa
-        }, 2000);
-        
-        return;
-    }
-    
-    questionContainer.querySelectorAll('.option-button').forEach(option => {
-        option.classList.remove('correct-answer', 'wrong-answer');
-    });
-    
-    if (isCorrect) {
-        btn.classList.add('correct-answer', 'bounce-in');
-        showFeedback(questionId, 'correct', '✅ Resposta correta!', xp);
-        correctAnswers++;
-        totalXP += xp;
-        
-        setTimeout(() => {
-            nextQuestion(true);
-        }, 1500);
-    } else {
-        btn.classList.add('wrong-answer', 'shake');
-        showFeedback(questionId, 'incorrect', '❌ Resposta incorreta.', 0);
-        
-        loseLife().then(() => {
-            setTimeout(() => {
-                nextQuestion(false);
-            }, 1500);
-        });
-    }
-}
-    
-    // ===== FUNÇÕES AUXILIARES =====
-    async function loseLife() {
-        if (isReviewMode) return false;
-        
-        if (userLives > 0) {
-            userLives--;
-            
-            const aulaId = document.getElementById('aula-id').value;
-            
-            try {
-                const response = await fetch("{% url 'usar_vida_pratica' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        aula_id: aulaId
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    userLives = data.vidas_restantes;
+        // ✅ MODO REVISÃO: MOSTRAR RESPOSTA CORRETA
+        if (isReviewMode) {
+            questionContainer.querySelectorAll('.option-button').forEach(option => {
+                if (option.dataset.correct === 'true') {
+                    option.classList.add('selected');
                 }
-            } catch (error) {
-                console.error('❌ Erro na requisição:', error);
-            }
+                option.disabled = true;
+            });
             
-            if (userLives <= 0) {
-                setTimeout(() => {
-                    endPracticeDueToLives();
-                }, 1000);
-            }
+            showFeedback(questionId, 'info', '📝 Modo revisão: Resposta correta destacada', 0);
             
-            return true;
+            setTimeout(() => {
+                nextQuestion(true);
+            }, 2000);
+            
+            return;
         }
         
-        return false;
+        // ✅ MODO NORMAL: VERIFICAR RESPOSTA
+        questionContainer.querySelectorAll('.option-button').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        btn.classList.add('selected');
+        
+        if (isCorrect) {
+            showFeedback(questionId, 'correct', '✅ Resposta correta!', xp);
+            
+            // ✅ DESABILITAR APÓS ACERTAR
+            questionContainer.querySelectorAll('.option-button').forEach(option => {
+                option.disabled = true;
+            });
+            
+            setTimeout(() => {
+                nextQuestion(true);
+            }, 1500);
+        } else {
+            // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
+            await loseLife();
+            
+            showFeedback(questionId, 'incorrect', '❌ Resposta incorreta. Tente novamente.', 0);
+            
+            setTimeout(() => {
+                nextQuestion(false);
+            }, 2000);
+        }
+    }
+
+    // ===== FUNÇÕES AUXILIARES =====
+    function resetQuestion(questionId) {
+        const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+        if (!questionElement) return;
+        
+        console.log(`🔄 Resetando questão ${questionId} para nova tentativa`);
+        
+        // Resetar opções de múltipla escolha
+        const optionButtons = questionElement.querySelectorAll('.option-button');
+        optionButtons.forEach(btn => {
+            btn.classList.remove('selected', 'shake');
+            btn.disabled = false;
+        });
+        
+        // Resetar lacunas
+        const blankInputs = questionElement.querySelectorAll('.blank-input');
+        blankInputs.forEach(input => {
+            input.classList.remove('filled', 'shake');
+            input.disabled = false;
+            input.value = '';
+        });
+        
+        // Resetar código (manter o código atual, apenas limpar feedback)
+        const terminal = document.getElementById(`code-output-${questionId}`);
+        if (terminal) {
+            terminal.innerHTML = '<div class="text-green-400">✅ Python carregado! Digite seu código e clique em "Executar".</div>';
+        }
+        
+        // Limpar feedback
+        const feedback = document.getElementById(`feedback-${questionId}`);
+        if (feedback) {
+            feedback.classList.add('hidden');
+            feedback.innerHTML = '';
+        }
     }
     
     function showFeedback(questionId, type, message, xp) {
@@ -1749,51 +2111,85 @@
         clearInterval(timerInterval);
         return seconds;
     }
-    
+
+    // ===== CALCULAR BÔNUS DE TEMPO =====
+    function calculateTimeBonus(elapsedTime, totalXP) {
+        const tempoMaximo = "{{ aula.tempo_pratica }}" * 60; // converter minutos para segundos
+        const percentualTempo = Math.max(0, (tempoMaximo - elapsedTime) / tempoMaximo);
+        
+        // Bônus de até 20% do XP total por tempo rápido
+        const bonus = Math.round(totalXP * percentualTempo * 0.2);
+        console.log(`⏰ Bônus de tempo: ${bonus} XP (${Math.round(percentualTempo * 100)}% de eficiência)`);
+        
+        return bonus;
+    }
+
+    // ===== FINALIZAÇÃO CORRIGIDA - XP EXATO =====
     async function finishPractice() {
         const aulaId = document.getElementById('aula-id').value;
         const elapsedTime = stopTimer();
         
-        // ✅ CORREÇÃO: CALCULAR XP CORRETAMENTE
-        let xpBase = totalXP;
-        let revisaoBonus = 0;
+        console.log(`🏁 Finalizando prática - Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
+        console.log(`📊 XP acumulado: ${totalXP}`);
+        console.log(`⏰ Tempo decorrido: ${elapsedTime} segundos`);
+        console.log(`💓 Vidas restantes: ${lives}`);
+        
+        let xpFinal = 0;
         let timeBonus = 0;
+        let revisaoBonus = 0;
         
         if (isReviewMode) {
-            // MODO REVISÃO: APENAS 5 XP FIXOS (NÃO SOMA XP DAS QUESTÕES)
-            revisaoBonus = parseInt(document.getElementById('xp-revisao').value) || 5;
-            totalXP = revisaoBonus; // ✅ CORREÇÃO: SÓ O BÔNUS DE REVISÃO
-            xpBase = 0; // Zera o XP das questões no modo revisão
+            // ✅ MODO REVISÃO: APENAS BÔNUS FIXO DE 5 XP (SOMENTE UMA VEZ)
+            revisaoBonus = 5; // Valor fixo
+            xpFinal = revisaoBonus;
             
-            console.log(`📝 Modo Revisão: XP das questões ignorado, apenas bônus de ${revisaoBonus} XP`);
+            console.log(`📝 Modo Revisão: Bônus fixo de ${revisaoBonus} XP`);
             
-            try {
-                await fetch("{% url 'registrar_xp_revisao' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        aula_id: aulaId,
-                        xp_revisao: revisaoBonus
-                    })
-                });
-            } catch (error) {
-                console.error('❌ Erro ao registrar XP da revisão:', error);
+            // ✅ CORREÇÃO: EVITAR REGISTRO DUPLICADO
+            if (!revisaoRegistrada) {
+                try {
+                    const response = await fetch("{% url 'registrar_xp_revisao' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            aula_id: aulaId,
+                            xp_revisao: revisaoBonus
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        revisaoRegistrada = true;
+                        console.log("✅ XP de revisão registrado com sucesso!");
+                    } else {
+                        console.error("❌ Erro ao registrar XP da revisão:", data.error);
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao registrar XP da revisão:', error);
+                }
+            } else {
+                console.log("🔁 XP de revisão já registrado anteriormente");
             }
         } else {
-            // MODO NORMAL: XP das questões + bônus por tempo
-            const expectedTime = {{ aula.tempo_pratica }} * 60;
-            if (elapsedTime < expectedTime * 0.5) timeBonus = 10;
-            else if (elapsedTime < expectedTime * 0.8) timeBonus = 5;
-            totalXP = xpBase + timeBonus;
+            // ✅ MODO NORMAL: XP EXATO DAS QUESTÕES CORRETAS + BÔNUS DE TEMPO
+            const xpQuestoes = Array.from(answeredCorrectly).reduce((total, questionId) => {
+                const question = questions.find(q => q.id === questionId);
+                return total + (question ? question.xp : 0);
+            }, 0);
             
-            console.log(`🎯 Modo Normal: XP Base=${xpBase}, Bônus Tempo=${timeBonus}, Total=${totalXP}`);
-        }
-        
-        // ✅ CORREÇÃO: SÓ REGISTRAR NO BANCO SE NÃO FOR REVISÃO
-        if (!isReviewMode) {
+            // ✅ CORREÇÃO: CALCULAR BÔNUS DE TEMPO
+            timeBonus = calculateTimeBonus(elapsedTime, xpQuestoes);
+            xpFinal = xpQuestoes + timeBonus;
+            
+            console.log(`🎯 Modo Normal:`);
+            console.log(`   - Questões corretas: ${answeredCorrectly.size}`);
+            console.log(`   - XP das questões: ${xpQuestoes}`);
+            console.log(`   - Bônus de tempo: +${timeBonus} XP`);
+            console.log(`   - Total: ${xpFinal} XP`);
+            
             try {
                 const response = await fetch("{% url 'finalizar_pratica' %}", {
                     method: 'POST',
@@ -1803,21 +2199,23 @@
                     },
                     body: JSON.stringify({
                         aula_id: aulaId,
-                        xp_total: totalXP, // ✅ ENVIA O XP CORRETO
-                        vidas_restantes: userLives
+                        xp_total: xpFinal,
+                        tempo_decorrido: elapsedTime
                     })
                 });
                 
                 const data = await response.json();
                 if (data.success) {
-                    console.log("✅ Prática finalizada com sucesso! XP:", totalXP);
+                    console.log("✅ Prática finalizada com sucesso!");
+                } else {
+                    console.error("❌ Erro ao finalizar prática:", data.error);
                 }
             } catch (error) {
                 console.error('❌ Erro ao finalizar prática:', error);
             }
         }
         
-        showResultScreen(totalXP, elapsedTime, timeBonus, revisaoBonus);
+        showResultScreen(xpFinal, elapsedTime, timeBonus, revisaoBonus);
     }
     
     function showResultScreen(totalXP, elapsedTime, timeBonus, revisaoBonus = 0) {
@@ -1830,56 +2228,43 @@
         if (isReviewMode) {
             resultScreen.querySelector('h2').innerHTML = '📝 Revisão Concluída';
             resultScreen.querySelector('p').textContent = 'Revisão dos exercícios finalizada!';
-        }
-        
-        // ✅ CORREÇÃO: MOSTRAR XP CORRETAMENTE NA TELA
-        if (isReviewMode) {
-            // No modo revisão, mostra apenas o bônus de revisão
+            
+            // ✅ MOSTRAR APENAS O BÔNUS DE REVISÃO
             document.getElementById('final-xp').textContent = revisaoBonus;
             document.getElementById('time-bonus').textContent = '0';
-        } else {
-            // No modo normal, mostra XP base + bônus tempo
-            document.getElementById('final-xp').textContent = totalXP - timeBonus;
-            document.getElementById('time-bonus').textContent = timeBonus;
-        }
-        
-        // ✅ CORREÇÃO: MOSTRAR BÔNUS DE REVISÃO
-        if (isReviewMode) {
             document.getElementById('revisao-bonus').textContent = revisaoBonus;
+            
+        } else {
+            if (lives === 0) {
+                resultScreen.querySelector('h2').innerHTML = '💔 Fim das Vidas';
+                resultScreen.querySelector('p').textContent = 'Suas vidas acabaram, mas você ganhou XP pelo progresso!';
+            }
+            
+            // ✅ CORREÇÃO: MOSTRAR XP DAS QUESTÕES + BÔNUS DE TEMPO
+            document.getElementById('final-xp').textContent = totalXP;
+            document.getElementById('time-bonus').textContent = timeBonus;
+            
+            // Esconder seção de bônus de revisão no modo normal
+            const revisaoSection = resultScreen.querySelector('.bg-purple-100');
+            if (revisaoSection) {
+                revisaoSection.style.display = 'none';
+            }
         }
         
+        // ✅ FORMATAR TEMPO CORRETAMENTE
         const minutes = Math.floor(elapsedTime / 60);
         const secondsRemaining = elapsedTime % 60;
         document.getElementById('final-time').textContent = 
             String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
             
-        console.log(`🏁 Tela de Resultados: Total XP=${totalXP}, Tempo=${minutes}:${secondsRemaining}, Revisão=${revisaoBonus}`);
+        console.log(`🏁 Tela de Resultados:`);
+        console.log(`   - Total XP: ${totalXP}`);
+        console.log(`   - Tempo: ${minutes}:${String(secondsRemaining).padStart(2, '0')}`);
+        console.log(`   - Bônus tempo: ${timeBonus}`);
+        console.log(`   - Bônus revisão: ${revisaoBonus}`);
+        console.log(`   - Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
     }
-    
-    function endPracticeDueToLives() {
-        stopTimer();
-        
-        const resultScreen = document.getElementById('result-screen');
-        const questionsContainer = document.getElementById('questions-container');
-        
-        questionsContainer.style.display = 'none';
-        resultScreen.classList.remove('hidden');
-        
-        resultScreen.querySelector('h2').innerHTML = '💔 Fim da Prática';
-        resultScreen.querySelector('p').textContent = 'Suas vidas acabaram! Tente novamente.';
-        
-        document.getElementById('final-xp').textContent = totalXP;
-        document.getElementById('time-bonus').textContent = '0';
-        
-        const minutes = Math.floor(seconds / 60);
-        const secondsRemaining = seconds % 60;
-        document.getElementById('final-time').textContent = 
-            String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
-        
-        const restartBtn = resultScreen.querySelector('button[onclick="location.reload()"]');
-        restartBtn.innerHTML = 'Tentar Novamente 🔄';
-    }
-    
-    console.log("🚀 Sistema com Python real (Pyodide) carregado com sucesso!");
+
+    console.log("🚀 Sistema corrigido - Loop, Vidas e Bônus funcionando perfeitamente!");
 </script>
 {% endblock %}

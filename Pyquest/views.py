@@ -20,7 +20,10 @@ from django.db import models
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from .conquistas_manager import ConquistaManager
-
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 
 
 
@@ -132,6 +135,14 @@ def home(request):
     progresso_nivel = perfil.get_progresso_nivel()
     xp_necessario = perfil.calcular_xp_para_proximo_nivel()
 
+    # CORREÇÃO: Contar atividades concluídas (lições) de forma real
+    # Contar aulas totalmente concluídas (teoria + prática)
+    licoes_concluidas = AulaConcluida.objects.filter(
+        usuario=request.user,
+        teoria_concluida=True,
+        pratica_concluida=True
+    ).count()
+
     context = {
         "vidas": perfil.vidas,
         "max_vidas": perfil.max_vidas,
@@ -145,7 +156,7 @@ def home(request):
         "conquistas": perfil.conquistas,
         "total_conquistas": perfil.total_conquistas,
         "sequencia": perfil.sequencia,
-        "ja_fez_atividade_hoje": perfil.ja_fez_atividade_hoje,  # NOVO
+        "ja_fez_atividade_hoje": perfil.ja_fez_atividade_hoje,
         "progresso": progresso_hoje.percentual,
         "meta": 60,
         "tempo": tempo_formatado,
@@ -153,6 +164,8 @@ def home(request):
         "xp_diario": progresso_hoje.xp_ganho,
         "atividades": atividades,
         "perfil": perfil,
+        # CORREÇÃO: Usar contagem real de lições concluídas
+        "licoes": licoes_concluidas,
     }
     return render(request, "Pyquest/home.html", context)
 
@@ -169,6 +182,38 @@ def logout_view(request):
 def perfil(request):
     perfil, created = Perfil.objects.get_or_create(user=request.user)
 
+    # CORREÇÃO: Contar lições concluídas corretamente
+    # Cada aula tem 2 lições (teoria + prática)
+    aulas_concluidas = AulaConcluida.objects.filter(
+        usuario=request.user,
+        teoria_concluida=True,
+        pratica_concluida=True
+    )
+    
+    # Total de lições concluídas (cada aula concluída conta como 2 lições)
+    licoes_concluidas = aulas_concluidas.count() * 2
+    
+    # CORREÇÃO: Se quiser contar separadamente teoria e prática
+    licoes_teoria_concluidas = AulaConcluida.objects.filter(
+        usuario=request.user,
+        teoria_concluida=True
+    ).count()
+    
+    licoes_pratica_concluidas = AulaConcluida.objects.filter(
+        usuario=request.user,
+        pratica_concluida=True
+    ).count()
+    
+    # Total geral de lições (teoria + prática)
+    licoes_totais = licoes_teoria_concluidas + licoes_pratica_concluidas
+
+    print(f"📊 DEBUG Perfil - Lições:")
+    print(f"  Aulas totalmente concluídas: {aulas_concluidas.count()}")
+    print(f"  Lições teoria concluídas: {licoes_teoria_concluidas}")
+    print(f"  Lições prática concluídas: {licoes_pratica_concluidas}")
+    print(f"  Total lições (teoria+prática): {licoes_totais}")
+    print(f"  Total lições (aulas*2): {licoes_concluidas}")
+
     # NOVO SISTEMA: Usar progresso do nível sem zerar XP
     progresso_xp = perfil.get_progresso_nivel()
     xp_necessario = perfil.calcular_xp_para_proximo_nivel()
@@ -178,14 +223,36 @@ def perfil(request):
             perfil.avatar = request.FILES["avatar"]
 
         perfil.descricao = request.POST.get("descricao", "").strip()
-        perfil.github = request.POST.get("github", "").strip()
-        perfil.linkedin = request.POST.get("linkedin", "").strip()
+        
+        # VALIDAÇÃO ESPECÍFICA PARA GITHUB E LINKEDIN
+        github = request.POST.get("github", "").strip()
+        linkedin = request.POST.get("linkedin", "").strip()
+        
+        # Validar URL do GitHub
+        if github:
+            github_regex = r'^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$'
+            if not re.match(github_regex, github):
+                messages.error(request, "❌ URL do GitHub inválida! Deve seguir o formato: https://github.com/seuusuario")
+                return redirect("perfil")
+            perfil.github = github
+        else:
+            perfil.github = ""
+        
+        # Validar URL do LinkedIn
+        if linkedin:
+            linkedin_regex = r'^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$'
+            if not re.match(linkedin_regex, linkedin):
+                messages.error(request, "❌ URL do LinkedIn inválida! Deve seguir o formato: https://linkedin.com/in/seunome")
+                return redirect("perfil")
+            perfil.linkedin = linkedin
+        else:
+            perfil.linkedin = ""
 
         perfil.save()
         messages.success(request, "Perfil atualizado com sucesso!")
         return redirect("perfil")
 
-    # ========== FILTROS E PAGINAÇÃO CORRIGIDOS ========== #
+    # ========== FILTROS E PAGINAÇÃO DAS CONQUISTAS ========== #
     raridade = request.GET.get('raridade', 'todas')
     categoria = request.GET.get('categoria', 'todas')
     
@@ -318,7 +385,26 @@ def perfil(request):
         "categoria_filtro": categoria,
         "pagina_atual": page_number,
         "total_paginas": total_paginas,
+        
+        # CORREÇÃO: Usar a contagem correta de lições
+        # Escolha UMA das opções abaixo:
+        
+        # Opção A: Total de lições (teoria + prática separadas)
+        "licoes": licoes_totais,
+        
+        # Opção B: Total de aulas totalmente concluídas * 2
+        # "licoes": licoes_concluidas,
+        
+        # DEBUG: Para verificar os valores
+        "debug_licoes": {
+            'aulas_totalmente_concluidas': aulas_concluidas.count(),
+            'licoes_teoria': licoes_teoria_concluidas,
+            'licoes_pratica': licoes_pratica_concluidas,
+            'licoes_totais': licoes_totais,
+            'licoes_aulas_x2': licoes_concluidas
+        }
     }
+    
     return render(request, "Pyquest/perfil.html", context)
 
 
@@ -383,14 +469,16 @@ def forum(request):
 
         posts_today = Post.objects.filter(created_at__date=hoje).count()
 
-        # 🔹 Hashtags ordenadas e filtradas
+        # 🔹 Hashtags ordenadas e filtradas - APENAS 3 PRIMEIRAS
         trending_tags = (
             Hashtag.objects
-            .filter(contador__gte=1)
-            .order_by('-contador', '-ultimo_uso')[:10]
+            .filter(contador__gt=0)  # Apenas hashtags com contador > 0
+            .order_by('-contador', '-ultimo_uso')[:3]  # Apenas 3 primeiras
         )
 
-        # 🔹 Usuários com mais XP
+        print(f"📊 Tópicos em alta encontrados: {trending_tags.count()}")
+
+        # 🔹 Resto do seu código permanece igual...
         top_users = (
             User.objects
             .filter(perfil__isnull=False)
@@ -446,6 +534,32 @@ def forum(request):
 
     except Exception as e:
         print(f"[ERRO] forum: {e}")
+
+    except Exception as e:
+        print(f"[ERRO] forum: {e}")
+        posts = Post.objects.all().order_by("-created_at")
+        paginator = Paginator(posts, 10)
+        try:
+            posts = paginator.page(1)
+        except:
+            posts = []
+
+        context = {
+            "posts": posts,
+            "total_users": User.objects.count(),
+            "active_today": 0,
+            "posts_today": 0,
+            "trending_tags": Hashtag.objects.order_by('-contador', '-ultimo_uso')[:3],  # MUDANÇA AQUI
+            "top_users": User.objects.filter(perfil__isnull=False).order_by('-perfil__xp')[:10],
+            "current_filter": "all",
+            "search_query": "",
+            "is_paginated": paginator.num_pages > 1,
+            "page_obj": posts,
+        }
+        return render(request, "Pyquest/forum.html", context)
+
+    except Exception as e:
+        print(f"[ERRO] forum: {e}")
         posts = Post.objects.all().order_by("-created_at")
         paginator = Paginator(posts, 10)
         try:
@@ -473,13 +587,16 @@ def create_post(request):
     if request.method == "POST":
         conteudo = request.POST.get("conteudo", "").strip()
         hashtags_text = request.POST.get("hashtags", "")
+        imagem = request.FILES.get("imagem")  # NOVO: Capturar a imagem
 
         if not conteudo:
             return redirect("forum")
 
+        # NOVO: Criar post com imagem
         post = Post.objects.create(
             autor=request.user,
-            conteudo=conteudo
+            conteudo=conteudo,
+            imagem=imagem  # Adicionar a imagem aqui
         )
 
         # 🔹 Processar hashtags
@@ -530,11 +647,17 @@ def edit_post(request, post_id):
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id, autor=request.user)
+    
+    print(f"🗑️ Iniciando exclusão do post {post_id}...")
+    
     if request.method == "POST":
         post.delete()
+        messages.success(request, "Post excluído com sucesso!")
         return redirect("forum")
-    # 👇 redireciona direto sem pedir confirmação
+    
+    # 👇 redireciona direto sem pedir confirmação (se não for POST)
     post.delete()
+    messages.success(request, "Post excluído com sucesso!")
     return redirect("forum")
 
 
@@ -1410,10 +1533,63 @@ def conteudo(request):
         else:
             tempo_formatado = f"{minutos_capitulo}min"
         
-        # Resto do código permanece igual...
+        # **LÓGICA DE DESBLOQUEIO CORRIGIDA**
+        bloqueado = False
+        
+        if capitulo.ordem == 1:
+            # Primeiro capítulo sempre disponível
+            bloqueado = False
+        else:
+            # Buscar o capítulo anterior
+            capitulo_anterior = Capitulo.objects.filter(
+                ordem=capitulo.ordem - 1, 
+                ativo=True
+            ).first()
+            
+            if capitulo_anterior:
+                # Calcular progresso do capítulo anterior
+                modulos_anterior_concluidos = 0
+                for modulo in capitulo_anterior.modulos.filter(ativo=True):
+                    total_partes_anterior = 0
+                    partes_concluidas_anterior = 0
+                    
+                    for aula in modulo.aulas.filter(ativo=True):
+                        if aula.tem_teoria:
+                            total_partes_anterior += 1
+                        if aula.tem_exercicios:
+                            total_partes_anterior += 1
+                        
+                        conclusao = AulaConcluida.objects.filter(
+                            usuario=request.user,
+                            aula=aula
+                        ).first()
+                        
+                        if conclusao:
+                            if aula.tem_teoria and conclusao.teoria_concluida:
+                                partes_concluidas_anterior += 1
+                            if aula.tem_exercicios and conclusao.pratica_concluida:
+                                partes_concluidas_anterior += 1
+                    
+                    # Considerar módulo concluído se TODAS as partes foram concluídas
+                    if total_partes_anterior > 0 and partes_concluidas_anterior == total_partes_anterior:
+                        modulos_anterior_concluidos += 1
+                
+                total_modulos_anterior = capitulo_anterior.modulos.filter(ativo=True).count()
+                
+                # **REGRRA DE DESBLOQUEIO: 50% do capítulo anterior**
+                porcentagem_minima_para_liberar = 50
+                
+                if total_modulos_anterior > 0:
+                    progresso_anterior = (modulos_anterior_concluidos / total_modulos_anterior) * 100
+                    if progresso_anterior < porcentagem_minima_para_liberar:
+                        bloqueado = True
+                else:
+                    # Se não há módulos no anterior, considerar bloqueado
+                    bloqueado = True
+        
+        # **CALCULAR PROGRESSO DO CAPÍTULO ATUAL (independente do bloqueio)**
         modulos_concluidos = 0
         for modulo in capitulo.modulos.filter(ativo=True):
-            # Contar TOTAL DE PARTES (teoria + prática) disponíveis
             total_partes = 0
             partes_concluidas = 0
             
@@ -1446,49 +1622,6 @@ def conteudo(request):
         else:
             progresso_percentual = 0
         
-        # **LÓGICA DE BLOQUEIO**
-        bloqueado = False
-        if capitulo.ordem > 1:
-            capitulo_anterior = Capitulo.objects.filter(
-                ordem=capitulo.ordem - 1, 
-                ativo=True
-            ).first()
-            
-            if capitulo_anterior:
-                modulos_anterior_concluidos = 0
-                for modulo in capitulo_anterior.modulos.filter(ativo=True):
-                    total_partes_anterior = 0
-                    partes_concluidas_anterior = 0
-                    
-                    for aula in modulo.aulas.filter(ativo=True):
-                        if aula.tem_teoria:
-                            total_partes_anterior += 1
-                        if aula.tem_exercicios:
-                            total_partes_anterior += 1
-                        
-                        conclusao = AulaConcluida.objects.filter(
-                            usuario=request.user,
-                            aula=aula
-                        ).first()
-                        
-                        if conclusao:
-                            if aula.tem_teoria and conclusao.teoria_concluida:
-                                partes_concluidas_anterior += 1
-                            if aula.tem_exercicios and conclusao.pratica_concluida:
-                                partes_concluidas_anterior += 1
-                    
-                    if total_partes_anterior > 0 and partes_concluidas_anterior == total_partes_anterior:
-                        modulos_anterior_concluidos += 1
-                
-                total_modulos_anterior = capitulo_anterior.modulos.filter(ativo=True).count()
-                
-                porcentagem_minima_para_liberar = 50
-                
-                if total_modulos_anterior > 0:
-                    progresso_anterior = (modulos_anterior_concluidos / total_modulos_anterior) * 100
-                    if progresso_anterior < porcentagem_minima_para_liberar:
-                        bloqueado = True
-        
         print(f"📊 Capítulo {capitulo.ordem}: {modulos_concluidos}/{total_modulos} módulos - {progresso_percentual}% - Tempo: {tempo_formatado} - Bloqueado: {bloqueado}")
         
         capitulos_com_stats.append({
@@ -1497,7 +1630,7 @@ def conteudo(request):
             'total_aulas': total_aulas,
             'modulos_concluidos': modulos_concluidos,
             'progresso_percentual': progresso_percentual,
-            'bloqueado': bloqueado,
+            'bloqueado': bloqueado,  # **AGORA CORRETAMENTE CALCULADO**
             'dificuldade': capitulo.dificuldade,
             'tempo_total_minutos': tempo_total_capitulo_minutos,
             'tempo_formatado': tempo_formatado,
@@ -1505,10 +1638,11 @@ def conteudo(request):
     
     # **ESTATÍSTICAS CORRETAS**
     total_capitulos_concluidos = len([c for c in capitulos_com_stats if c['progresso_percentual'] == 100])
-    total_capitulos_em_progresso = len([c for c in capitulos_com_stats if 0 < c['progresso_percentual'] < 100])
+    total_capitulos_em_progresso = len([c for c in capitulos_com_stats if 0 < c['progresso_percentual'] < 100 and not c['bloqueado']])
     total_capitulos_bloqueados = len([c for c in capitulos_com_stats if c['bloqueado']])
+    total_capitulos_disponiveis = len([c for c in capitulos_com_stats if not c['bloqueado'] and c['progresso_percentual'] == 0])
     
-    print(f"🎯 Estatísticas - Concluídos: {total_capitulos_concluidos}, Em progresso: {total_capitulos_em_progresso}, Bloqueados: {total_capitulos_bloqueados}")
+    print(f"🎯 Estatísticas - Concluídos: {total_capitulos_concluidos}, Em progresso: {total_capitulos_em_progresso}, Bloqueados: {total_capitulos_bloqueados}, Disponíveis: {total_capitulos_disponiveis}")
     
     context = {
         'capitulos_com_stats': capitulos_com_stats,
@@ -2938,9 +3072,16 @@ def dashboard(request):
     perfil = request.user.perfil
     perfil.verificar_streak_automatico()
     
+    # VERSÃO SIMPLIFICADA
+    modulos_concluidos = ModuloConcluido.objects.filter(usuario=request.user).count()
+    total_modulos = Modulo.objects.filter(ativo=True).count()
+    
     context = {
         'perfil': perfil,
         'current_time': timezone.now().strftime('%d/%m/%Y %H:%M'),
+        'posicao_ranking': 42,
+        'modulos_concluidos': modulos_concluidos,  # NOVO
+        'total_modulos': total_modulos,  # NOVO
     }
     
     return render(request, "Pyquest/dashboard.html", context)
@@ -2973,31 +3114,31 @@ def api_dashboard_basico(request):
         data__date=hoje
     ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
     
-    # Módulos concluídos
-    modulos_concluidos = ModuloConcluido.objects.filter(usuario=request.user).count()
+    # CORREÇÃO: Usar a mesma lógica para contar módulos concluídos
+    modulos_concluidos = perfil.contar_modulos_concluidos()
     total_modulos = Modulo.objects.filter(ativo=True).count()
     
-    # Sequência ATUALIZADA - usa verificação correta
-    sequencia_atual = perfil.sequencia
+    # CORREÇÃO: Usar o campo correto para o recorde de sequência
+    recorde_sequencia = perfil.sequencia_maxima
     
     # Precisão (placeholder - implemente conforme seu sistema)
     precisao = 89
     
     # Acertos seguidos (placeholder)
     acertos_seguidos = perfil.acertos_seguidos
-    recorde_acertos = perfil.sequencia_maxima  # Usando o streak máximo como recorde
     
     return JsonResponse({
         'tempo_estudo': tempo_formatado,
         'tempo_segundos': tempo_estudo_hoje,  # Para cálculos
         'xp_total': perfil.xp,
         'xp_hoje': xp_hoje,
-        'modulos_concluidos': modulos_concluidos,
-        'total_modulos': total_modulos,
-        'sequencia_atual': sequencia_atual,
+        'modulos_concluidos': modulos_concluidos,  # CORREÇÃO
+        'total_modulos': total_modulos,  # CORREÇÃO
+        'sequencia_atual': perfil.sequencia,
+        'recorde_sequencia': recorde_sequencia,
         'precisao': precisao,
         'acertos_seguidos': acertos_seguidos,
-        'recorde_acertos': recorde_acertos,
+        'recorde_acertos': perfil.recorde_acertos,
     })
 
 @login_required
@@ -4135,5 +4276,113 @@ def api_usar_vida(request):
                 'error': 'Sem vidas disponíveis'
             })
             
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+
+def esqueci_senha(request):
+    """View para solicitar redefinição de senha"""
+    context = {}
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        if not email:
+            messages.error(request, "Por favor, informe seu email.")
+            return render(request, "Pyquest/esqueci_senha.html")
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Gerar token para redefinição
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Construir URL de redefinição
+            reset_url = request.build_absolute_uri(
+                f"/redefinir-senha/{uid}/{token}/"
+            )
+            
+            # ⚠️ EM DESENVOLVIMENTO: Mostrar o link na mesma página
+            messages.success(request, f"Link de redefinição gerado com sucesso!")
+            
+            # Adicionar o link ao contexto para mostrar na página
+            context['reset_link'] = reset_url
+            context['email_enviado'] = True
+            
+            # ⚠️ Comente este bloco se quiser testar o email real:
+            """
+            try:
+                send_mail(
+                    'Redefinição de Senha - PyQuest',
+                    f'Clique no link para redefinir sua senha: {reset_url}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, "Email de redefinição enviado! Verifique sua caixa de entrada.")
+                context['email_enviado'] = True
+            except Exception as e:
+                messages.error(request, f"Erro ao enviar email: {str(e)}")
+            """
+            
+        except User.DoesNotExist:
+            messages.error(request, "Email não encontrado em nossa base de dados.")
+    
+    return render(request, "Pyquest/esqueci_senha.html", context)
+
+def redefinir_senha(request, uidb64, token):
+    """View para redefinir a senha com token válido"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            senha1 = request.POST.get('password1')
+            senha2 = request.POST.get('password2')
+            
+            if not senha1 or not senha2:
+                messages.error(request, "Preencha todos os campos.")
+                return render(request, "Pyquest/redefinir_senha.html")
+            
+            if senha1 != senha2:
+                messages.error(request, "As senhas não coincidem.")
+                return render(request, "Pyquest/redefinir_senha.html")
+            
+            if len(senha1) < 8:
+                messages.error(request, "A senha deve ter pelo menos 8 caracteres.")
+                return render(request, "Pyquest/redefinir_senha.html")
+            
+            # Alterar senha
+            user.set_password(senha1)
+            user.save()
+            
+            messages.success(request, "Senha redefinida com sucesso! Faça login com sua nova senha.")
+            return redirect('login')
+        
+        return render(request, "Pyquest/redefinir_senha.html")
+    else:
+        messages.error(request, "Link de redefinição inválido ou expirado.")
+        return redirect('esqueci_senha')
+    
+
+@login_required
+def api_vidas_status(request):
+    """API para status das vidas do usuário"""
+    try:
+        perfil = request.user.perfil
+        perfil.regenerar_vidas()  # Sempre regenerar antes de verificar
+        
+        return JsonResponse({
+            'success': True,
+            'vidas': perfil.vidas,
+            'max_vidas': perfil.max_vidas,
+            'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida(),
+            'progresso_vidas': int((perfil.vidas / perfil.max_vidas) * 100) if perfil.max_vidas > 0 else 0
+        })
+        
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})

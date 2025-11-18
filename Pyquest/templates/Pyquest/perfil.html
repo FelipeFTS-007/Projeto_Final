@@ -6,266 +6,93 @@
 
 {% block extra_css %}
 <style>
-  /* Modal Responsivo */
-  #edit-profile-modal .bg-white {
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: 1rem;
+  /* Variáveis CSS para consistência */
+  :root {
+    --primary-blue: #2682EA;
+    --blue-100: #dbeafe;
+    --blue-200: #bfdbfe;
+    --blue-300: #93c5fd;
+    --blue-600: #2563eb;
+    --blue-800: #1e40af;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
   }
 
-  @media (max-width: 640px) {
-    #edit-profile-modal .bg-white {
-      margin: 0.5rem;
-      max-height: 95vh;
-    }
-  }
-
-  /* Garantir que o modal não ultrapasse a tela */
-  .modal {
-    align-items: flex-start;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-
-  /* Animações personalizadas */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideIn {
-    from {
-      transform: translateY(-10px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes pulse {
-    from {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.05);
-    }
-
-    to {
-      transform: scale(1);
-    }
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .animate-slideIn {
-    animation: slideIn 0.3s ease-out;
-  }
-
-  .animate-pulse {
-    animation: pulse 0.5s ease-in-out;
-  }
-
-  /* Estilização da barra de rolagem */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-
-  /* CORREÇÃO: Fundos translúcidos para conquistas */
-  .conquista {
+  /* Header do Perfil - Layout Centralizado */
+  .profile-header {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1e3a8a 100%);
+    color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 2.5rem 1.5rem;
     position: relative;
     overflow: hidden;
-    border-radius: 0.75rem;
+    text-align: center;
   }
 
-  .badge-bg {
+  .profile-header::before {
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 0;
-    border-radius: 0.75rem;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     opacity: 0.3;
   }
 
-  /* Cores de texto padronizadas */
-  .text-comum {
-    color: rgb(59, 130, 246);
+  /* Container do Avatar Centralizado - AUMENTADO */
+  .avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2.5rem;
   }
 
-  .text-rara {
-    color: rgb(16, 185, 129);
-  }
-
-  .text-epica {
-    color: rgb(139, 92, 246);
-  }
-
-  .text-lendaria {
-    color: rgb(245, 158, 11);
-  }
-
-  /* Fundos dos círculos dos ícones */
-  .icon-comum {
-    background-color: rgb(59, 130, 246);
-    color: white;
-  }
-
-  .icon-rara {
-    background-color: rgb(16, 185, 129);
-    color: white;
-  }
-
-  .icon-epica {
-    background-color: rgb(139, 92, 246);
-    color: white;
-  }
-
-  .icon-lendaria {
-    background-color: rgb(245, 158, 11);
-    color: white;
-  }
-
-  /* Fundos padronizados */
-  .badge-bg-comum {
-    background-color: rgb(59, 130, 246);
-  }
-
-  .badge-bg-rara {
-    background-color: rgb(16, 185, 129);
-  }
-
-  .badge-bg-epica {
-    background-color: rgb(139, 95, 246);
-  }
-
-  .badge-bg-lendaria {
-    background-color: rgb(245, 158, 11);
-  }
-
-  /* Fundo metálico com brilho no hover */
-  .shine-effect {
+  /* Avatar modernizado - AUMENTADO */
+  .avatar-container {
     position: relative;
-    overflow: hidden;
-    transition: transform 0.2s ease-in-out;
-  }
-
-  .shine-effect:hover {
-    transform: scale(1.03);
-  }
-
-  .shine-effect::after {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -75%;
-    width: 50%;
-    height: 200%;
-    background: linear-gradient(120deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.3) 50%,
-        rgba(255, 255, 255, 0) 100%);
-    transform: skewX(-25deg);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 20;
-  }
-
-  .shine-effect:hover::after {
-    opacity: 1;
-    animation: shine 1s forwards;
-  }
-
-  @keyframes shine {
-    0% {
-      left: -75%;
-    }
-
-    100% {
-      left: 125%;
-    }
-  }
-
-  .badge-pill {
     display: inline-block;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    border-radius: 50%;
+    padding: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
   }
 
-  .badge-pill-comum {
-    background-color: rgba(59, 130, 246, 0.2);
-    color: rgb(59, 130, 246);
+  .avatar {
+    width: 8rem; /* Aumentado de 6rem para 8rem */
+    height: 8rem; /* Aumentado de 6rem para 8rem */
+    border-radius: 50%;
+    border: 4px solid white; /* Borda aumentada */
+    background: white;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .badge-pill-rara {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: rgb(16, 185, 129);
-  }
-
-  .badge-pill-epica {
-    background-color: rgba(139, 95, 246, 0.2);
-    color: rgb(139, 95, 246);
-  }
-
-  .badge-pill-lendaria {
-    background-color: rgba(245, 158, 11, 0.2);
-    color: rgb(245, 158, 11);
-  }
-
-  .hidden-conquista {
-    display: none;
-  }
-
-  /* Categorias (não raridades) */
-  .categoria-progresso {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #1d4ed8;
-  }
-
-  .categoria-precisao {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #059669;
-  }
-
-  .categoria-especial {
-    background-color: rgba(139, 92, 246, 0.15);
-    color: #6d28d9;
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .avatar-upload {
     position: relative;
     cursor: pointer;
+    transition: all 0.3s ease;
   }
 
-  .avatar-upload:hover .avatar-overlay {
-    opacity: 1;
+  .avatar-upload:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.3);
   }
 
   .avatar-overlay {
@@ -274,7 +101,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(59, 130, 246, 0.7);
+    background: rgba(38, 130, 234, 0.8);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -283,185 +110,979 @@
     transition: opacity 0.3s ease;
   }
 
-  .modal {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-
-  .modal-hidden {
-    opacity: 0;
-    transform: scale(0.9);
-    pointer-events: none;
-  }
-
-  .modal-visible {
+  .avatar-upload:hover .avatar-overlay {
     opacity: 1;
-    transform: scale(1);
   }
 
-  .achievement-unlocked {
+  /* Informações do usuário centralizadas */
+  .user-info {
+    text-align: center;
+  }
+
+  .username {
+    font-size: 2.25rem; /* Aumentado ligeiramente */
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Barra de progresso de nível centralizada */
+  .level-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .level-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.35rem 1rem; /* Aumentado */
+    border-radius: 9999px;
+    font-size: 0.9rem; /* Aumentado */
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+  }
+
+  .progress-bar-container {
+    width: 14rem; /* Aumentado */
+    height: 0.6rem; /* Aumentado */
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .achievement-unlocked:hover {
+  .progress-bar-fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  .progress-percent {
+    font-size: 0.85rem; /* Aumentado */
+    min-width: 3rem; /* Aumentado */
+    text-align: center;
+  }
+
+  /* Estatísticas centralizadas abaixo do avatar */
+  .stats-section {
+    display: flex;
+    justify-content: center;
+    gap: 2rem; /* Aumentado o espaçamento */
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 1.2rem; /* Aumentado */
+    padding: 1.75rem 1.5rem; /* Aumentado */
+    text-align: center;
+    min-width: 9rem; /* Aumentado */
+    box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.2);
+  }
+
+  .stat-value {
+    font-size: 1.7rem; /* Aumentado */
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem; /* Aumentado */
+    opacity: 0.9;
+    font-weight: 400;
+  }
+
+  /* Botão de edição no canto */
+  .edit-profile-btn {
+    position: absolute;
+    top: 1.5rem; /* Ajustado */
+    right: 1.5rem; /* Ajustado */
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary-blue);
+    border: none;
+    padding: 0.6rem 1.2rem; /* Aumentado */
+    border-radius: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    font-size: 0.95rem; /* Aumentado */
+  }
+
+  .edit-profile-btn:hover {
+    background: white;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  .achievement-unlocked::before {
+  /* Animações */
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  /* MODAL DE EDIÇÃO - CAMPOS COM BORDAS VISÍVEIS */
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 0.85rem; /* Aumentado */
+    border: 2px solid #d1d5db; /* Borda mais espessa e visível */
+    border-radius: 0.75rem; /* Cantos mais arredondados */
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background-color: white;
+    color: var(--gray-700);
+  }
+
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(38, 130, 234, 0.15); /* Sombra mais suave */
+    background-color: #fafafa;
+  }
+
+  .form-input:disabled {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 6rem; /* Aumentado */
+    line-height: 1.5;
+  }
+
+  /* Avatar preview no modal - AUMENTADO */
+  .avatar-preview {
+    width: 8rem; /* Aumentado de 6rem para 8rem */
+    height: 8rem; /* Aumentado de 6rem para 8rem */
+    border-radius: 50%;
+    border: 3px solid var(--blue-300); /* Borda mais visível */
+    overflow: hidden;
+    margin: 0 auto 1.5rem; /* Aumentado */
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-upload-btn {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: var(--primary-blue);
+    width: 2.5rem; /* Aumentado */
+    height: 2.5rem; /* Aumentado */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    border: 2px solid white;
+  }
+
+  .avatar-upload-btn:hover {
+    background: #1e70ea;
+    transform: scale(1.1);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .avatar-upload-btn svg {
+    width: 1.2rem; /* Aumentado */
+    height: 1.2rem; /* Aumentado */
+    color: white;
+  }
+
+  /* Labels dos formulários mais destacados */
+  .form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--gray-700);
+  }
+
+  /* Seção "Sobre o Usuário" modernizada */
+  .about-section {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.75rem; /* Aumentado */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 2rem; /* Aumentado */
+    border-left: 4px solid var(--primary-blue);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.3rem; /* Aumentado */
+    font-weight: 700;
+    margin-bottom: 1.2rem; /* Aumentado */
+    color: var(--gray-700);
+  }
+
+  .section-title img {
+    width: 1.75rem; /* Aumentado */
+    height: 1.75rem; /* Aumentado */
+  }
+
+  /* O restante do CSS permanece igual... */
+
+  /* Conquistas - Design modernizado */
+  .achievements-section {
+    margin-top: 2.5rem; /* Aumentado */
+  }
+
+  .section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .section-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+  }
+
+  .achievements-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-700);
+  }
+
+  .achievements-title img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .achievements-counter {
+    background: var(--blue-100);
+    color: var(--blue-800);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .filters-container {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-select {
+    border: 2px solid var(--gray-300); /* Borda mais visível */
+    border-radius: 0.5rem;
+    padding: 0.6rem; /* Aumentado */
+    font-size: 0.875rem;
+    background: white;
+    color: var(--gray-700);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(38, 130, 234, 0.1);
+  }
+
+  /* Grid de conquistas modernizado */
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .achievements-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .achievements-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .achievements-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .achievement-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .achievement-card::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.5) 100%);
-    z-index: 1;
-    opacity: 0.7;
+    border-radius: 1rem;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary-blue), #8b5cf6, #f59e0b);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: subtract;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .achievement-card:hover::before {
+    opacity: 1;
+  }
+
+  .achievement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .achievement-unlocked {
+    border-left: 4px solid var(--success);
   }
 
   .achievement-locked {
-    filter: grayscale(0.8);
+    filter: grayscale(0.7);
     opacity: 0.8;
   }
 
-  .badge-pill-progresso {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #2563eb;
-  }
-
-  .badge-pill-precisao {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
-  }
-
-  .badge-pill-especial {
-    background-color: rgba(168, 85, 247, 0.15);
-    color: #9333ea;
-  }
-
-  .badge-pill-dominio {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #059669;
-  }
-
-  .badge-pill-algoritmos {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-  }
-
-  /* Conteúdo das conquistas deve ficar acima do fundo */
-  .conquista-content {
+  .achievement-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     position: relative;
-    z-index: 10;
+    overflow: hidden;
   }
 
-  /* Modal Conquista */
-  #modal-conquista {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+  .modal-body .achievement-icon {
+  width: 6rem; /* Aumentado para melhor visualização */
+  height: 6rem; /* Aumentado para melhor visualização */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* A imagem dentro do ícone no modal deve conter sem cortes */
+.modal-body .achievement-icon img {
+  width: 70%; /* Reduzido para garantir que caiba completo */
+  height: 70%; /* Reduzido para garantir que caiba completo */
+  object-fit: contain; /* Alterado de 'cover' para 'contain' */
+}
+
+  .achievement-icon::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 50%;
   }
 
-  #modal-conquista.modal-hidden {
-    opacity: 0;
-    transform: scale(0.9);
-    pointer-events: none;
+  .achievement-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
   }
 
-  #modal-conquista.modal-visible {
+  .achievement-description {
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+  }
+
+  .achievement-badges {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  /* Cores de borda lateral baseadas na raridade */
+.achievement-card.raridade-comum {
+    border-left: 4px solid #3b82f6;
+}
+
+.achievement-card.raridade-rara {
+    border-left: 4px solid #10b981;
+}
+
+.achievement-card.raridade-epica {
+    border-left: 4px solid #8b5cf6;
+}
+
+.achievement-card.raridade-lendaria {
+    border-left: 4px solid #f59e0b;
+}
+
+/* Efeitos hover baseados na raridade */
+.achievement-card.raridade-comum:hover {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3), 0 10px 10px -5px rgba(59, 130, 246, 0.2);
+    border-left: 6px solid #3b82f6;
+    transform: translateY(-8px) scale(1.02);
+}
+
+.achievement-card.raridade-rara:hover {
+    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.3), 0 10px 10px -5px rgba(16, 185, 129, 0.2);
+    border-left: 6px solid #10b981;
+    transform: translateY(-8px) scale(1.02);
+}
+
+.achievement-card.raridade-epica:hover {
+    box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.3), 0 10px 10px -5px rgba(139, 92, 246, 0.2);
+    border-left: 6px solid #8b5cf6;
+    transform: translateY(-8px) scale(1.02);
+}
+
+.achievement-card.raridade-lendaria:hover {
+    box-shadow: 0 20px 25px -5px rgba(245, 158, 11, 0.3), 0 10px 10px -5px rgba(245, 158, 11, 0.2);
+    border-left: 6px solid #f59e0b;
+    transform: translateY(-8px) scale(1.02);
+}
+
+/* Brilho sutil no border gradient no hover */
+.achievement-card.raridade-comum:hover::before {
     opacity: 1;
-    transform: scale(1);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa, #3b82f6);
+}
+
+.achievement-card.raridade-rara:hover::before {
+    opacity: 1;
+    background: linear-gradient(135deg, #10b981, #34d399, #10b981);
+}
+
+.achievement-card.raridade-epica:hover::before {
+    opacity: 1;
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa, #8b5cf6);
+}
+
+.achievement-card.raridade-lendaria:hover::before {
+    opacity: 1;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b);
+}
+
+/* Transições suaves */
+.achievement-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.achievement-card::before {
+    transition: opacity 0.4s ease, background 0.4s ease;
+}
+
+/* Efeito de brilho pulsante sutil para conquistas desbloqueadas no hover */
+.achievement-unlocked.raridade-comum:hover .achievement-icon {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.achievement-unlocked.raridade-rara:hover .achievement-icon {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.achievement-unlocked.raridade-epica:hover .achievement-icon {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.achievement-unlocked.raridade-lendaria:hover .achievement-icon {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+.achievement-icon {
+    transition: box-shadow 0.3s ease;
+}
+
+
+/* Efeito nos badges durante o hover */
+.achievement-card:hover .badge {
+    transform: scale(1.05);
+}
+
+.badge {
+    transition: transform 0.3s ease;
+}
+
+/* Cores específicas para os badges de categoria no hover */
+.achievement-card.raridade-comum:hover .badge-categoria {
+    background: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+}
+
+.achievement-card.raridade-rara:hover .badge-categoria {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+}
+
+.achievement-card.raridade-epica:hover .badge-categoria {
+    background: rgba(139, 92, 246, 0.15);
+    color: #7c3aed;
+}
+
+.achievement-card.raridade-lendaria:hover .badge-categoria {
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+}
+
+/* Cores de borda para o modal baseadas na raridade */
+.modal-header.raridade-comum {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.modal-header.raridade-rara {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.modal-header.raridade-epica {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.modal-header.raridade-lendaria {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+  .badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 
-  /* Barras de progresso para conquistas bloqueadas */
+  .badge-rarity {
+    background: rgba(59, 130, 246, 0.1);
+    color: rgb(59, 130, 246);
+  }
+
+  .badge-category {
+    background: rgba(16, 185, 129, 0.1);
+    color: rgb(16, 185, 129);
+  }
+
+  .achievement-progress {
+    width: 100%;
+  }
+
   .progress-bar {
     width: 100%;
-    height: 6px;
-    background-color: #e5e7eb;
-    border-radius: 3px;
+    height: 0.5rem;
+    background: var(--gray-200);
+    border-radius: 9999px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-bottom: 0.5rem;
   }
 
   .progress-fill {
     height: 100%;
-    background-color: #10b981;
-    border-radius: 3px;
-    transition: width 0.3s ease;
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+    background: linear-gradient(90deg, var(--success), #34d399);
   }
 
   .progress-text {
     font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 4px;
+    color: var(--gray-500);
     text-align: center;
   }
-</style>
 
+  /* Seções de conquistas desbloqueadas e bloqueadas */
+  .achievements-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    margin: 2rem 0 1rem;
+    font-weight: 600;
+  }
+
+  .unlocked-title {
+    background: linear-gradient(135deg, var(--blue-100), #dbeafe);
+    color: var(--blue-800);
+  }
+
+  .locked-title {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  /* Paginação moderna */
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--gray-200);
+    margin-top: 2rem;
+  }
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .pagination-btn {
+    background: var(--blue-100);
+    color: var(--blue-600);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .pagination-btn:hover {
+    background: var(--blue-200);
+    transform: translateY(-1px);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .pagination-current {
+    font-weight: 600;
+    color: var(--blue-800);
+  }
+
+  .pagination-progress {
+    width: 100%;
+    max-width: 16rem;
+    height: 0.375rem;
+    background: var(--gray-200);
+    border-radius: 9999px;
+    overflow: hidden;
+    margin: 1rem auto 0;
+  }
+
+  .pagination-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), #8b5cf6);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+  }
+
+  /* Modais modernizados */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .modal-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .modal-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 28rem;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-visible .modal-content {
+    transform: scale(1);
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary-blue), #1e40af);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    transition: background 0.2s ease;
+  }
+
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-body {
+    padding: 1.75rem; /* Aumentado */
+  }
+
+  .modal-footer {
+    padding: 1.25rem 1.5rem; /* Aumentado */
+    background: var(--gray-100);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.2rem; /* Aumentado */
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem; /* Aumentado */
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--gray-700);
+    border: 2px solid var(--gray-300); /* Borda mais visível */
+  }
+
+  .btn-secondary:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+  }
+
+  .btn-primary {
+    background: var(--primary-blue);
+    color: white;
+    border: 2px solid var(--primary-blue); /* Borda consistente */
+  }
+
+  .btn-primary:hover {
+    background: #1e70ea;
+    border-color: #1e70ea;
+  }
+
+  /* Formulários modernizados */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Cores para raridades */
+  .rarity-comum { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; }
+  .rarity-rara { background: linear-gradient(135deg, #10b981, #34d399); color: white; }
+  .rarity-epica { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; }
+  .rarity-lendaria { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; }
+
+  .text-comum { color: #3b82f6; }
+  .text-rara { color: #10b981; }
+  .text-epica { color: #8b5cf6; }
+  .text-lendaria { color: #f59e0b; }
+
+  .badge-comum { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+  .badge-rara { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+  .badge-epica { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+  .badge-lendaria { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+  /* Animações de entrada para elementos */
+  .animate-stagger > * {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+  .animate-stagger > *:nth-child(7) { animation-delay: 0.7s; }
+  .animate-stagger > *:nth-child(8) { animation-delay: 0.8s; }
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- Header do Perfil -->
-<div
-  class="bg-blue-100 text-blue-800 rounded-2xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between relative">
-  <!-- Avatar + Nome -->
-  <div class="flex items-center space-x-4">
-    <div class="avatar-upload relative" id="avatar-container">
-      <div
-        class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl border-4 border-blue-300 shadow-lg overflow-hidden">
-        <img id="avatar-display" src="{{ perfil.avatar.url }}?{% now 'U' %}" alt="Avatar"
-          class="w-full h-full object-cover" id="avatar-image">
-      </div>
-      <div class="avatar-overlay">
-        <i class="fas fa-camera text-white text-xl"></i>
-      </div>
-    </div>
-    <div>
-      <h2 class="text-2xl font-bold" id="username-header">{{ request.user.username }}</h2>
-      <div class="flex items-center space-x-2 mt-1">
-        <span class="text-sm font-semibold bg-blue-200 px-2 py-1 rounded-full">Nível {{ perfil.nivel }}</span>
-        <div class="relative w-24 h-2 bg-blue-300 rounded-full">
-          <div class="absolute h-full bg-blue-600 rounded-full transition-all duration-500" style="width: {{ progresso_xp }}%"></div>
-        </div>
-        <span class="text-xs text-blue-700">{{ progresso_xp|floatformat:0 }}%</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Estatísticas (centralizadas no header) -->
-  <div class="flex space-x-6 mt-6 md:mt-0 text-center mx-auto">
-    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
-      <p class="text-2xl font-bold text-white">{{ perfil.xp }}</p>
-      <p class="text-xs text-white">XP Total</p>
-    </div>
-    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
-      <p class="text-2xl font-bold text-white">{{ perfil.licoes }}</p>
-      <p class="text-xs text-white">Lições</p>
-    </div>
-    <div class="bg-blue-600 rounded-xl px-4 py-2 shadow-md w-28">
-      <p class="text-2xl font-bold text-white">{{ desbloq_count }}</p>
-      <p class="text-xs text-white">Conquistas</p>
-    </div>
-  </div>
-
-  <!-- Botão de Editar -->
-  <button id="edit-profile-btn"
-    class="absolute top-4 right-4 bg-white hover:bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center space-x-2">
-    <div class="flex items-center">
-      <img src="{% static 'imagem/person_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="editar"
-        class="w-5 h-5 object-contain mr-2" />
-      <span class="font-medium">
-        Editar
-      </span>
-    </div>
+<!-- Header do Perfil - Layout Centralizado -->
+<div class="profile-header animate-fadeIn">
+  <!-- Botão de Edição no canto -->
+  <button id="edit-profile-btn" class="edit-profile-btn">
+    <img src="{% static 'imagem/person_edit_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="editar" class="w-5 h-5" />
+    <span>Editar</span>
   </button>
+
+  <!-- Seção do Avatar Centralizada - AUMENTADA -->
+  <div class="avatar-section">
+    <div class="avatar-upload" id="avatar-container">
+      <div class="avatar-container">
+        <div class="avatar">
+          <img id="avatar-display" src="{{ perfil.avatar.url }}?{% now 'U' %}" alt="Avatar">
+        </div>
+        <div class="avatar-overlay">
+          <i class="fas fa-camera text-white text-2xl"></i> <!-- Ícone aumentado -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="user-info">
+      <h2 class="username" id="username-header">{{ request.user.username }}</h2>
+      
+      <div class="level-container">
+        <span class="level-badge">Nível {{ perfil.nivel }}</span>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: {{ progresso_xp }}%"></div>
+        </div>
+        <span class="progress-percent">{{ progresso_xp|floatformat:0 }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estatísticas Centralizadas Abaixo -->
+<div class="stats-section">
+  <div class="stat-card">
+    <div class="stat-value">{{ perfil.xp }}</div>
+    <div class="stat-label">XP Total</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ licoes }}</div>  <!-- CORREÇÃO AQUI -->
+    <div class="stat-label">Lições</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ desbloq_count }}</div>
+    <div class="stat-label">Conquistas</div>
+  </div>
+</div>
 </div>
 
-<!-- Sobre o Usuário -->
-<div class="bg-blue-200 rounded-2xl shadow-md p-6 mt-6">
-  <h3 class="text-xl font-bold text-blue-900 mb-3 flex items-center">
-    <img src="{% static 'imagem/info_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}" alt="informação"
-      class="w-6 h-6 object-contain mr-2" />
+
+
+<!-- Sobre o Usuário Modernizado -->
+<div class="about-section animate-slideInUp">
+  <h3 class="section-title">
+    <img src="{% static 'imagem/info_24dp_2682EA_FILL0_wght400_GRAD0_opsz24.png' %}" alt="informação" />
     Sobre o Usuário
   </h3>
   <p class="text-gray-700" id="user-description">{{ perfil.descricao }}</p>
@@ -469,332 +1090,307 @@
 
 <hr class="my-8 border-t-2 border-blue-200" />
 
-<!-- Cabeçalho da seção de conquistas -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-  <!-- Esquerda: título + contador -->
-  <div>
-    <h3 id="conquistasTitulo" class="text-2xl font-bold flex items-center gap-2">
-      <img src="{% static 'imagem/license_40dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="conquistas"
-        class="w-10 h-10 object-contain mr-2" />
-      Conquistas
-    </h3>
-    <!-- Contadores -->
-    <div class="mt-2 flex flex-col space-y-2">
-      <!-- X de Y Conquistas desbloqueadas -->
-      <div class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium shadow w-max">
-        <span id="contador-conquistas">
-          {{ desbloq_count }} de {{ total_conquistas }} conquistas
-        </span>
+<!-- Container principal das conquistas -->
+<div id="conquistas-container" class="achievements-section">
+  <!-- Cabeçalho da seção de conquistas -->
+  <div class="section-header">
+    <div>
+      <h3 class="achievements-title">
+        <img src="{% static 'imagem/license_40dp_2682EA_FILL0_wght400_GRAD0_opsz40.png' %}" alt="conquistas" />
+        Conquistas
+      </h3>
+      <div class="achievements-counter">
+        <span id="contador-conquistas">{{ desbloq_count }} de {{ total_conquistas }} conquistas</span>
       </div>
     </div>
-  </div>
 
-  <!-- Direita: filtros -->
-  <div class="flex gap-2 mt-4 sm:mt-0">
-    <!-- Ícone do filtro -->
-    <div class="w-6 h-6 flex items-center justify-center">
-      <img src="{% static 'imagem/filter_icon_136624.png' %}" alt="Filtro" class="w-5 h-5 object-contain" />
+    <!-- Filtros -->
+    <div class="filters-container">
+      <img src="{% static 'imagem/filter_icon_136624.png' %}" alt="Filtro" class="w-5 h-5" />
+      <form method="get" id="filtroForm" class="flex gap-2">
+        {% if request.GET.page %}
+        <input type="hidden" name="page" value="{{ request.GET.page }}">
+        {% endif %}
+
+        <select name="raridade" id="raridadeSelect" class="filter-select">
+          <option value="todas" {% if request.GET.raridade == 'todas' or not request.GET.raridade %}selected{% endif %}>Todas as Raridades</option>
+          <option value="comum" {% if request.GET.raridade == 'comum' %}selected{% endif %}>Comum</option>
+          <option value="rara" {% if request.GET.raridade == 'rara' %}selected{% endif %}>Rara</option>
+          <option value="epica" {% if request.GET.raridade == 'epica' %}selected{% endif %}>Épico</option>
+          <option value="lendaria" {% if request.GET.raridade == 'lendaria' %}selected{% endif %}>Lendário</option>
+        </select>
+
+        <select name="categoria" id="categoriaSelect" class="filter-select">
+          <option value="todas" {% if request.GET.categoria == 'todas' or not request.GET.categoria %}selected{% endif %}>Todas as Categorias</option>
+          <option value="progresso" {% if request.GET.categoria == 'progresso' %}selected{% endif %}>Progresso</option>
+          <option value="habilidade" {% if request.GET.categoria == 'habilidade' %}selected{% endif %}>Habilidade</option>
+          <option value="precisao" {% if request.GET.categoria == 'precisao' %}selected{% endif %}>Precisão</option>
+          <option value="dominio" {% if request.GET.categoria == 'dominio' %}selected{% endif %}>Domínio</option>
+          <option value="especial" {% if request.GET.categoria == 'especial' %}selected{% endif %}>Especial</option>
+        </select>
+        
+        <button type="submit" style="display: none;"></button>
+      </form>
     </div>
-
-    <!-- Filtro de Raridade -->
-    <form method="get" id="filtroForm" class="flex gap-2">
-      <!-- Manter página atual nos filtros -->
-      {% if request.GET.page %}
-      <input type="hidden" name="page" value="{{ request.GET.page }}">
-      {% endif %}
-
-      <select name="raridade" id="raridadeSelect" class="border rounded-md px-3 py-2 text-sm">
-        <option value="todas" {% if request.GET.raridade == 'todas' or not request.GET.raridade %}selected{% endif %}>Todas as Raridades</option>
-        <option value="comum" {% if request.GET.raridade == 'comum' %}selected{% endif %}>Comum</option>
-        <option value="rara" {% if request.GET.raridade == 'rara' %}selected{% endif %}>Rara</option>
-        <option value="epica" {% if request.GET.raridade == 'epica' %}selected{% endif %}>Épico</option>
-        <option value="lendaria" {% if request.GET.raridade == 'lendaria' %}selected{% endif %}>Lendário</option>
-      </select>
-
-      <select name="categoria" id="categoriaSelect" class="border rounded-md px-3 py-2 text-sm">
-        <option value="todas" {% if request.GET.categoria == 'todas' or not request.GET.categoria %}selected{% endif %}>Todas as Categorias</option>
-        <option value="progresso" {% if request.GET.categoria == 'progresso' %}selected{% endif %}>Progresso</option>
-        <option value="habilidade" {% if request.GET.categoria == 'habilidade' %}selected{% endif %}>Habilidade</option>
-        <option value="precisao" {% if request.GET.categoria == 'precisao' %}selected{% endif %}>Precisão</option>
-        <option value="dominio" {% if request.GET.categoria == 'dominio' %}selected{% endif %}>Domínio</option>
-        <option value="especial" {% if request.GET.categoria == 'especial' %}selected{% endif %}>Especial</option>
-      </select>
-      
-      <!-- Botão submit escondido para funcionar com JavaScript -->
-      <button type="submit" style="display: none;"></button>
-    </form>
   </div>
-</div>
 
-<!-- Desbloqueadas destacado -->
-<div class="my-4">
-  <div
-    class="w-full bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-base font-semibold shadow text-left flex items-center">
-    <img src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="diamante"
-      class="w-6 h-6 object-contain mr-2" />
-    Desbloqueadas (<span id="contador-desbloqueadas">{{ conquistas_desbloqueadas|length }}</span>)
+  <!-- Conquistas Desbloqueadas -->
+  <div class="my-6">
+    <div class="achievements-section-title unlocked-title">
+      <img src="{% static 'imagem/diamond_shine_100dp_2682EA_FILL0_wght400_GRAD0_opsz48.png' %}" alt="diamante" class="w-6 h-6" />
+      Desbloqueadas (<span id="contador-desbloqueadas">{{ conquistas_desbloqueadas|length }}</span>)
+    </div>
   </div>
-</div>
 
-<!-- Grid de Conquistas Desbloqueadas -->
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  {% for conquista_data in conquistas_desbloqueadas %}
-  <div class="conquista unlocked p-4 bg-white rounded-lg shadow shine-effect" 
-       data-titulo="{{ conquista_data.conquista.titulo }}"
-       data-descricao="{{ conquista_data.conquista.descricao }}" 
-       data-raridade="{{ conquista_data.conquista.raridade }}"
-       data-categoria="{{ conquista_data.conquista.categoria }}" 
-       data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
-       data-progresso="100"
-       data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
-       onclick="abrirConquista(this)">
-    <div class="badge-bg badge-bg-{{ conquista_data.conquista.raridade }}"></div>
-    <div class="conquista-content relative z-10 flex flex-col items-center">
-      <div class="w-16 h-16 flex items-center justify-center rounded-full icon-{{ conquista_data.conquista.raridade }} text-3xl">
+  <!-- Grid de Conquistas Desbloqueadas -->
+  <div class="achievements-grid animate-stagger">
+    {% for conquista_data in conquistas_desbloqueadas %}
+    <div class="achievement-card achievement-unlocked raridade-{{ conquista_data.conquista.raridade }}"
+        data-titulo="{{ conquista_data.conquista.titulo }}"
+        data-descricao="{{ conquista_data.conquista.descricao }}" 
+        data-raridade="{{ conquista_data.conquista.raridade }}"
+        data-categoria="{{ conquista_data.conquista.categoria }}" 
+        data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
+        data-progresso="100"
+        data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
+        onclick="abrirConquista(this)">
+      <div class="achievement-icon rarity-{{ conquista_data.conquista.raridade }}">
         {% if conquista_data.conquista.icone %}
-        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-12 h-12 object-contain">
+        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-10 h-10 object-contain">
         {% else %}
         <i class="fas fa-award"></i>
         {% endif %}
       </div>
-      <h3 class="mt-3 font-bold text-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.titulo }}</h3>
-      <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
-        <span class="badge-pill badge-pill-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
-        <span class="badge-pill badge-pill-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
+      <h3 class="achievement-title text-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.titulo }}</h3>
+      <p class="achievement-description">{{ conquista_data.conquista.descricao }}</p>
+      <div class="achievement-badges">
+        <span class="badge badge-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
+        <span class="badge badge-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
       </div>
-      <p class="mt-3 text-center text-sm">{{ conquista_data.conquista.descricao }}</p>
-      <div class="mt-2 w-full">
+      <div class="achievement-progress">
         <div class="progress-bar">
           <div class="progress-fill" style="width: 100%"></div>
         </div>
         <div class="progress-text">✅ Concluído</div>
       </div>
     </div>
+    {% empty %}
+    <div class="col-span-full flex items-center justify-center py-8">
+      <p class="text-gray-500 text-center">Nenhuma conquista desbloqueada ainda.</p>
+    </div>
+    {% endfor %}
   </div>
-  {% empty %}
-  <div class="col-span-full flex items-center justify-between py-8">
-    <p class="text-gray-500 text-center">Nenhuma conquista desbloqueada ainda.</p>
-  </div>
-  {% endfor %}
-</div>
 
-<!-- Conquistas bloqueadas -->
-<div class="my-4 mt-8">
-  <div
-    class="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-base font-semibold shadow text-left flex items-center">
-    <img src="{% static 'imagem/lock_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="bloqueadas"
-      class="w-6 h-6 object-contain mr-2" />
-    Bloqueadas (<span id="contador-bloqueadas">{{ conquistas_bloqueadas|length }}</span>)
+  <!-- Conquistas Bloqueadas -->
+  <div class="my-6">
+    <div class="achievements-section-title locked-title">
+      <img src="{% static 'imagem/lock_100dp_000000_FILL0_wght400_GRAD0_opsz48.png' %}" alt="bloqueadas" class="w-6 h-6" />
+      Bloqueadas (<span id="contador-bloqueadas">{{ conquistas_bloqueadas|length }}</span>)
+    </div>
   </div>
-</div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  {% for conquista_data in conquistas_bloqueadas %}
-  <div class="conquista locked p-4 bg-white rounded-lg shadow achievement-locked" 
-       data-titulo="{{ conquista_data.conquista.titulo }}"
-       data-descricao="{{ conquista_data.conquista.descricao }}" 
-       data-raridade="{{ conquista_data.conquista.raridade }}"
-       data-categoria="{{ conquista_data.conquista.categoria }}" 
-       data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
-       data-progresso="{{ conquista_data.progresso.percentual }}"
-       data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
-       onclick="abrirConquista(this)">
-    <div class="badge-bg badge-bg-{{ conquista_data.conquista.raridade }}"></div>
-    <div class="conquista-content relative z-10 flex flex-col items-center">
-      <div class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-300 text-3xl">
+  <div class="achievements-grid animate-stagger">
+    {% for conquista_data in conquistas_bloqueadas %}
+    <div class="achievement-card achievement-locked raridade-{{ conquista_data.conquista.raridade }}"
+        data-titulo="{{ conquista_data.conquista.titulo }}"
+        data-descricao="{{ conquista_data.conquista.descricao }}" 
+        data-raridade="{{ conquista_data.conquista.raridade }}"
+        data-categoria="{{ conquista_data.conquista.categoria }}" 
+        data-icone="{% if conquista_data.conquista.icone %}{{ conquista_data.conquista.icone.url }}{% endif %}"
+        data-progresso="{{ conquista_data.progresso.percentual }}"
+        data-objetivo="{{ conquista_data.conquista.valor_requerido }} {{ conquista_data.conquista.get_tipo_evento_display }}"
+        onclick="abrirConquista(this)">
+      <div class="achievement-icon rarity-{{ conquista_data.conquista.raridade }}">
         {% if conquista_data.conquista.icone %}
-        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-12 h-12 object-contain">
+        <img src="{{ conquista_data.conquista.icone.url }}" alt="{{ conquista_data.conquista.titulo }}" class="w-10 h-10 object-contain">
         {% else %}
-        <i class="fas fa-award text-gray-400"></i>
+        <i class="fas fa-award"></i>
         {% endif %}
       </div>
-      <h3 class="mt-3 font-bold text-gray-500">{{ conquista_data.conquista.titulo }}</h3>
-      <div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
-        <span class="badge-pill badge-pill-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
-        <span class="badge-pill badge-pill-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
+      <h3 class="achievement-title text-gray-500">{{ conquista_data.conquista.titulo }}</h3>
+      <p class="achievement-description">{{ conquista_data.conquista.descricao }}</p>
+      <div class="achievement-badges">
+        <span class="badge badge-{{ conquista_data.conquista.raridade }}">{{ conquista_data.conquista.get_raridade_display }}</span>
+        <span class="badge badge-{{ conquista_data.conquista.categoria }}">{{ conquista_data.conquista.get_categoria_display }}</span>
       </div>
-      <p class="mt-3 text-center text-sm text-gray-400">{{ conquista_data.conquista.descricao }}</p>
-      <div class="mt-2 w-full">
+      <div class="achievement-progress">
         <div class="progress-bar">
           <div class="progress-fill" style="width: {{ conquista_data.progresso.percentual }}%"></div>
         </div>
         <div class="progress-text">{{ conquista_data.progresso.progresso_atual }}/{{ conquista_data.progresso.meta }} ({{ conquista_data.progresso.percentual }}%)</div>
       </div>
     </div>
-  </div>
-  {% empty %}
-  <div class="col-span-full">
-    <p class="text-gray-400 text-center py-4">Nenhuma conquista bloqueada.</p>
-  </div>
-  {% endfor %}
-</div>
-
-<!-- PAGINAÇÃO -->
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="mt-8 flex justify-between items-center border-t border-blue-200 pt-4">
-  <div class="text-sm text-blue-600">
-    Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} conquistas
+    {% empty %}
+    <div class="col-span-full">
+      <p class="text-gray-400 text-center py-4">Nenhuma conquista bloqueada.</p>
+    </div>
+    {% endfor %}
   </div>
 
-  <div class="flex items-center gap-4">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
-      ←
-    </a>
-    {% endif %}
+  <!-- Paginação -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination">
+    <div class="pagination-info">
+      Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} conquistas
+    </div>
 
-    <span class="text-blue-600 font-medium">
-      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-    </span>
+    <div class="pagination-controls">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}#conquistas-container"
+        class="pagination-btn">
+        ←
+      </a>
+      {% else %}
+      <span class="pagination-btn" disabled>←</span>
+      {% endif %}
 
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-      class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition">
-      →
-    </a>
-    {% endif %}
-  </div>
-</div>
+      <span class="pagination-current">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      </span>
 
-<!-- Indicador de progresso sutil -->
-<div class="flex justify-center w-full mt-4">
-  <div class="w-64 bg-gray-200 rounded-full h-2">
-    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-      style="width: {% widthratio page_obj.number page_obj.paginator.num_pages 100 %}%">
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}#conquistas-container"
+        class="pagination-btn">
+        →
+      </a>
+      {% else %}
+      <span class="pagination-btn" disabled>→</span>
+      {% endif %}
     </div>
   </div>
+
+  <!-- Indicador de progresso da paginação -->
+  <div class="pagination-progress">
+    <div class="pagination-progress-fill" style="width: {% widthratio page_obj.number page_obj.paginator.num_pages 100 %}%"></div>
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 
 <!-- Modal Conquista -->
-<div id="modal-conquista"
-  class="modal modal-hidden fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slideIn border-2 border-blue-200">
-    <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-4 flex justify-between items-center">
-      <h3 id="conquista-titulo" class="text-xl font-bold text-blue-900">Título da Conquista</h3>
-      <button type="button" onclick="fecharConquista()" class="text-blue-600 hover:text-blue-800">
-        <i class="fas fa-times text-xl"></i>
+<div id="modal-conquista" class="modal modal-hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="conquista-titulo" class="modal-title">Título da Conquista</h3>
+      <button type="button" onclick="fecharConquista()" class="modal-close">
+        <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="p-6 flex flex-col items-center text-center">
-      <div id="conquista-icone"
-        class="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-gray-200 shadow-lg text-3xl">🏆</div>
-      <p id="conquista-descricao" class="text-gray-700 mb-4">Descrição da conquista...</p>
-      <p id="conquista-objetivo" class="text-sm text-blue-600 italic mb-4">
-        Objetivo da conquista aparecerá aqui...</p>
-      <div class="flex gap-2 flex-wrap justify-center mb-6">
-        <span id="conquista-raridade" class="badge-pill bg-gray-100 text-gray-600">Raridade</span>
-        <span id="conquista-categoria" class="badge-pill bg-gray-100 text-gray-600">Categoria</span>
-      </div>
-      <div class="w-full">
-        <div class="flex justify-between text-sm mb-1">
-          <span class="text-gray-600">Progresso</span>
-          <span id="conquista-progresso-text" class="text-gray-800 font-semibold">0%</span>
+    <div class="modal-body">
+      <div class="flex flex-col items-center text-center">
+        <div id="conquista-icone" class="achievement-icon rarity-comum mb-4">🏆</div>
+        <p id="conquista-descricao" class="text-gray-700 mb-4">Descrição da conquista...</p>
+        <p id="conquista-objetivo" class="text-sm text-blue-600 italic mb-4">
+          Objetivo da conquista aparecerá aqui...
+        </p>
+        <div class="achievement-badges mb-6">
+          <span id="conquista-raridade" class="badge badge-comum">Raridade</span>
+          <span id="conquista-categoria" class="badge badge-categoria">Categoria</span>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-3">
-          <div id="conquista-progresso" class="bg-blue-500 h-3 rounded-full transition-all duration-500"
-            style="width: 0%"></div>
+        <div class="w-full">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600">Progresso</span>
+            <span id="conquista-progresso-text" class="text-gray-800 font-semibold">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div id="conquista-progresso" class="progress-fill" style="width: 0%"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de Edição de Perfil -->
-<div id="edit-profile-modal"
-  class="modal modal-hidden fixed inset-0 flex items-start justify-center z-50 p-4 backdrop-blur-sm overflow-y-auto">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border-2 border-blue-300 my-auto">
-    <!-- FORM REAL -->
-    <form method="POST" enctype="multipart/form-data">
+<!-- Modal de Edição de Perfil - CAMPOS COM BORDAS VISÍVEIS -->
+<div id="edit-profile-modal" class="modal modal-hidden">
+  <div class="modal-content">
+    <form method="POST" enctype="multipart/form-data" id="profile-form">
       {% csrf_token %}
-      <div class="bg-blue-100 text-blue-800 p-4 flex justify-between items-center">
-        <h3 class="text-xl font-bold">Editar Perfil</h3>
-        <button type="button" id="close-modal" class="text-blue-700 hover:text-blue-900">
-          <i class="fas fa-times text-xl"></i>
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Perfil</h3>
+        <button type="button" id="close-modal" class="modal-close">
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
-      <div class="p-6">
+      <div class="modal-body">
         <div class="flex flex-col items-center mb-6">
-          <div class="relative mb-4">
-            <div
-              class="w-24 h-24 bg-blue-200 rounded-full flex items-center justify-center text-3xl border-4 border-blue-300 shadow-lg overflow-hidden"
-              id="avatar-preview">
-              {% if perfil.avatar %}
-              <img src="{{ perfil.avatar.url }}?{% now 'U' %}" alt="Avatar">
-              {% else %}
-              <img src="{% static 'default-avatar.png' %}?{% now 'U' %}" alt="Avatar">
-              {% endif %}
-            </div>
-
-            <!-- bolinha azul com câmera -->
-            <div id="btnUploadFoto"
-              class="absolute bottom-0 right-0 bg-[#2682EA] w-6 h-6 flex items-center justify-center rounded-full shadow cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" aria-hidden="true">
+          <div class="avatar-preview" id="avatar-preview">
+            {% if perfil.avatar %}
+            <img src="{{ perfil.avatar.url }}?{% now 'U' %}" alt="Avatar">
+            {% else %}
+            <img src="{% static 'default-avatar.png' %}?{% now 'U' %}" alt="Avatar">
+            {% endif %}
+            <div id="btnUploadFoto" class="avatar-upload-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h4l2-3h6l2 3h4v13H3V7z" />
                 <circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2" fill="none" />
               </svg>
             </div>
-
-            <!-- input real para upload -->
-            <input type="file" name="avatar" id="uploadFoto" accept="image/*" class="hidden">
           </div>
           <p class="text-sm text-gray-600">Clique na câmera para alterar sua foto</p>
+          <input type="file" name="avatar" id="uploadFoto" accept="image/*" class="hidden">
         </div>
 
-        <div class="space-y-4">
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nome de usuário</label>
-            <input type="text" id="username" value="{{ user.username }}" disabled
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
-          </div>
-
-          <div>
-            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descrição do perfil</label>
-            <textarea name="descricao" id="description" rows="3"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ perfil.descricao }}</textarea>
-          </div>
+        <div class="form-group">
+          <label for="username" class="form-label">Nome de usuário</label>
+          <input type="text" id="username" value="{{ user.username }}" disabled class="form-input">
         </div>
-        <div>
-          <h2 class="text-blue-800 p-4 font-bold text-center w-full">
-            Compartilhe suas Redes
-          </h2>
 
-          <label for="github" class="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
-          <input type="url" name="github" id="github" value="{{ perfil.github|default:'' }}"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="https://github.com/seuusuario" pattern="https?://(www\.)?github\.com/[\w-]+/?"
-            title="Digite uma URL válida do GitHub">
+        <div class="form-group">
+          <label for="description" class="form-label">Descrição do perfil</label>
+          <textarea name="descricao" id="description" rows="3" class="form-textarea">{{ perfil.descricao }}</textarea>
+        </div>
 
-          <label for="linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-          <input type="url" name="linkedin" id="linkedin" value="{{ perfil.linkedin|default:'' }}"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="https://linkedin.com/in/seunome" pattern="https?://(www\.)?linkedin\.com/in/[\w-]+/?"
-            title="Digite uma URL válida do LinkedIn">
+        <h2 class="text-blue-800 font-bold text-center my-4">Compartilhe suas Redes</h2>
+
+        <div class="form-group">
+          <label for="github" class="form-label">GitHub</label>
+          <input type="url" name="github" id="github" value="{{ perfil.github|default:'' }}" class="form-input"
+            placeholder="https://github.com/seuusuario"
+            pattern="https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?"
+            title="Digite uma URL válida do GitHub (ex: https://github.com/seuusuario)">
+        </div>
+
+        <div class="form-group">
+          <label for="linkedin" class="form-label">LinkedIn</label>
+          <input type="url" name="linkedin" id="linkedin" value="{{ perfil.linkedin|default:'' }}" class="form-input"
+            placeholder="https://linkedin.com/in/seunome"
+            pattern="https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?"
+            title="Digite uma URL válida do LinkedIn (ex: https://linkedin.com/in/seunome)">
         </div>
       </div>
 
-      <div class="bg-blue-100 px-6 py-4 flex justify-end space-x-3">
-        <button type="button" id="cancel-edit"
-          class="px-4 py-2 text-blue-700 hover:text-blue-900 font-medium rounded-lg">
-          Cancelar
-        </button>
-        <button type="submit"
-          class="px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition">
-          Salvar Alterações
-        </button>
+      <div class="modal-footer">
+        <button type="button" id="cancel-edit" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
       </div>
     </form>
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    // Salvar posição do scroll antes de submeter formulários
+    let scrollPosition = 0;
+    
+    // Salvar posição quando clicar em links de paginação
+    document.querySelectorAll('a[href*="page="]').forEach(link => {
+      link.addEventListener('click', function() {
+        sessionStorage.setItem('conquistasScrollPosition', window.scrollY);
+      });
+    });
+    
+    // Restaurar posição do scroll após carregar a página
+    const savedPosition = sessionStorage.getItem('conquistasScrollPosition');
+    if (savedPosition) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedPosition));
+        sessionStorage.removeItem('conquistasScrollPosition');
+      }, 100);
+    }
+
     // Setar valores dos selects
     const urlParams = new URLSearchParams(window.location.search);
     const raridade = urlParams.get('raridade') || 'todas';
@@ -805,10 +1401,12 @@
 
     // Submeter form quando select mudar
     document.getElementById('raridadeSelect').addEventListener('change', function () {
+      sessionStorage.setItem('conquistasScrollPosition', window.scrollY);
       submitFiltros();
     });
 
     document.getElementById('categoriaSelect').addEventListener('change', function () {
+      sessionStorage.setItem('conquistasScrollPosition', window.scrollY);
       submitFiltros();
     });
 
@@ -827,6 +1425,15 @@
           hiddenInput.value = page;
           form.appendChild(hiddenInput);
         }
+      }
+      
+      // Adicionar âncora para voltar à posição
+      if (!form.querySelector('input[name="anchor"]')) {
+        const anchorInput = document.createElement('input');
+        anchorInput.type = 'hidden';
+        anchorInput.name = 'anchor';
+        anchorInput.value = 'conquistas-container';
+        form.appendChild(anchorInput);
       }
       
       form.submit();
@@ -849,39 +1456,64 @@
         params.set('categoria', categoria);
       }
       
+      // Adicionar âncora
+      params.set('anchor', 'conquistas-container');
+      
       // Atualizar href
       url.search = params.toString();
       link.href = url.toString();
     });
+    
+    // Rolar para âncora se especificado na URL
+    if (window.location.hash === '#conquistas-container' || urlParams.get('anchor') === 'conquistas-container') {
+      setTimeout(() => {
+        const element = document.getElementById('conquistas-container');
+        if (element) {
+          const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
+          window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+        }
+      }, 100);
+    }
   });
 
   function abrirConquista(el) {
-    document.getElementById("conquista-titulo").textContent = el.dataset.titulo;
-    document.getElementById("conquista-descricao").textContent = el.dataset.descricao;
-    document.getElementById("conquista-objetivo").textContent = "Objetivo: " + el.dataset.objetivo;
+  document.getElementById("conquista-titulo").textContent = el.dataset.titulo;
+  document.getElementById("conquista-descricao").textContent = el.dataset.descricao;
+  document.getElementById("conquista-objetivo").textContent = "Objetivo: " + el.dataset.objetivo;
 
-    const iconeDiv = document.getElementById("conquista-icone");
-    if (el.dataset.icone && el.dataset.icone !== "None") {
-      iconeDiv.innerHTML = `<img src="${el.dataset.icone}" class="w-16 h-16 object-contain">`;
-    } else {
-      iconeDiv.innerHTML = "🏆";
-    }
-
-    const raridadeEl = document.getElementById("conquista-raridade");
-    raridadeEl.textContent = el.dataset.raridade.charAt(0).toUpperCase() + el.dataset.raridade.slice(1);
-    raridadeEl.className = `badge-pill badge-pill-${el.dataset.raridade}`;
-
-    const categoriaEl = document.getElementById("conquista-categoria");
-    categoriaEl.textContent = el.dataset.categoria.charAt(0).toUpperCase() + el.dataset.categoria.slice(1);
-    categoriaEl.className = `badge-pill badge-pill-${el.dataset.categoria}`;
-
-    const progresso = parseInt(el.dataset.progresso) || 0;
-    document.getElementById("conquista-progresso").style.width = progresso + "%";
-    document.getElementById("conquista-progresso-text").textContent = progresso + "%";
-
-    document.getElementById("modal-conquista").classList.remove("modal-hidden");
-    document.getElementById("modal-conquista").classList.add("modal-visible");
+  const iconeDiv = document.getElementById("conquista-icone");
+  const modalHeader = document.querySelector('#modal-conquista .modal-header');
+  
+  // Limpar classes de raridade anteriores
+  iconeDiv.className = 'achievement-icon';
+  modalHeader.className = 'modal-header';
+  
+  // Aplicar classes de raridade
+  iconeDiv.classList.add(`rarity-${el.dataset.raridade}`);
+  modalHeader.classList.add(`raridade-${el.dataset.raridade}`);
+  
+  if (el.dataset.icone && el.dataset.icone !== "None") {
+    iconeDiv.innerHTML = `<img src="${el.dataset.icone}" alt="${el.dataset.titulo}">`;
+  } else {
+    iconeDiv.innerHTML = "🏆";
   }
+
+  const raridadeEl = document.getElementById("conquista-raridade");
+  raridadeEl.textContent = el.dataset.raridade.charAt(0).toUpperCase() + el.dataset.raridade.slice(1);
+  raridadeEl.className = `badge badge-${el.dataset.raridade}`;
+
+  const categoriaEl = document.getElementById("conquista-categoria");
+  categoriaEl.textContent = el.dataset.categoria.charAt(0).toUpperCase() + el.dataset.categoria.slice(1);
+  categoriaEl.className = `badge badge-${el.dataset.categoria}`;
+
+  const progresso = parseInt(el.dataset.progresso) || 0;
+  document.getElementById("conquista-progresso").style.width = progresso + "%";
+  document.getElementById("conquista-progresso-text").textContent = progresso + "%";
+
+  const modal = document.getElementById("modal-conquista");
+  modal.classList.remove("modal-hidden");
+  modal.classList.add("modal-visible");
+}
 
   function fecharConquista() {
     const modal = document.getElementById("modal-conquista");
@@ -900,6 +1532,7 @@
   const cancelEditBtn = document.getElementById('cancel-edit');
   const btnUploadFoto = document.getElementById('btnUploadFoto');
   const uploadFoto = document.getElementById('uploadFoto');
+  const profileForm = document.getElementById('profile-form');
 
   function openModal() {
     modal.classList.remove('modal-hidden');
@@ -945,22 +1578,51 @@
     }
   });
 
-  // Validação de URLs
-  document.querySelector('form').addEventListener('submit', function (e) {
-    const github = document.getElementById('github').value;
-    const linkedin = document.getElementById('linkedin').value;
+  // VALIDAÇÃO MELHORADA PARA URLs
+  profileForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    const github = document.getElementById('github').value.trim();
+    const linkedin = document.getElementById('linkedin').value.trim();
+    
+    let isValid = true;
+    let errorMessage = '';
 
-    if (github && !github.includes('github.com')) {
-      alert('❌ URL do GitHub inválida! Deve conter "github.com"');
-      e.preventDefault();
+    // Validação específica para GitHub
+    if (github) {
+      const githubRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/;
+      if (!githubRegex.test(github)) {
+        isValid = false;
+        errorMessage = '❌ URL do GitHub inválida! Deve seguir o formato: https://github.com/seuusuario';
+      }
+    }
+
+    // Validação específica para LinkedIn
+    if (linkedin) {
+      const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/;
+      if (!linkedinRegex.test(linkedin)) {
+        isValid = false;
+        errorMessage = errorMessage ? errorMessage + '\n\n❌ URL do LinkedIn inválida! Deve seguir o formato: https://linkedin.com/in/seunome' 
+                                   : '❌ URL do LinkedIn inválida! Deve seguir o formato: https://linkedin.com/in/seunome';
+      }
+    }
+
+    if (!isValid) {
+      alert(errorMessage);
       return;
     }
 
-    if (linkedin && !linkedin.includes('linkedin.com/in')) {
-      alert('❌ URL do LinkedIn inválida! Deve conter "linkedin.com/in"');
-      e.preventDefault();
-      return;
-    }
+    // Se passou na validação, adicionar campo hidden para manter scroll no topo
+    const scrollTopInput = document.createElement('input');
+    scrollTopInput.type = 'hidden';
+    scrollTopInput.name = 'scroll_top';
+    scrollTopInput.value = 'true';
+    profileForm.appendChild(scrollTopInput);
+
+    // Submeter o formulário
+    profileForm.submit();
   });
+
+
 </script>
 {% endblock %}

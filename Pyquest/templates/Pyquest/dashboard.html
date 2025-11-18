@@ -112,20 +112,33 @@
         color: #94A3B8;
     }
     
-    /* Gráficos modernizados */
+    
+    /* Gráficos modernizados - MELHORIAS APLICADAS */
     .chart-container {
         position: relative;
         height: 440px;
         background: white;
         border-radius: 1.5rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
+        border: 1px solid #E2E8F0;
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
     }
     
     .chart-container:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: #CBD5E1;
+    }
+    
+    .chart-container h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #F3F4F6;
     }
     
     /* Calendário Mini Compacto - Atualizado */
@@ -133,18 +146,20 @@
         background: white;
         border-radius: 1.5rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 2px solid #E2E8F0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid #E2E8F0;
         height: 440px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         transition: all 0.3s ease;
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
     }
     
     .mini-calendar:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: #CBD5E1;
     }
     
     .calendar-header {
@@ -329,18 +344,21 @@
         padding: 0.5rem 1rem;
         font-size: 0.875rem;
         color: #64748B;
+        font-weight: 500;
     }
     
     .time-btn:hover {
         border-color: var(--primary-blue);
         color: var(--primary-blue);
         transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
     }
     
     .time-btn.active {
         background: var(--primary-blue);
         color: white;
         border-color: var(--primary-blue);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
     }
     
     /* Barra de progresso para módulos */
@@ -427,6 +445,122 @@
     .stat-card:nth-child(5) { animation-delay: 0.5s; }
     .stat-card:nth-child(6) { animation-delay: 0.6s; }
     
+    /* Ajustes específicos para o gráfico de conquistas */
+    .chart-container:nth-child(1) .chart-container-inner {
+        height: 180px; /* Altura maior para caber todas as barras */
+    }
+    
+    /* Aumentar o espaçamento inferior do título */
+    .chart-container h2 {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Ajustar a legenda para não sobrepor */
+    #conquistas-legenda {
+        margin-top: 1rem;
+        max-height: 120px;
+        overflow-y: auto;
+    }
+    .chart-container-inner {
+        height: 300px; /* Ou o valor que preferir */
+        position: relative;
+    }
+    
+    /* MELHORIAS PARA GRÁFICOS - NOVAS REGRAS */
+    
+    /* Títulos dos gráficos mais destacados */
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .chart-title i {
+        margin-right: 0.75rem;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, #3B82F6, #1E40AF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Controles de período mais destacados */
+    .time-controls {
+        display: flex;
+        gap: 0.5rem;
+        background: #F8FAFC;
+        padding: 0.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid #E2E8F0;
+    }
+    
+    /* Dropdown de ranking mais destacado */
+    .ranking-dropdown {
+        position: relative;
+    }
+    
+    .ranking-dropdown-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #64748B;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .ranking-dropdown-btn:hover {
+        border-color: #3B82F6;
+        color: #3B82F6;
+    }
+    
+    .ranking-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 0.5rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid #E2E8F0;
+        min-width: 120px;
+        z-index: 20;
+        overflow: hidden;
+    }
+    
+    .ranking-option {
+        display: block;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        color: #64748B;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    
+    .ranking-option:last-child {
+        border-bottom: none;
+    }
+    
+    .ranking-option:hover {
+        background: #F8FAFC;
+        color: #3B82F6;
+    }
+    
+    /* Estilos para os gráficos do Chart.js - MAIS DESTAQUE */
+    .chartjs-render-monitor {
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+    }
+    
     /* Responsividade */
     @media (max-width: 768px) {
         .dashboard-header {
@@ -448,6 +582,10 @@
         .calendar-day {
             font-size: 0.7rem;
         }
+        
+        .chart-container, .mini-calendar {
+            height: 400px;
+        }
     }
     
     @media (max-width: 640px) {
@@ -462,27 +600,20 @@
         .calendar-day {
             font-size: 0.65rem;
         }
+        
+        .chart-container, .mini-calendar {
+            height: 350px;
+            padding: 1rem;
+        }
     }
 
-/* Ajustes específicos para o gráfico de conquistas */
-.chart-container:nth-child(1) .chart-container-inner {
-    height: 180px; /* Altura maior para caber todas as barras */
-}
 
-/* Aumentar o espaçamento inferior do título */
-.chart-container h2 {
-    margin-bottom: 1.5rem;
-}
-
-/* Ajustar a legenda para não sobrepor */
-#conquistas-legenda {
-    margin-top: 1rem;
-    max-height: 120px;
-    overflow-y: auto;
-}
-.chart-container-inner {
-    height: 300px; /* Ou o valor que preferir */
-    position: relative;
+/* CORREÇÃO: Container de informações do ranking */
+.flex.justify-between.items-center.mt-4.text-sm.text-gray-600.bg-gray-50.p-3.rounded-lg {
+    margin-top: auto; /* Empurra para baixo */
+    margin-bottom: 0;
+    flex-shrink: 0; /* Evita que diminua */
+    min-height: fit-content;
 }
 </style>
 {% endblock %}
@@ -521,6 +652,8 @@
             <p class="stat-number" id="xp-total">{{ perfil.xp|default:0 }}</p>
             <div class="stat-subtext" id="xp-hoje">+{{ perfil.xp_hoje|default:0 }} hoje</div>
         </div>
+
+        
         
         <!-- Módulos -->
         <div class="stat-card stat-card-progress fade-in">
@@ -542,6 +675,8 @@
             <h3 class="stat-label">Sequência</h3>
             <p class="stat-number" id="sequencia-atual">{{ perfil.sequencia|default:0 }} Dias</p>
             <div class="stat-subtext" id="meta-sequencia">Meta: 7 dias</div>
+
+            
         </div>
         
         <!-- Tempo para Próxima Vida (NOVO) -->
@@ -550,7 +685,13 @@
                 <i class="fas fa-heart text-blue-600 text-xl"></i>
             </div>
             <h3 class="stat-label">Próxima Vida</h3>
-            <p class="stat-number" id="tempo-proxima-vida">{{ perfil.tempo_para_proxima_vida }}min</p>
+            <p class="stat-number" id="tempo-proxima-vida">
+                {% if perfil.vidas >= perfil.max_vidas %}
+                    Completas
+                {% else %}
+                    {{ perfil.tempo_para_proxima_vida }}min
+                {% endif %}
+            </p>
             <div class="stat-subtext">{{ perfil.vidas }}/{{ perfil.max_vidas }} vidas</div>
         </div>
         
@@ -570,10 +711,10 @@
         <!-- Gráfico de Evolução de XP -->
         <div class="chart-container fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-chart-line mr-3 text-blue-600"></i> Evolução do XP
+                <h2 class="chart-title">
+                    <i class="fas fa-chart-line"></i> Evolução do XP
                 </h2>
-                <div class="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                <div class="time-controls">
                     <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300" data-period="day">Dia</button>
                     <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300 active" data-period="week">Semana</button>
                     <button class="time-btn px-3 py-1.5 rounded-lg font-semibold text-sm transition-all duration-300" data-period="month">Mês</button>
@@ -648,12 +789,12 @@
         <!-- Gráfico de Conquistas por Categoria -->
         <div class="chart-container fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-trophy mr-3 text-blue-600"></i> Conquistas por Categoria
+                <h2 class="chart-title">
+                    <i class="fas fa-trophy"></i> Conquistas por Categoria
                 </h2>
-                <div class="flex items-center text-sm text-gray-600">
-                    <i class="fas fa-info-circle mr-1 text-blue-500"></i>
-                    <span class="text-xs">Progresso nas categorias</span>
+                <div class="flex items-center text-sm text-gray-600 bg-blue-50 px-3 py-1.5 rounded-lg">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    <span class="text-xs font-medium">Progresso nas categorias</span>
                 </div>
             </div>
             <div class="chart-container-inner">
@@ -666,35 +807,34 @@
         
         <!-- Ranking Chart -->
         <div class="chart-container fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-trophy mr-3 text-blue-600"></i> Evolução no Ranking
+            <div class="flex justify-between items-center mb-0">
+                <h2 class="chart-title">
+                    <i class="fas fa-chart-bar"></i> Evolução no Ranking
                 </h2>
-                <div class="relative inline-block text-left">
-                    <button id="rankingDropdownBtn" class="inline-flex justify-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors">
+                <div class="ranking-dropdown">
+                    <button id="rankingDropdownBtn" class="ranking-dropdown-btn">
                         Semana
-                        <i class="fas fa-chevron-down ml-2 text-xs self-center"></i>
+                        <i class="fas fa-chevron-down text-xs"></i>
                     </button>
-                    <div id="rankingDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-32 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10">
-                        <div class="py-1">
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="day">Dia</a>
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="week">Semana</a>
-                            <a href="#" class="ranking-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" data-period="month">Mês</a>
-                        </div>
+                    <div id="rankingDropdownMenu" class="ranking-dropdown-menu hidden">
+                        <a href="#" class="ranking-option" data-period="day">Dia</a>
+                        <a href="#" class="ranking-option" data-period="week">Semana</a>
+                        <a href="#" class="ranking-option" data-period="month">Mês</a>
                     </div>
                 </div>
             </div>
             <div class="chart-container-inner">
                 <canvas id="rankingChart"></canvas>
             </div>
-            <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
-                <span>Posição atual: <strong id="posicao-atual">#{{ posicao_ranking|default:0 }}</strong></span>
+            <div class="flex justify-between items-center mt-0 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <span>Posição atual: <strong id="posicao-atual" class="text-blue-600">#{{ posicao_ranking|default:0 }}</strong></span>
                 <span class="flex items-center" id="variacao-ranking">
                     <i class="fas fa-minus mr-1 text-gray-500"></i> <span class="text-gray-500">Sem variação</span>
                 </span>
             </div>
         </div>
     </div>
+    
 </div>
 
 <!-- Loading Overlay -->
@@ -703,7 +843,11 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p class="text-gray-600">Carregando dashboard...</p>
     </div>
+
+
+    
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -712,6 +856,38 @@
 // Variáveis globais
 let charts = {};
 let currentCalendarDate = new Date();
+
+// 🔥 SISTEMA MAIS RIGOROSO - CRITÉRIOS DIFICULTADOS
+const CRITERIOS_ATIVIDADE = {
+    1: { // Leve - MUITO MAIS DIFÍCIL
+        min_xp: 25,       // Era 10, agora 25
+        min_atividades: 2, // Era 1, agora 2
+        min_tempo: 5,     // 15 minutos mínimos
+        cor: '#dbeafe',
+        nome: 'Leve'
+    },
+    2: { // Moderado - MUITO MAIS DIFÍCIL
+        min_xp: 60,       // Era 30, agora 60
+        min_atividades: 4, // Era 3, agora 4
+        min_tempo: 15,     // 30 minutos mínimos
+        cor: '#93c5fd',
+        nome: 'Moderado'
+    },
+    3: { // Intenso - MUITO MAIS DIFÍCIL
+        min_xp: 220,      // Era 60, agora 120
+        min_atividades: 6, // Era 5, agora 6
+        min_tempo: 20,     // 1 hora mínima
+        cor: '#3b82f6',
+        nome: 'Intenso'
+    },
+    4: { // Muito Intenso - MUITO MAIS DIFÍCIL
+        min_xp: 400,      
+        min_atividades: 8, // Era 8, agora 8 (mantido mas mais raro)
+        min_tempo: 45,    // 45 minnutos de minimo
+        cor: '#1e40af',
+        nome: 'Muito Intenso'
+    }
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando Dashboard...');
@@ -810,13 +986,13 @@ async function fetchAPI(url) {
     }
 }
 
+// 🔥 CALENDÁRIO MUITO MAIS RIGOROSO
 function getFallbackCalendarData() {
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const data = [];
     
-    // Gerar dados mais realistas baseados no perfil do usuário
     const hoje = new Date();
     const monthStart = new Date(year, month, 1);
     
@@ -825,44 +1001,87 @@ function getFallbackCalendarData() {
         const isPast = currentDate < hoje;
         const isToday = currentDate.toDateString() === hoje.toDateString();
         
-        // Simular atividade mais realista (menos aleatória)
         let hasActivity = false;
         let activityLevel = 0;
-        
+        let activityCount = 0;
+        let xp = 0;
+        let tempoEstudo = 0;
+
         if (isPast) {
-            // Dias passados têm maior chance de atividade
-            hasActivity = Math.random() > 0.3;
+            // 🔥 SISTEMA MUITO MAIS RIGOROSO: Menos dias com atividade
+            hasActivity = Math.random() > 0.75; // Apenas 25% de chance (era 40%)
+            
             if (hasActivity) {
-                // Níveis baseados em probabilidade mais realista
-                const rand = Math.random();
-                if (rand < 0.4) activityLevel = 1;      // 40% leve
-                else if (rand < 0.7) activityLevel = 2; // 30% moderado
-                else if (rand < 0.9) activityLevel = 3; // 20% intenso
-                else activityLevel = 4;                 // 10% muito intenso
+                // 🔥 Gerar dados mais realistas mas MUITO mais difíceis
+                activityCount = Math.floor(Math.random() * 12) + 1; // 1-12 atividades
+                xp = Math.floor(Math.random() * 250) + 10; // 10-259 XP
+                tempoEstudo = Math.floor(Math.random() * 180) + 10; // 10-189 minutos
+                
+                // 🔥 NÍVEIS MUITO MAIS DIFÍCEIS DE ATINGIR
+                if (xp >= CRITERIOS_ATIVIDADE[4].min_xp && 
+                    activityCount >= CRITERIOS_ATIVIDADE[4].min_atividades &&
+                    tempoEstudo >= CRITERIOS_ATIVIDADE[4].min_tempo) {
+                    activityLevel = 4; // Muito intenso
+                } else if (xp >= CRITERIOS_ATIVIDADE[3].min_xp && 
+                          activityCount >= CRITERIOS_ATIVIDADE[3].min_atividades &&
+                          tempoEstudo >= CRITERIOS_ATIVIDADE[3].min_tempo) {
+                    activityLevel = 3; // Intenso
+                } else if (xp >= CRITERIOS_ATIVIDADE[2].min_xp && 
+                          activityCount >= CRITERIOS_ATIVIDADE[2].min_atividades &&
+                          tempoEstudo >= CRITERIOS_ATIVIDADE[2].min_tempo) {
+                    activityLevel = 2; // Moderado
+                } else if (xp >= CRITERIOS_ATIVIDADE[1].min_xp && 
+                          activityCount >= CRITERIOS_ATIVIDADE[1].min_atividades &&
+                          tempoEstudo >= CRITERIOS_ATIVIDADE[1].min_tempo) {
+                    activityLevel = 1; // Leve
+                } else {
+                    // 🔥 Se não atingiu o mínimo para nível 1, não conta como atividade
+                    hasActivity = false;
+                    activityLevel = 0;
+                    activityCount = 0;
+                    xp = 0;
+                    tempoEstudo = 0;
+                }
             }
         } else if (isToday) {
-            // Hoje tem alta chance de atividade
-            hasActivity = Math.random() > 0.2;
-            activityLevel = hasActivity ? 2 : 0;
+            // Hoje também mais rigoroso
+            hasActivity = Math.random() > 0.6; // 40% de chance (era 60%)
+            if (hasActivity) {
+                activityCount = Math.floor(Math.random() * 6) + 1;
+                xp = Math.floor(Math.random() * 80) + 15;
+                tempoEstudo = Math.floor(Math.random() * 60) + 15;
+                
+                // Aplicar critérios rigorosos também para hoje
+                if (xp >= CRITERIOS_ATIVIDADE[2].min_xp && activityCount >= CRITERIOS_ATIVIDADE[2].min_atividades) {
+                    activityLevel = 2;
+                } else if (xp >= CRITERIOS_ATIVIDADE[1].min_xp && activityCount >= CRITERIOS_ATIVIDADE[1].min_atividades) {
+                    activityLevel = 1;
+                } else {
+                    hasActivity = false;
+                    activityLevel = 0;
+                }
+            }
         }
-        
-        const activityCount = hasActivity ? Math.floor(Math.random() * 6) + 1 : 0;
-        const xp = hasActivity ? Math.floor(Math.random() * 80) + 10 : 0;
         
         data.push({
             date: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
             activity_level: activityLevel,
             activity_count: activityCount,
             xp: xp,
+            tempo_estudo: tempoEstudo,
             is_today: isToday,
             has_activity: hasActivity
         });
     }
     
-    // Calcular estatísticas realistas
+    // Calcular estatísticas
     const dias_ativos = data.filter(d => d.activity_level > 0).length;
     const total_atividades = data.reduce((sum, d) => sum + d.activity_count, 0);
     const total_xp = data.reduce((sum, d) => sum + d.xp, 0);
+    const total_tempo = data.reduce((sum, d) => sum + d.tempo_estudo, 0);
+    
+    console.log('🔥 CALENDÁRIO RIGOROSO - Dias ativos:', dias_ativos, 'de', daysInMonth, 
+                'Total XP:', total_xp, 'Total tempo:', Math.round(total_tempo/60) + 'h');
     
     return {
         year: year,
@@ -872,6 +1091,7 @@ function getFallbackCalendarData() {
             dias_ativos: dias_ativos,
             total_atividades: total_atividades,
             total_xp: total_xp,
+            total_tempo_minutos: total_tempo,
             current_streak: calcularSequenciaFallback(data),
             percentual_mes: Math.round((dias_ativos / daysInMonth) * 100)
         }
@@ -886,6 +1106,20 @@ function calcularSequenciaFallback(data) {
     const todayData = data.find(d => d.date === hoje);
     if (todayData && todayData.activity_level > 0) {
         streak++;
+        
+        // Verificar dias anteriores consecutivos
+        let currentDate = new Date(hoje);
+        for (let i = 1; i <= 30; i++) {
+            currentDate.setDate(currentDate.getDate() - 1);
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayData = data.find(d => d.date === dateStr);
+            
+            if (dayData && dayData.activity_level > 0) {
+                streak++;
+            } else {
+                break;
+            }
+        }
     }
     
     return streak;
@@ -904,7 +1138,7 @@ function getFallbackData(url) {
             sequencia_atual: 5,
             precisao: 89,
             acertos_seguidos: 8,
-            recorde_acertos: 15
+            recorde_sequencia: 12
         };
     }
     
@@ -939,9 +1173,15 @@ async function inicializarDadosBasicos() {
         document.getElementById('xp-hoje').textContent = `+${data.xp_hoje} hoje`;
         document.getElementById('modulos-concluidos').textContent = `${data.modulos_concluidos}/${data.total_modulos}`;
         document.getElementById('sequencia-atual').textContent = `${data.sequencia_atual} Dias`;
-        document.getElementById('precisao').textContent = `${data.precisao}%`;
-        document.getElementById('acertos-seguidos').textContent = data.acertos_seguidos;
-        document.getElementById('recorde-acertos').textContent = `Recorde: ${data.recorde_acertos}`;
+        
+        // Usar o campo correto para o recorde de sequência
+        const recordeSequencia = data.recorde_sequencia || data.recorde_acertos || 0;
+        document.getElementById('recorde-sequencia').textContent = `${recordeSequencia} Dias`;
+        
+        console.log('📊 Dados básicos carregados:', {
+            sequencia_atual: data.sequencia_atual,
+            recorde_sequencia: recordeSequencia
+        });
         
         // Animar barras de progresso
         setTimeout(() => {
@@ -1308,49 +1548,62 @@ function getActivityClass(level) {
     return 'activity-none';
 }
 
+// 🔥 TOOLTIP COM CRITÉRIOS RIGOROSOS
 function showCalendarTooltip(element, dayNumber, activityLevel, dateStr) {
     // Remover tooltip existente
     hideCalendarTooltip();
     
     const tooltip = document.createElement('div');
-    tooltip.className = 'calendar-tooltip';
+    tooltip.className = 'calendar-tooltip fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-xs';
+    tooltip.style.pointerEvents = 'none';
     
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
                        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     
+    const criterios = CRITERIOS_ATIVIDADE[activityLevel];
     let activityText = 'Nenhuma atividade';
-    if (activityLevel === 1) activityText = 'Atividade leve';
-    else if (activityLevel === 2) activityText = 'Atividade moderada';
-    else if (activityLevel === 3) activityText = 'Atividade intensa';
-    else if (activityLevel >= 4) activityText = 'Atividade muito intensa';
+    let criteriaText = '';
+    
+    if (criterios) {
+        activityText = `Atividade ${criterios.nome}`;
+        criteriaText = `Mínimo: ${criterios.min_xp}+ XP • ${criterios.min_atividades}+ atividades • ${criterios.min_tempo}min`;
+    }
     
     tooltip.innerHTML = `
-        <div class="font-semibold">${dayNumber} de ${monthNames[currentCalendarDate.getMonth()]}</div>
-        <div>${activityText}</div>
-        <div class="text-xs mt-1">Clique para ver detalhes</div>
+        <div class="font-semibold text-gray-800 text-sm">${dayNumber} de ${monthNames[currentCalendarDate.getMonth()]}</div>
+        <div class="text-gray-700 text-sm mt-1">${activityText}</div>
+        <div class="text-xs text-gray-600 mt-2 font-medium">${criteriaText}</div>
+        <div class="text-xs text-blue-600 mt-2 font-medium">Clique para ver detalhes</div>
     `;
-    
     document.body.appendChild(tooltip);
     
     // Posicionar tooltip
     const rect = element.getBoundingClientRect();
-    tooltip.style.left = rect.left + rect.width / 2 + 'px';
-    tooltip.style.top = rect.top + 'px';
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    let top = rect.top - tooltipRect.height - 10;
+    
+    // Ajustar se sair da tela
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+    }
+    if (top < 10) {
+        top = rect.bottom + 10;
+    }
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
     tooltip.style.opacity = '1';
     
     element.tooltip = tooltip;
-    
-    // Adicionar clique para ver detalhes
-    element.addEventListener('click', async function() {
-        await mostrarDetalhesDia(dateStr);
-    });
 }
 
 async function mostrarDetalhesDia(dateStr) {
     console.log('📅 Buscando detalhes para:', dateStr);
     
     try {
-        // CORREÇÃO: Garantir que a data seja enviada corretamente
         const response = await fetch(`/api/calendar/activity-detail/?date=${dateStr}`);
         
         if (!response.ok) {
@@ -1361,14 +1614,12 @@ async function mostrarDetalhesDia(dateStr) {
         
         if (data.success) {
             console.log('✅ Dados recebidos para:', data.date_display || data.date);
-            // Criar modal com detalhes
             criarModalDetalhesDia(data);
         } else {
             console.log('ℹ️ Nenhuma atividade detalhada para este dia');
-            // Mostrar modal mesmo sem atividades
             criarModalDetalhesDia({
                 date: dateStr,
-                date_display: formatarDataParaExibicao(dateStr), // CORREÇÃO: Adicionar formatação
+                date_display: formatarDataParaExibicao(dateStr),
                 atividades: [],
                 total_atividades: 0,
                 total_xp: 0,
@@ -1409,7 +1660,6 @@ async function mostrarDetalhesDia(dateStr) {
     }
 }
 
-// CORREÇÃO: Função para formatar data para exibição
 function formatarDataParaExibicao(dateStr) {
     const data = new Date(dateStr);
     return data.toLocaleDateString('pt-BR', {
@@ -1426,7 +1676,6 @@ function criarModalDetalhesDia(dados) {
         existingModal.remove();
     }
     
-    // CORREÇÃO: Usar date_display se disponível, caso contrário formatar
     let dataFormatada;
     if (dados.date_display) {
         dataFormatada = dados.date_display;
@@ -1558,15 +1807,15 @@ function hideCalendarTooltip() {
 function updateCalendarStats(data) {
     document.getElementById('stats-active-days').textContent = data.stats.dias_ativos;
     
-    // Calcular sequência atual (simplificado)
+    // Calcular sequência atual
     const currentStreak = calcularSequenciaAtual(data.data);
     document.getElementById('stats-current-streak').textContent = `${currentStreak} dias`;
 }
 
 function calcularSequenciaAtual(days) {
-    const today = new Date().toISOString().split('T')[0];
+    const hoje = new Date().toISOString().split('T')[0];
     let streak = 0;
-    let currentDate = new Date(today);
+    let currentDate = new Date(hoje);
     
     for (let i = 0; i < 30; i++) {
         const dateStr = currentDate.toISOString().split('T')[0];
@@ -1734,6 +1983,41 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('#rankingDropdownBtn') && !e.target.closest('#rankingDropdownMenu')) {
         document.getElementById('rankingDropdownMenu')?.classList.add('hidden');
     }
+});
+
+// CORREÇÃO: Função para atualizar status das vidas
+async function atualizarStatusVidas() {
+    try {
+        const data = await fetchAPI('/api/dashboard/basico/');
+        
+        const elementoVidas = document.getElementById('tempo-proxima-vida');
+        const elementoSubtitulo = document.querySelector('.stat-card-vida .stat-subtext');
+        
+        if (elementoVidas && elementoSubtitulo) {
+            const vidasAtuais = 10; // Fallback
+            const maxVidas = 10;
+            
+            if (vidasAtuais >= maxVidas) {
+                elementoVidas.textContent = 'Completas';
+                elementoVidas.style.fontSize = '1.2rem';
+            } else {
+                elementoVidas.textContent = '5min';
+                elementoVidas.style.fontSize = '2rem';
+            }
+            
+            elementoSubtitulo.textContent = `${vidasAtuais}/${maxVidas} vidas`;
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar status das vidas:', error);
+    }
+}
+
+// Chamar a função periodicamente (a cada minuto)
+setInterval(atualizarStatusVidas, 60000);
+
+// E também chamar quando a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(atualizarStatusVidas, 1000);
 });
 
 // Atualizar tempo a cada minuto

@@ -1830,7 +1830,7 @@
     </div>
 </template>
 
-<!-- Template para Código - SEM numeração -->
+<!-- Template para Código - SEM numeração e COM saída esperada no preview -->
 <template id="code-template">
     <div class="question-item" data-type="code">
         <div class="flex items-start justify-between mb-4">
@@ -1930,7 +1930,7 @@
                 <div class="validation-error output-error"></div>
             </div>
             
-            <!-- Preview Simples -->
+            <!-- Preview Simples COM saída esperada -->
             <div class="bg-blue-50 p-4 rounded-lg">
                 <h5 class="font-medium text-blue-800 mb-3">Como o aluno verá:</h5>
                 <div class="bg-white p-4 rounded border border-blue-200">
@@ -1948,13 +1948,12 @@
                             </div>
                         </div>
                     </div>
-                    <button class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-green-700 transition run-button" 
-                            onclick="simulateCodeExecution(this)">
-                        ▶ Executar Código
-                    </button>
-                    
-                    <div class="output-preview mt-3 p-3 bg-gray-900 text-green-400 font-mono text-sm rounded hidden">
-                        <div class="output-content">Hello</div>
+                    <!-- NOVO: Saída esperada no preview -->
+                    <div class="mt-3">
+                        <strong class="text-gray-700">Saída esperada:</strong>
+                        <div class="output-preview mt-1 p-3 bg-gray-900 text-green-400 font-mono text-sm rounded">
+                            <div class="output-content">Hello</div>
+                        </div>
                     </div>
                 </div>
             </div>

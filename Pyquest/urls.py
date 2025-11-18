@@ -14,16 +14,13 @@ urlpatterns = [
     path('teoria/', views.teoria, name='teoria'),
     path('marcar-aula-concluida/', views.marcar_aula_concluida, name='marcar_aula_concluida'),
     path('pratica/', views.pratica, name='pratica'),
-     # NOVAS URLs PARA SISTEMA DE VIDAS
     path('usar_vida_pratica/', views.usar_vida_pratica, name='usar_vida_pratica'),
     path('finalizar_pratica/', views.finalizar_pratica, name='finalizar_pratica'),
-    # Progresso e Conclusão
     path('salvar_progresso_questao/', views.salvar_progresso_questao, name='salvar_progresso_questao'),
     path('salvar-tempo-pratica/', views.salvar_tempo_pratica, name='salvar_tempo_pratica'),
     path('salvar-tempo-teoria/', views.salvar_tempo_teoria, name='salvar_tempo_teoria'),
     path('api/tempo-estudo/', views.api_tempo_estudo, name='api_tempo_estudo'),
     path('registrar-xp-revisao/', views.registrar_xp_revisao, name='registrar_xp_revisao'),
-     # NOVAS URLs PARA SISTEMA DE STREAK
     path('streak/registrar_atividade/', views.registrar_atividade_streak, name='registrar_atividade_streak'),
     path('streak/api/', views.api_streak_usuario, name='api_streak_usuario'),
     path('testar-tempo/', views.testar_tempo, name='testar_tempo'),
@@ -31,7 +28,7 @@ urlpatterns = [
     path('perfil/', views.perfil, name='perfil'),
     path('ranking/', views.ranking, name='ranking'),
     path("forum/", views.forum, name="forum"),
-    path('create/', views.create_post, name='create_post'),  # Nome correto
+    path('create/', views.create_post, name='create_post'),
     path('forum/<int:post_id>/edit/', views.edit_post, name='edit_post'),
     path("forum/<int:post_id>/delete/", views.delete_post, name="delete_post"),
     path('forum/<int:post_id>/comment/', views.add_comment, name='add_comment'),
@@ -51,7 +48,6 @@ urlpatterns = [
     path('finalizar-sessao/', views.finalizar_sessao_estudo, name='finalizar_sessao'),
     path('api/sessao-ativa/', views.verificar_sessao_ativa, name='sessao_ativa'),
     path('salvar-tempo-estudo/', views.salvar_tempo_estudo, name='salvar_tempo_estudo'),
-    path('testar-tempo/', views.testar_tempo, name='testar_tempo'),
     path('salvar-tempo-teoria/', views.salvar_tempo_teoria, name='salvar_tempo_teoria'),
     path('forcar-verificacao-conquistas/', views.forcar_verificacao_conquistas, name='forcar_verificacao_conquistas'),
     path('corrigir-conquistas/', views.corrigir_conquistas, name='corrigir_conquistas'),
@@ -80,4 +76,7 @@ urlpatterns = [
     path('api/questao/<int:questao_id>/respostas/', views.api_questao_respostas, name='api_questao_respostas'),
     path('api/vidas/status/', views.api_vidas_status, name='api_vidas_status'),
     path('api/vidas/usar/', views.api_usar_vida, name='api_usar_vida'),
+    path("esqueci-senha/", views.esqueci_senha, name="esqueci_senha"),
+    path("redefinir-senha/<uidb64>/<token>/", views.redefinir_senha, name="redefinir_senha"),
+    path('api/vidas-status/', views.api_vidas_status, name='api_vidas_status'),
     ]

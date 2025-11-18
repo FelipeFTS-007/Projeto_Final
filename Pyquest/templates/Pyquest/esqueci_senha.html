@@ -1,0 +1,338 @@
+<!-- Pyquest/templates/Pyquest/esqueci_senha.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyQuest - Esqueci a Senha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'blue': {
+                            200: '#BFDBFE',
+                            400: '#60A5FA',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            800: '#1E40AF',
+                            900: '#1E3A8A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #BFDBFE;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            background-color: #3B82F6;
+        }
+        
+        .logo-rotate {
+            transform: rotate(-90deg) scaleX(-1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="flex flex-col md:flex-row w-full max-w-4xl rounded-2xl overflow-hidden card-shadow">
+        <!-- Left Panel - Form -->
+        <div class="w-full md:w-1/2 bg-white p-8 md:p-10 flex flex-col justify-center rounded-l-2xl">
+            <div class="mb-8 flex items-center">
+                <div class="flex items-center gap-2">
+                    <img src="/static/imagem/Python Sword & Coin Emblem.png" 
+                         alt="Logo PyQuest"
+                         class="w-12 h-12 logo-rotate">
+                    <h1 class="font-bold text-2xl text-blue-600">PyQuest</h1>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">
+                    {% if reset_link %}Link Gerado!{% else %}Redefinir Senha{% endif %}
+                </h2>
+                <p class="text-gray-600 mt-1">
+                    {% if reset_link %}
+                        Use o link abaixo para redefinir sua senha
+                    {% else %}
+                        Digite seu email para receber o link de redefinição
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Mensagens do Sistema -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} fade-in">
+                        <div class="flex items-center">
+                            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} mr-2"></i>
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Seção do Link de Redefinição -->
+            {% if reset_link %}
+            <div class="fade-in">
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fa-solid fa-link text-blue-500 text-lg mt-1"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-blue-800 mb-2">
+                                Link de Redefinição
+                            </h3>
+                            <div class="bg-white p-3 rounded-lg border border-blue-200">
+                                <code class="text-xs text-blue-900 break-all">{{ reset_link }}</code>
+                            </div>
+                            <button 
+                                onclick="copiarLink()"
+                                class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition flex items-center"
+                            >
+                                <i class="fa-regular fa-copy mr-2"></i>
+                                Copiar Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-lightbulb text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-yellow-800 mb-1">Como usar:</h4>
+                            <ul class="text-yellow-700 text-sm space-y-1">
+                                <li>• Copie o link acima e cole no navegador</li>
+                                <li>• Crie uma nova senha na próxima tela</li>
+                                <li>• Faça login com sua nova senha</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <a href="{% url 'login' %}" 
+                       class="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-semibold transition flex items-center justify-center">
+                        Fazer Login
+                        <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                    <button 
+                        onclick="window.location.reload()"
+                        class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 rounded-xl text-gray-700 font-semibold transition flex items-center justify-center">
+                        Novo Link
+                        <i class="fa-solid fa-rotate ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Formulário de Solicitação -->
+            <div class="fade-in">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2" for="email">
+                            Email Cadastrado
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-regular fa-envelope text-gray-400"></i>
+                            </div>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email"
+                                placeholder="seu.email@exemplo.com"
+                                class="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50"
+                                required
+                            >
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Enviaremos um link único para redefinir sua senha
+                        </p>
+                    </div>
+                    
+                    <button 
+                        type="submit"
+                        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-semibold shadow-md transition flex items-center justify-center transform hover:scale-[1.02]"
+                    >
+                        <i class="fa-solid fa-paper-plane mr-2"></i>
+                        Enviar Link de Redefinição
+                    </button>
+                </form>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="text-center">
+                        <p class="text-gray-600">
+                            Lembrou sua senha? 
+                            <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Faça login aqui
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Panel - Features -->
+        <div class="w-full md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-8 md:p-10">
+            <div class="flex flex-col justify-center h-full space-y-8">
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <i class="fa-solid fa-shield-keyhole text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Segurança Garantida</h3>
+                        <p class="text-blue-100">Seu link de redefinição é único e expira automaticamente para sua segurança.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <i class="fa-solid fa-clock text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Processo Rápido</h3>
+                        <p class="text-blue-100">Receba o link instantaneamente e redefina sua senha em poucos minutos.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="feature-icon p-3 rounded-xl mr-4">
+                        <i class="fa-solid fa-mobile-screen text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Acesso em Qualquer Lugar</h3>
+                        <p class="text-blue-100">Redefina sua senha de qualquer dispositivo com acesso ao email.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-900 bg-opacity-30 p-4 rounded-xl mt-6">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <i class="fa-solid fa-lightbulb mr-2"></i>
+                        Dicas de Segurança
+                    </h3>
+                    <ul class="text-blue-100 text-sm space-y-2">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check mt-1 mr-2 text-green-400"></i>
+                            <span>Use senhas diferentes para cada serviço online</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check mt-1 mr-2 text-green-400"></i>
+                            <span>Combine letras, números e símbolos especiais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check mt-1 mr-2 text-green-400"></i>
+                            <span>Evite informações pessoais como datas comuns</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check mt-1 mr-2 text-green-400"></i>
+                            <span>Considere usar um gerenciador de senhas</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {% if not reset_link %}
+                <div class="bg-green-900 bg-opacity-30 p-4 rounded-xl">
+                    <h3 class="font-bold text-lg mb-2 flex items-center">
+                        <i class="fa-solid fa-circle-info mr-2"></i>
+                        O que acontece depois?
+                    </h3>
+                    <ol class="text-blue-100 text-sm space-y-2">
+                        <li class="flex items-start">
+                            <span class="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">1</span>
+                            <span>Digite seu email e clique em enviar</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">2</span>
+                            <span>Receba o link de redefinição nesta página</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">3</span>
+                            <span>Clique no link e crie sua nova senha</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">4</span>
+                            <span>Faça login com suas novas credenciais</span>
+                        </li>
+                    </ol>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copiarLink() {
+            const link = "{{ reset_link }}";
+            navigator.clipboard.writeText(link).then(function() {
+                // Mostrar feedback visual
+                const btn = event.target;
+                const originalHTML = btn.innerHTML;
+                
+                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Copiado!';
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                // Criar tooltip de confirmação
+                const tooltip = document.createElement('div');
+                tooltip.className = 'absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-3 py-1 rounded-lg text-sm';
+                tooltip.innerHTML = 'Link copiado!';
+                tooltip.style.zIndex = '1000';
+                
+                btn.parentNode.style.position = 'relative';
+                btn.parentNode.appendChild(tooltip);
+                
+                setTimeout(function() {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Erro ao copiar: ', err);
+                alert('Não foi possível copiar o link. Tente copiar manualmente.');
+            });
+        }
+
+        // Efeito de foco no input quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+        const emailInput = document.getElementById('email');
+        const resetLink = "{{ reset_link|yesno:'true,false' }}" === "true";
+
+        if (emailInput && !resetLink) {
+            setTimeout(() => emailInput.focus(), 300);
+        }
+    });
+    </script>
+</body>
+</html>

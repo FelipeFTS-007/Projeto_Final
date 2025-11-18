@@ -36,6 +36,14 @@ class Perfil(models.Model):
     precisao_geral = models.IntegerField(default=0)  # Em porcentagem
     ja_fez_atividade_hoje = models.BooleanField(default=False)
     ultima_verificacao_diaria = models.DateTimeField(auto_now_add=True)
+    background_image = models.ImageField(
+        upload_to="backgrounds/", 
+        blank=True, 
+        null=True,
+        default="backgrounds/default-bg.jpg",
+        verbose_name="Imagem de Fundo"
+    )
+    ultima_atualizacao_vidas = models.DateTimeField(auto_now=True)
     
     def atualizar_estatisticas_dashboard(self):
         """Atualiza estatísticas para o dashboard"""
@@ -101,9 +109,27 @@ class Perfil(models.Model):
         else:
             return f"{minutos:02d}:{segundos_restantes:02d}"
     
-    ultima_atualizacao_vidas = models.DateTimeField(auto_now=True)
-
-
+    def contar_modulos_concluidos(self):
+        """Conta quantos módulos o usuário concluiu completamente"""
+        modulos_concluidos = 0
+        modulos = Modulo.objects.filter(ativo=True).prefetch_related('aulas')
+        
+        for modulo in modulos:
+            total_aulas = modulo.aulas.filter(ativo=True).count()
+            if total_aulas > 0:
+                # Contar aulas totalmente concluídas (teoria + prática)
+                aulas_concluidas = AulaConcluida.objects.filter(
+                    usuario=self.user,
+                    aula__in=modulo.aulas.all(),
+                    teoria_concluida=True,
+                    pratica_concluida=True
+                ).count()
+                
+                # Considerar módulo concluído se TODAS as aulas foram concluídas
+                if aulas_concluidas == total_aulas:
+                    modulos_concluidos += 1
+        
+        return modulos_concluidos
 
     # ===== MÉTODOS DO SISTEMA DE STREAK =====
     
@@ -118,11 +144,16 @@ class Perfil(models.Model):
         
         print(f"🕒 Última atividade: {self.ultima_atividade}")
         print(f"🕒 Agora: {agora}")
+        print(f"📊 Sequência atual: {self.sequencia}")
+        print(f"🏆 Sequência máxima: {self.sequencia_maxima}")
         
         # Se nunca teve atividade OU streak é 0, iniciar streak em 1
         if not self.ultima_atividade or self.sequencia == 0:
             self.sequencia = 1
             self.ultima_atividade = agora
+            # CORREÇÃO: Atualizar sequência máxima também
+            if self.sequencia > self.sequencia_maxima:
+                self.sequencia_maxima = self.sequencia
             self.save()
             print("🎯 Primeira atividade - Streak iniciado: 1")
             return 1, False, True
@@ -150,6 +181,12 @@ class Perfil(models.Model):
             print("🎯 Última atividade foi ontem - AUMENTANDO STREAK")
             self.sequencia += 1
             self.ultima_atividade = agora
+            
+            # CORREÇÃO CRÍTICA: Atualizar sequência máxima se necessário
+            if self.sequencia > self.sequencia_maxima:
+                self.sequencia_maxima = self.sequencia
+                print(f"🏆 NOVO RECORDE! Sequência máxima: {self.sequencia_maxima}")
+            
             streak_aumentado = True
             print(f"📈 Streak aumentado: {streak_anterior} → {self.sequencia}")
             self.save()
@@ -161,6 +198,7 @@ class Perfil(models.Model):
             # Atualizar streak máximo antes de zerar
             if streak_anterior > self.sequencia_maxima:
                 self.sequencia_maxima = streak_anterior
+                print(f"🏆 Atualizando recorde antes de zerar: {self.sequencia_maxima}")
             
             # Zerar streak - COMEÇAR EM 0, não em 1
             self.sequencia = 0
@@ -169,10 +207,8 @@ class Perfil(models.Model):
             print(f"🔄 Streak zerado: {streak_anterior} → 0")
             self.save()
         
-        # Atualizar streak máximo se necessário
-        if self.sequencia > self.sequencia_maxima:
-            self.sequencia_maxima = self.sequencia
-            self.save()
+        # CORREÇÃO: Garantir que sempre salve se houve mudança
+        print(f"✅ FINAL - Sequência: {self.sequencia}, Máxima: {self.sequencia_maxima}")
         
         return self.sequencia, streak_zerado, streak_aumentado
     
@@ -200,9 +236,10 @@ class Perfil(models.Model):
             print(f"💀 Streak quebrado: {dias_diferenca} dias sem atividade")
             streak_anterior = self.sequencia
             
-            # Atualizar streak máximo antes de zerar
+            # CORREÇÃO: Atualizar streak máximo antes de zerar
             if streak_anterior > self.sequencia_maxima:
                 self.sequencia_maxima = streak_anterior
+                print(f"🏆 Atualizando recorde na verificação automática: {self.sequencia_maxima}")
             
             # Zerar completamente - COMEÇAR EM 0, não em 1
             self.sequencia = 0
@@ -213,6 +250,7 @@ class Perfil(models.Model):
             return True
         
         return False
+    
     def verificar_streak_quebrado(self):
         """Verifica se o streak foi quebrado (mais de 24h sem atividade)"""
         if not self.ultima_atividade:
@@ -251,78 +289,90 @@ class Perfil(models.Model):
         self.save()
         return streak_anterior
 
-    # No models.py, na classe Perfil
-
-def regenerar_vidas(self):
-    """Regenera vidas baseado no tempo passado - VERSÃO CORRIGIDA"""
-    agora = timezone.now()
-    
-    # Se está com vidas máximas, não precisa regenerar
-    if self.vidas >= self.max_vidas:
-        self.ultima_atualizacao_vidas = agora
-        self.save()
-        return
-    
-    # Calcular tempo desde a última atualização
-    diferenca = agora - self.ultima_atualizacao_vidas
-    minutos_passados = diferenca.total_seconds() / 60
-    
-    # Regenera 1 vida a cada 10 minutos
-    vidas_regeneradas = int(minutos_passados / 10)
-    
-    if vidas_regeneradas > 0:
-        # Calcular novo tempo base para próxima regeneração
-        minutos_restantes = minutos_passados % 10
-        tempo_base = agora - timedelta(minutes=minutos_restantes)
+    def regenerar_vidas(self):
+        """Regenera vidas baseado no tempo passado - VERSÃO CORRIGIDA"""
+        agora = timezone.now()
         
-        self.vidas = min(self.max_vidas, self.vidas + vidas_regeneradas)
-        self.ultima_atualizacao_vidas = tempo_base
-        self.save()
-        print(f"✅ {vidas_regeneradas} vidas regeneradas! Total: {self.vidas}")
+        # Se está com vidas máximas, não precisa regenerar
+        if self.vidas >= self.max_vidas:
+            self.ultima_atualizacao_vidas = agora
+            self.save()
+            return
+        
+        # Calcular tempo desde a última atualização
+        diferenca = agora - self.ultima_atualizacao_vidas
+        minutos_passados = diferenca.total_seconds() / 60
+        
+        # Regenera 1 vida a cada 10 minutos
+        vidas_regeneradas = int(minutos_passados / 10)
+        
+        if vidas_regeneradas > 0:
+            # Calcular novo tempo base para próxima regeneração
+            minutos_restantes = minutos_passados % 10
+            tempo_base = agora - timedelta(minutes=minutos_restantes)
+            
+            self.vidas = min(self.max_vidas, self.vidas + vidas_regeneradas)
+            self.ultima_atualizacao_vidas = tempo_base
+            self.save()
+            print(f"✅ {vidas_regeneradas} vidas regeneradas! Total: {self.vidas}")
 
-def tempo_para_proxima_vida(self):
-    """Retorna minutos até a próxima vida regenerar - VERSÃO CORRIGIDA"""
-    if self.vidas >= self.max_vidas:
-        return 0
-    
-    agora = timezone.now()
-    diferenca = agora - self.ultima_atualizacao_vidas
-    minutos_passados = diferenca.total_seconds() / 60
-    minutos_restantes = 10 - (minutos_passados % 10)
-    
-    return int(minutos_restantes) if minutos_restantes > 0 else 0
+    def tempo_para_proxima_vida(self):
+        """Retorna minutos até a próxima vida regenerar - VERSÃO CORRIGIDA"""
+        if self.vidas >= self.max_vidas:
+            return 0
+        
+        agora = timezone.now()
+        diferenca = agora - self.ultima_atualizacao_vidas
+        minutos_passados = diferenca.total_seconds() / 60
+        minutos_restantes = 10 - (minutos_passados % 10)
+        
+        return int(minutos_restantes) if minutos_restantes > 0 else 0
 
-def usar_vida(self):
-    """Usa uma vida e retorna se foi possível - VERSÃO CORRIGIDA"""
-    if self.vidas > 0:
-        self.vidas -= 1
-        self.ultima_atualizacao_vidas = timezone.now()  # Resetar timer
-        self.save()
-        return True
-    return False
+    def usar_vida(self):
+        """Usa uma vida e retorna se foi possível - VERSÃO CORRIGIDA"""
+        if self.vidas > 0:
+            self.vidas -= 1
+            self.ultima_atualizacao_vidas = timezone.now()  # Resetar timer
+            self.save()
+            return True
+        return False
 
     def verificar_reset_diario(self):
-            """Verifica e reseta automaticamente se passou um dia"""
-            from django.utils import timezone
-            from datetime import timedelta
+        """Verifica e reseta automaticamente se passou um dia - CORREÇÃO"""
+        agora = timezone.now()
+        
+        # Se a última verificação foi há mais de 12 horas, resetar
+        if agora - self.ultima_verificacao_diaria > timedelta(hours=12):
+            # Verificar se mudou o dia
+            if self.ultima_verificacao_diaria.date() < agora.date():
+                self.ja_fez_atividade_hoje = False
             
-            agora = timezone.now()
-            
-            # Se a última verificação foi há mais de 12 horas, resetar
-            if agora - self.ultima_verificacao_diaria > timedelta(hours=12):
-                # Verificar se mudou o dia
-                if self.ultima_verificacao_diaria.date() < agora.date():
-                    self.ja_fez_atividade_hoje = False
-                
-                self.ultima_verificacao_diaria = agora
-                self.save()
+            # CORREÇÃO: Atualizar sem chamar save() para evitar recursão
+            self.ultima_verificacao_diaria = agora
     
     def save(self, *args, **kwargs):
-        # Sempre verificar reset diário ao salvar
+        # CORREÇÃO: Chamar verificação antes do save para evitar recursão
         self.verificar_reset_diario()
-        super().save(*args, **kwargs)
+        
+        # CORREÇÃO: Evitar campos problemáticos no update_fields
+        if 'update_fields' in kwargs:
+            # Remover campos que podem causar problemas
+            update_fields = kwargs['update_fields']
+            if update_fields:
+                # Filtrar campos problemáticos
+                safe_fields = [field for field in update_fields 
+                             if field not in ['ultima_verificacao_diaria', 'ja_fez_atividade_hoje']]
+                kwargs['update_fields'] = safe_fields
+        
+        try:
+            super().save(*args, **kwargs)
+        except Exception as e:
+            print(f"❌ Erro ao salvar perfil: {e}")
+            # Tentar salvar sem update_fields em caso de erro
+            if 'update_fields' in kwargs:
+                kwargs.pop('update_fields')
+                super().save(*args, **kwargs)
     
-
     def __str__(self):
         return f"Perfil de {self.user.username}"
 
@@ -346,13 +396,9 @@ class Atividade(models.Model):
     xp_ganho = models.IntegerField(default=0)
     data = models.DateTimeField(default=timezone.now)
     
-
     def __str__(self):
         return f"{self.titulo} ({self.user.username})"
 
-
-
-# models.py - ATUALIZE a classe Conquista
 
 class Conquista(models.Model):
     RARIDADES = [
@@ -421,14 +467,9 @@ class Conquista(models.Model):
         progresso = self.calcular_progresso(usuario)
         return progresso['atingiu_meta']
 
-    # models.py - ATUALIZE o método calcular_progresso na classe Conquista
-
-    # models.py - ATUALIZE o método calcular_progresso
-
     def calcular_progresso(self, usuario):
         """Calcula o progresso do usuário em relação a esta conquista - VERSÃO CORRIGIDA"""
         from django.db.models import Count, Q
-        from datetime import timedelta
         
         progresso_atual = 0
         meta = self.valor_requerido
@@ -555,7 +596,6 @@ class Conquista(models.Model):
         }
 
 
-
 class Capitulo(models.Model):
     DIFICULDADE_CHOICES = [
         ('beginner', 'Iniciante'),
@@ -616,10 +656,6 @@ class Modulo(models.Model):
         return self.titulo
 
 
-
-
-
-# models.py - ATUALIZAR o modelo Aula
 class Aula(models.Model):
     modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE, related_name="aulas")
     
@@ -665,7 +701,6 @@ class Aula(models.Model):
     def __str__(self):
         return self.titulo_aula
     
-    # No models.py, na classe Aula
     def save(self, *args, **kwargs):
         # Garantir que os valores sejam inteiros
         try:
@@ -688,6 +723,7 @@ class Aula(models.Model):
             self.xp_pratica = int(xp_pratico_calculado) if xp_pratico_calculado is not None else 0
         
         super().save(*args, **kwargs)
+    
     def contar_questoes(self):
         return self.questoes.count()
     
@@ -711,7 +747,7 @@ class Aula(models.Model):
     class Meta:
         ordering = ['ordem']
 
-# models.py - ADICIONE este modelo
+
 class AulaConcluida(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     aula = models.ForeignKey(Aula, on_delete=models.CASCADE)
@@ -731,6 +767,7 @@ class AulaConcluida(models.Model):
     
     def __str__(self):
         return f"{self.usuario.username} - {self.aula.titulo_aula}"
+
 
 class TopicoTeorico(models.Model):
     aula = models.ForeignKey(Aula, on_delete=models.CASCADE, related_name="topicos")
@@ -768,12 +805,12 @@ class Questao(models.Model):
     
     class Meta:
         ordering = ['ordem']
-        # ADICIONADO DO ARQUIVO 2
         verbose_name = "Questão"
         verbose_name_plural = "Questões"
     
     def __str__(self):
         return f"{self.tipo} - {self.enunciado[:50]}"
+
 
 class OpcaoQuestao(models.Model):
     questao = models.ForeignKey(Questao, on_delete=models.CASCADE, related_name="opcoes")
@@ -787,6 +824,7 @@ class OpcaoQuestao(models.Model):
     def __str__(self):
         return f"{self.texto[:30]} - {'✓' if self.correta else '✗'}"
 
+
 class DicaQuestao(models.Model):
     questao = models.ForeignKey(Questao, on_delete=models.CASCADE, related_name="dicas")
     texto = models.TextField()
@@ -798,6 +836,7 @@ class DicaQuestao(models.Model):
     def __str__(self):
         return f"Dica {self.ordem}: {self.texto[:30]}"
     
+
 class Hashtag(models.Model):
     nome = models.CharField(max_length=50, unique=True)
     contador = models.PositiveIntegerField(default=0)
@@ -805,8 +844,20 @@ class Hashtag(models.Model):
 
     def __str__(self):
         return f"#{self.nome}"
+    
+    @classmethod
+    def limpar_hashtags_automatico(cls):
+        """Remove automaticamente hashtags que não são usadas por nenhum post"""
+        hashtags_orfas = cls.objects.filter(contador=0)
+        count = hashtags_orfas.count()
+        
+        if count > 0:
+            print(f"🧹 Removendo {count} hashtags órfãs automaticamente...")
+            hashtags_orfas.delete()
+        
+        return count
 
-# models.py - ATUALIZAR o modelo Post
+
 class Post(models.Model):
     autor = models.ForeignKey(User, on_delete=models.CASCADE)
     conteudo = models.TextField()
@@ -851,6 +902,37 @@ class Post(models.Model):
             hashtag.save(update_fields=["contador", "ultimo_uso"])
             self.hashtags.add(hashtag)
     
+    def delete(self, *args, **kwargs):
+        """Remove o post e atualiza automaticamente os contadores das hashtags"""
+        print(f"🗑️ Excluindo post {self.id} - Atualizando hashtags...")
+        
+        # Salvar as hashtags antes de deletar para poder atualizar os contadores
+        hashtags_do_post = list(self.hashtags.all())
+        
+        # Primeiro remover as relações ManyToMany
+        self.hashtags.clear()
+        
+        # Deletar o post
+        super().delete(*args, **kwargs)
+        
+        # Atualizar contadores de cada hashtag
+        for hashtag in hashtags_do_post:
+            # Recontar quantos posts usam essa hashtag AGORA
+            posts_com_hashtag = Post.objects.filter(hashtags=hashtag).count()
+            hashtag.contador = posts_com_hashtag
+            
+            if posts_com_hashtag == 0:
+                # Se não há mais posts, zerar último uso
+                hashtag.ultimo_uso = None
+            else:
+                # Buscar a data do último post que ainda usa essa hashtag
+                ultimo_post = Post.objects.filter(hashtags=hashtag).order_by('-created_at').first()
+                if ultimo_post:
+                    hashtag.ultimo_uso = ultimo_post.created_at
+            
+            hashtag.save()
+            print(f"  🔄 Hashtag #{hashtag.nome}: contador atualizado para {hashtag.contador}")
+    
 
 class Comentario(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comentarios")
@@ -876,10 +958,6 @@ class Notificacao(models.Model):
         return f"Notificação para {self.usuario.username}"
 
 
-
-
-
-# Adicione ao models.py
 class ModuloConcluido(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
@@ -887,34 +965,6 @@ class ModuloConcluido(models.Model):
     
     class Meta:
         unique_together = ['usuario', 'modulo']
-
-
-
-
-
-
-#isso tem que esta no final#
-
-
-@receiver(post_save, sender=User)
-def criar_perfil(sender, instance, created, **kwargs):
-    if created:
-        Perfil.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def salvar_perfil(sender, instance, **kwargs):
-    instance.perfil.save()
-
-
-
-@receiver(post_migrate)
-def create_professor_group(sender, **kwargs):
-    if sender.name == 'PyQuest': 
-        group, created = Group.objects.get_or_create(name='professores')
-        if created:
-            # Adicione permissões específicas se necessário
-            print("Grupo 'professores' criado com sucesso!")
-
 
 
 class TentativaPratica(models.Model):
@@ -929,6 +979,7 @@ class TentativaPratica(models.Model):
     class Meta:
         unique_together = ['usuario', 'aula']
         
+
 class TempoEstudo(models.Model):
     TIPO_CHOICES = [
         ('teoria', 'Teoria'),
@@ -947,8 +998,8 @@ class TempoEstudo(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.aula.titulo_aula} ({self.tipo}) - {self.data}"
-    
-    # Adicione esta classe se não existir
+
+
 class SessaoEstudo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     aula = models.ForeignKey('Aula', on_delete=models.CASCADE, null=True, blank=True)
@@ -985,6 +1036,7 @@ class SessaoEstudo(models.Model):
                 tempo_estudo.tempo_segundos += self.tempo_total
                 tempo_estudo.save()
 
+
 class TempoEstudoDiario(models.Model):
     """Armazena o tempo de estudo por dia"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -1011,3 +1063,99 @@ class TempoEstudoDiario(models.Model):
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
         else:
             return f"{minutos:02d}:{segundos:02d}"
+
+
+# ========== FUNÇÕES PARA MÓDULOS CONCLUÍDOS ==========
+
+def verificar_e_marcar_modulo_concluido(usuario, aula):
+    """Verifica se todas as aulas do módulo foram concluídas e marca o módulo como concluído"""
+    try:
+        modulo = aula.modulo
+        
+        # Verificar se TODAS as aulas do módulo foram concluídas (teoria + prática)
+        total_aulas = modulo.aulas.filter(ativo=True).count()
+        
+        if total_aulas > 0:
+            aulas_totalmente_concluidas = AulaConcluida.objects.filter(
+                usuario=usuario,
+                aula__in=modulo.aulas.all(),
+                teoria_concluida=True,
+                pratica_concluida=True
+            ).count()
+            
+            # Se todas as aulas foram concluídas, marcar módulo como concluído
+            if aulas_totalmente_concluidas == total_aulas:
+                ModuloConcluido.objects.get_or_create(
+                    usuario=usuario,
+                    modulo=modulo
+                )
+                print(f"✅ Módulo '{modulo.titulo}' marcado como concluído para {usuario.username}")
+                return True
+            else:
+                # Se não estão todas concluídas, remover da lista de concluídos (caso exista)
+                ModuloConcluido.objects.filter(
+                    usuario=usuario,
+                    modulo=modulo
+                ).delete()
+        
+        return False
+        
+    except Exception as e:
+        print(f"❌ Erro ao verificar módulo concluído: {e}")
+        return False
+
+
+# ========== SIGNALS CORRIGIDOS ==========
+
+@receiver(post_save, sender=User)
+def criar_perfil(sender, instance, created, **kwargs):
+    """
+    Signal para criar perfil automaticamente quando um usuário é criado.
+    CORREÇÃO: Usar create em vez de get_or_create para evitar loops
+    """
+    if created:
+        # CORREÇÃO: Verificar se já existe um perfil antes de criar
+        if not hasattr(instance, 'perfil'):
+            try:
+                # CORREÇÃO: Usar create com valores padrão explícitos
+                Perfil.objects.create(
+                    user=instance,
+                    ultima_verificacao_diaria=timezone.now(),
+                    ultima_atualizacao_vidas=timezone.now()
+                )
+                print(f"✅ Perfil criado para usuário: {instance.username}")
+            except Exception as e:
+                print(f"❌ Erro ao criar perfil: {e}")
+
+
+@receiver(post_save, sender=User)
+def salvar_perfil(sender, instance, **kwargs):
+    """
+    Signal para salvar perfil quando usuário é salvo.
+    CORREÇÃO: Verificar se o perfil existe antes de tentar salvar
+    """
+    try:
+        if hasattr(instance, 'perfil'):
+            instance.perfil.save()
+    except Perfil.DoesNotExist:
+        # Se o perfil não existe, criar um
+        Perfil.objects.get_or_create(user=instance)
+        print(f"🔄 Perfil criado para usuário: {instance.username}")
+
+
+@receiver(post_save, sender=AulaConcluida)
+def verificar_modulo_ao_concluir_aula(sender, instance, **kwargs):
+    """Verifica se o módulo deve ser marcado como concluído quando uma aula é concluída"""
+    print(f"🔍 Signal AulaConcluida: {instance.aula.titulo_aula} - Teoria: {instance.teoria_concluida}, Prática: {instance.pratica_concluida}")
+    
+    if instance.teoria_concluida and instance.pratica_concluida:
+        verificar_e_marcar_modulo_concluido(instance.usuario, instance.aula)
+
+
+@receiver(post_migrate)
+def create_professor_group(sender, **kwargs):
+    """Cria grupo de professores após migração"""
+    if sender.name == 'PyQuest': 
+        group, created = Group.objects.get_or_create(name='professores')
+        if created:
+            print("✅ Grupo 'professores' criado com sucesso!")

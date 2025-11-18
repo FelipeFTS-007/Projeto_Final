@@ -253,78 +253,78 @@ class Perfil(models.Model):
 
     # No models.py, na classe Perfil
 
-def regenerar_vidas(self):
-    """Regenera vidas baseado no tempo passado - VERSÃO CORRIGIDA"""
-    agora = timezone.now()
-    
-    # Se está com vidas máximas, não precisa regenerar
-    if self.vidas >= self.max_vidas:
-        self.ultima_atualizacao_vidas = agora
-        self.save()
-        return
-    
-    # Calcular tempo desde a última atualização
-    diferenca = agora - self.ultima_atualizacao_vidas
-    minutos_passados = diferenca.total_seconds() / 60
-    
-    # Regenera 1 vida a cada 10 minutos
-    vidas_regeneradas = int(minutos_passados / 10)
-    
-    if vidas_regeneradas > 0:
-        # Calcular novo tempo base para próxima regeneração
-        minutos_restantes = minutos_passados % 10
-        tempo_base = agora - timedelta(minutes=minutos_restantes)
+    def regenerar_vidas(self):
+        """Regenera vidas baseado no tempo passado - VERSÃO CORRIGIDA"""
+        agora = timezone.now()
         
-        self.vidas = min(self.max_vidas, self.vidas + vidas_regeneradas)
-        self.ultima_atualizacao_vidas = tempo_base
-        self.save()
-        print(f"✅ {vidas_regeneradas} vidas regeneradas! Total: {self.vidas}")
+        # Se está com vidas máximas, não precisa regenerar
+        if self.vidas >= self.max_vidas:
+            self.ultima_atualizacao_vidas = agora
+            self.save()
+            return
+        
+        # Calcular tempo desde a última atualização
+        diferenca = agora - self.ultima_atualizacao_vidas
+        minutos_passados = diferenca.total_seconds() / 60
+        
+        # Regenera 1 vida a cada 10 minutos
+        vidas_regeneradas = int(minutos_passados / 10)
+        
+        if vidas_regeneradas > 0:
+            # Calcular novo tempo base para próxima regeneração
+            minutos_restantes = minutos_passados % 10
+            tempo_base = agora - timedelta(minutes=minutos_restantes)
+            
+            self.vidas = min(self.max_vidas, self.vidas + vidas_regeneradas)
+            self.ultima_atualizacao_vidas = tempo_base
+            self.save()
+            print(f"✅ {vidas_regeneradas} vidas regeneradas! Total: {self.vidas}")
 
-def tempo_para_proxima_vida(self):
-    """Retorna minutos até a próxima vida regenerar - VERSÃO CORRIGIDA"""
-    if self.vidas >= self.max_vidas:
-        return 0
-    
-    agora = timezone.now()
-    diferenca = agora - self.ultima_atualizacao_vidas
-    minutos_passados = diferenca.total_seconds() / 60
-    minutos_restantes = 10 - (minutos_passados % 10)
-    
-    return int(minutos_restantes) if minutos_restantes > 0 else 0
+    def tempo_para_proxima_vida(self):
+        """Retorna minutos até a próxima vida regenerar - VERSÃO CORRIGIDA"""
+        if self.vidas >= self.max_vidas:
+            return 0
+        
+        agora = timezone.now()
+        diferenca = agora - self.ultima_atualizacao_vidas
+        minutos_passados = diferenca.total_seconds() / 60
+        minutos_restantes = 10 - (minutos_passados % 10)
+        
+        return int(minutos_restantes) if minutos_restantes > 0 else 0
 
-def usar_vida(self):
-    """Usa uma vida e retorna se foi possível - VERSÃO CORRIGIDA"""
-    if self.vidas > 0:
-        self.vidas -= 1
-        self.ultima_atualizacao_vidas = timezone.now()  # Resetar timer
-        self.save()
-        return True
-    return False
+    def usar_vida(self):
+        """Usa uma vida e retorna se foi possível - VERSÃO CORRIGIDA"""
+        if self.vidas > 0:
+            self.vidas -= 1
+            self.ultima_atualizacao_vidas = timezone.now()  # Resetar timer
+            self.save()
+            return True
+        return False
 
     def verificar_reset_diario(self):
-            """Verifica e reseta automaticamente se passou um dia"""
-            from django.utils import timezone
-            from datetime import timedelta
-            
-            agora = timezone.now()
-            
-            # Se a última verificação foi há mais de 12 horas, resetar
-            if agora - self.ultima_verificacao_diaria > timedelta(hours=12):
-                # Verificar se mudou o dia
-                if self.ultima_verificacao_diaria.date() < agora.date():
-                    self.ja_fez_atividade_hoje = False
+                """Verifica e reseta automaticamente se passou um dia"""
+                from django.utils import timezone
+                from datetime import timedelta
                 
-                self.ultima_verificacao_diaria = agora
-                self.save()
-    
+                agora = timezone.now()
+                
+                # Se a última verificação foi há mais de 12 horas, resetar
+                if agora - self.ultima_verificacao_diaria > timedelta(hours=12):
+                    # Verificar se mudou o dia
+                    if self.ultima_verificacao_diaria.date() < agora.date():
+                        self.ja_fez_atividade_hoje = False
+                    
+                    self.ultima_verificacao_diaria = agora
+                    self.save()
+        
     def save(self, *args, **kwargs):
-        # Sempre verificar reset diário ao salvar
-        self.verificar_reset_diario()
-        super().save(*args, **kwargs)
-    
+            # Sempre verificar reset diário ao salvar
+            self.verificar_reset_diario()
+            super().save(*args, **kwargs)
+        
 
     def __str__(self):
-        return f"Perfil de {self.user.username}"
+            return f"Perfil de {self.user.username}"
 
 
 class Progresso(models.Model):

@@ -2060,7 +2060,29 @@ def verificar_conquistas_sequencia(sender, instance, **kwargs):
     """Verifica conquistas relacionadas a sequência de dias"""
     ConquistaManager.verificar_conquistas_usuario(instance.user, 'sequencia_dias')
 
-
+# views.py
+@csrf_exempt
+def atualizar_vida(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            aula_id = data.get('aula_id')
+            vida_perdida = data.get('vida_perdida')
+            vidas_restantes = data.get('vidas_restantes')
+            question_id = data.get('question_id')
+            
+            # Aqui você salva no banco de dados
+            # Exemplo: atualizar perfil do usuário
+            perfil = request.perfil
+            perfil.vidas = vidas_restantes
+            perfil.save()
+            
+            return JsonResponse({'success': True, 'vidas_restantes': vidas_restantes})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
 
 
 # ===== VIEWS DO SISTEMA DE STREAK =====

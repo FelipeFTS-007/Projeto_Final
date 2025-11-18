@@ -64,6 +64,9 @@ urlpatterns = [
     path('api/dashboard/heatmap/', views.api_dashboard_heatmap, name='api_dashboard_heatmap'),
     path('api/dashboard/estatisticas/', views.api_dashboard_estatisticas, name='api_dashboard_estatisticas'),
     path('api/dashboard/registrar-atividade/', views.registrar_atividade_manual, name='registrar_atividade_manual'),
+     # ... outras URLs ...
+    path('atualizar-vida/', views.atualizar_vida, name='atualizar_vida'),
+    path('registrar-xp-revisao/', views.registrar_xp_revisao, name='registrar_xp_revisao'),
     path('api/dashboard/gerar-dados-demo/', views.gerar_dados_demo, name='gerar_dados_demo'),
     path('verificar-streak/', views.verificar_streak_manual, name='verificar_streak_manual'),
     path('api/streak/', views.api_streak_status, name='api_streak_status'),

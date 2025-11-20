@@ -597,6 +597,38 @@
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
     }
 
+  /* ✅ ESTILOS PARA ELEMENTOS BLOQUEADOS SEM VIDAS */
+.btn-blocked {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.no-lives-badge {
+    margin-left: auto;
+}
+
+/* ✅ Mensagem temporária não bloqueante */
+.temp-message {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ✅ Tooltip informativo */
+.lives-warning {
+    animation: fadeIn 0.5s ease;
+}
+
 </style>
 {% endblock %}
 
@@ -801,6 +833,181 @@ document.addEventListener('DOMContentLoaded', function() {
   const conteudoPratica = document.getElementById('conteudo-pratica');
   const textoAbas = document.getElementById('texto-abas-conteudo');
 
+  // ✅ DADOS DO USUÁRIO DO CONTEXTO
+  const userLives = {{ vidas_restantes }};
+  const maxLives = {{ max_vidas }};
+  const podeFazerPratica = {{ pode_fazer_pratica|yesno:"true,false" }};
+  const tempoProximaVida = {{ tempo_proxima_vida }};
+
+  console.log(`💓 Status Vidas: ${userLives}/${maxLives}`);
+  console.log(`🔓 Pode fazer prática: ${podeFazerPratica}`);
+  console.log(`⏰ Próxima vida em: ${tempoProximaVida} min`);
+
+// ✅ FUNÇÃO PARA BLOQUEAR ATIVIDADES PRÁTICAS SE SEM VIDAS
+function checkAndBlockPracticeActivities() {
+  if (!podeFazerPratica) {
+    console.log("🚫 Usuário sem vidas - bloqueando atividades práticas");
+    
+    // Bloquear todos os botões de prática
+    const practiceButtons = document.querySelectorAll('.action-btn-pratica');
+    practiceButtons.forEach(button => {
+      button.disabled = true;
+      button.style.opacity = '0.5';
+      button.style.cursor = 'not-allowed';
+      button.style.background = '#9CA3AF'; // Cinza
+      button.style.border = '1px solid #6B7280';
+      
+      // Alterar texto do botão
+      const buttonText = button.querySelector('span') || button;
+      if (buttonText.textContent.includes('Iniciar') || buttonText.textContent.includes('Revisar')) {
+        buttonText.innerHTML = `Sem Vidas <img src="{% static 'imagem/block_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Bloqueado" class="w-3 h-3">`;
+      }
+    });
+
+    // ✅ ESCONDER O XP DAS ATIVIDADES PRÁTICAS
+    const practiceCards = document.querySelectorAll('#conteudo-pratica .lesson-card');
+    practiceCards.forEach(card => {
+      // Esconder o badge de XP
+      const xpBadge = card.querySelector('.xp-badge-pratica');
+      if (xpBadge) {
+        xpBadge.style.display = 'none';
+      }
+      
+      // Adicionar badge de sem vidas no lugar do XP (apenas se não existir)
+      if (!card.querySelector('.no-lives-badge')) {
+        const header = card.querySelector('.lesson-header');
+        if (header) {
+          const badge = document.createElement('div');
+          badge.className = 'no-lives-badge';
+          badge.innerHTML = `
+            <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: #FEF2F2; color: #DC2626; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; border: 1px solid #FECACA;">
+              <img src="{% static 'imagem/block_20dp_DC2626_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Sem vidas" class="w-3 h-3">
+              <span>Sem Vidas</span>
+            </div>
+          `;
+          header.appendChild(badge);
+        }
+      }
+    });
+
+    // Adicionar tooltip informativo (SEM FUNDO VERMELHO)
+    const practiceSection = document.getElementById('conteudo-pratica');
+    if (practiceSection && !practiceSection.querySelector('.lives-warning')) {
+      const warning = document.createElement('div');
+      warning.className = 'lives-warning';
+      warning.innerHTML = `
+        <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <img src="{% static 'imagem/block_20dp_DC2626_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Atenção" class="w-5 h-5">
+            <p style="color: #DC2626; font-weight: 600; margin: 0; font-size: 0.9rem;">Sem vidas disponíveis</p>
+          </div>
+          <p style="color: #7F1D1D; margin: 0; font-size: 0.8rem; line-height: 1.4;">
+            Aguarde a regeneração das vidas (${tempoProximaVida} minuto${tempoProximaVida !== 1 ? 's' : ''}) para continuar com as atividades práticas.
+            <br>Enquanto isso, você pode revisar a teoria ou voltar mais tarde.
+          </p>
+        </div>
+      `;
+      practiceSection.insertBefore(warning, practiceSection.firstChild);
+    }
+
+    return true; // Está bloqueado
+  } else {
+    // ✅ SE TEM VIDAS, GARANTIR QUE O XP ESTÁ VISÍVEL
+    const practiceCards = document.querySelectorAll('#conteudo-pratica .lesson-card');
+    practiceCards.forEach(card => {
+      const xpBadge = card.querySelector('.xp-badge-pratica');
+      if (xpBadge) {
+        xpBadge.style.display = 'flex'; // Ou 'block' dependendo do estilo original
+      }
+      
+      // Remover badge de sem vidas se existir
+      const noLivesBadge = card.querySelector('.no-lives-badge');
+      if (noLivesBadge) {
+        noLivesBadge.remove();
+      }
+    });
+    
+    // Remover warning se existir
+    const warning = document.querySelector('.lives-warning');
+    if (warning) {
+      warning.remove();
+    }
+    
+    return false; // Não está bloqueado
+  }
+}
+
+  // ✅ FUNÇÃO PARA VERIFICAR E ATUALIZAR ESTADO DAS AULAS PRÁTICAS
+  function updatePracticeButtonsState() {
+    const isBlocked = checkAndBlockPracticeActivities();
+    
+    if (isBlocked) {
+      // Se estiver bloqueado, adicionar listener para mostrar mensagem ao clicar
+      const practiceButtons = document.querySelectorAll('.action-btn-pratica');
+      practiceButtons.forEach(button => {
+        button.onclick = function(e) {
+          e.preventDefault();
+          showTemporaryMessage(`Você não tem vidas disponíveis. Próxima vida em ${tempoProximaVida} minuto${tempoProximaVida !== 1 ? 's' : ''}.`, 'error');
+        };
+      });
+
+      // Também bloquear links
+      const practiceLinks = document.querySelectorAll('a[href*="pratica"]');
+      practiceLinks.forEach(link => {
+        link.onclick = function(e) {
+          if (!podeFazerPratica) {
+            e.preventDefault();
+            showTemporaryMessage(`Você não tem vidas disponíveis. Próxima vida em ${tempoProximaVida} minuto${tempoProximaVida !== 1 ? 's' : ''}.`, 'error');
+            return false;
+          }
+        };
+      });
+    } else {
+      // Se não está bloqueado, garantir que os links funcionam normalmente
+      const practiceLinks = document.querySelectorAll('a[href*="pratica"]');
+      practiceLinks.forEach(link => {
+        link.onclick = null; // Remover qualquer bloqueio anterior
+      });
+    }
+  }
+
+  // ✅ FUNÇÃO PARA MOSTRAR MENSAGEM TEMPORÁRIA (NÃO BLOQUEANTE)
+  function showTemporaryMessage(message, type = 'info') {
+    // Remover mensagem anterior se existir
+    const existingMessage = document.querySelector('.temp-message');
+    if (existingMessage) {
+      existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `temp-message fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+      type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+    }`;
+    messageDiv.style.maxWidth = '400px';
+    messageDiv.innerHTML = `
+      <div class="flex items-center gap-2">
+        <img src="{% static 'imagem/block_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Atenção" class="w-5 h-5">
+        <span class="text-sm">${message}</span>
+      </div>
+    `;
+
+    document.body.appendChild(messageDiv);
+
+    // Remover após 4 segundos
+    setTimeout(() => {
+      if (messageDiv.parentNode) {
+        messageDiv.remove();
+      }
+    }, 4000);
+  }
+
+  // ✅ FUNÇÃO PARA ATUALIZAR TEXTO DA DICA BASEADO NAS VIDAS
+  function updateTipText() {
+    if (!podeFazerPratica) {
+      textoAbas.textContent = `Você está sem vidas para atividades práticas. Aguarde ${tempoProximaVida} minuto${tempoProximaVida !== 1 ? 's' : ''} para a próxima vida ou revise a teoria.`;
+    }
+  }
+
   // Função para alternar entre abas
   function alternarAba(abaAtiva, abaInativa, conteudoAtivo, conteudoInativo, texto, isPratica) {
     // Resetar todas as abas
@@ -810,12 +1017,20 @@ document.addEventListener('DOMContentLoaded', function() {
       tabTeoria.classList.add('tab-inactive');
       tabPratica.classList.remove('tab-pratica-inactive');
       tabPratica.classList.add('tab-pratica-active');
+      
+      // ✅ ATUALIZAR TEXTO SE ESTIVER SEM VIDAS
+      if (!podeFazerPratica) {
+        textoAbas.textContent = `Você está sem vidas para atividades práticas. Aguarde ${tempoProximaVida} minuto${tempoProximaVida !== 1 ? 's' : ''} para a próxima vida.`;
+      } else {
+        textoAbas.textContent = texto;
+      }
     } else {
       // Se estamos ativando a teoria
       tabTeoria.classList.remove('tab-inactive');
       tabTeoria.classList.add('tab-active');
       tabPratica.classList.remove('tab-pratica-active');
       tabPratica.classList.add('tab-pratica-inactive');
+      textoAbas.textContent = texto;
     }
     
     // Esconder todos os conteúdos
@@ -828,8 +1043,10 @@ document.addEventListener('DOMContentLoaded', function() {
     conteudoAtivo.classList.remove('hidden-content');
     conteudoAtivo.classList.add('visible-content');
     
-    // Atualizar texto
-    textoAbas.textContent = texto;
+    // ✅ ATUALIZAR ESTADO DOS BOTÕES QUANDO MUDAR DE ABA
+    if (isPratica) {
+      setTimeout(updatePracticeButtonsState, 100);
+    }
   }
 
   // Event listeners para as abas
@@ -855,6 +1072,19 @@ document.addEventListener('DOMContentLoaded', function() {
     );
   });
 
+  // ✅ INICIALIZAR: Verificar e bloquear atividades práticas se necessário
+  updatePracticeButtonsState();
+  updateTipText();
+
+  // ✅ VERIFICAR SE HÁ AULAS PRÁTICAS AO CARREGAR A PÁGINA
+  // Se a aba de prática estiver ativa por padrão, garantir que os botões estão bloqueados
+  setTimeout(() => {
+    const praticaContent = document.getElementById('conteudo-pratica');
+    if (praticaContent && !praticaContent.classList.contains('hidden-content')) {
+      updatePracticeButtonsState();
+    }
+  }, 500);
+
   // Marcar o item de conteúdo como ativo na sidebar
   const conteudoLink = document.getElementById('nav-conteudo');
   if (conteudoLink) {
@@ -868,6 +1098,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
+
+  // ✅ BOTÃO PARA VERIFICAR STATUS DE VIDAS (para debug)
+  console.log("✅ Sistema de vidas inicializado na página de tarefas");
 });
 </script>
 {% endblock %}

@@ -631,80 +631,78 @@
         </div>
     </div>
 
-    <!-- Cards de Resumo Atualizados -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <!-- Tempo de Estudo -->
-        <div class="stat-card stat-card-vida fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-clock text-blue-600 text-xl"></i>
-            </div>
-            <h3 class="stat-label">Tempo de Estudo</h3>
-            <p class="stat-number" id="tempo-estudo">{{ perfil.tempo_estudo_formatado }}</p>
-            <div class="stat-subtext" id="tempo-hoje">Hoje</div>
+<!-- Cards de Resumo Atualizados -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <!-- Tempo de Estudo TOTAL (Teoria + Prática) -->
+    <div class="stat-card stat-card-vida fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-clock text-blue-600 text-xl"></i>
         </div>
-        
-        <!-- XP Total -->
-        <div class="stat-card stat-card-overall fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-star text-purple-600 text-xl"></i>
-            </div>
-            <h3 class="stat-label">XP Total</h3>
-            <p class="stat-number" id="xp-total">{{ perfil.xp|default:0 }}</p>
-            <div class="stat-subtext" id="xp-hoje">+{{ perfil.xp_hoje|default:0 }} hoje</div>
-        </div>
-
-        
-        
-        <!-- Módulos -->
-        <div class="stat-card stat-card-progress fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-cubes text-orange-500 text-xl"></i>
-            </div>
-            <h3 class="stat-label">Módulos</h3>
-            <p class="stat-number" id="modulos-concluidos">{{ modulos_concluidos|default:0 }}/{{ total_modulos|default:0 }}</p>
-            <div class="progress-bar-modules">
-                <div class="progress-fill-modules" id="progresso-modulos" style="width: 0%"></div>
-            </div>
-        </div>
-        
-        <!-- Sequência -->
-        <div class="stat-card stat-card-streak fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-fire text-red-500 text-xl"></i>
-            </div>
-            <h3 class="stat-label">Sequência</h3>
-            <p class="stat-number" id="sequencia-atual">{{ perfil.sequencia|default:0 }} Dias</p>
-            <div class="stat-subtext" id="meta-sequencia">Meta: 7 dias</div>
-
-            
-        </div>
-        
-        <!-- Tempo para Próxima Vida (NOVO) -->
-        <div class="stat-card stat-card-vida fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-heart text-blue-600 text-xl"></i>
-            </div>
-            <h3 class="stat-label">Próxima Vida</h3>
-            <p class="stat-number" id="tempo-proxima-vida">
-                {% if perfil.vidas >= perfil.max_vidas %}
-                    Completas
-                {% else %}
-                    {{ perfil.tempo_para_proxima_vida }}min
-                {% endif %}
-            </p>
-            <div class="stat-subtext">{{ perfil.vidas }}/{{ perfil.max_vidas }} vidas</div>
-        </div>
-        
-        <!-- Recorde de Sequência -->
-        <div class="stat-card stat-card-completed fade-in">
-            <div class="stat-icon">
-                <i class="fas fa-trophy text-green-600 text-xl"></i>
-            </div>
-            <h3 class="stat-label">Recorde</h3>
-            <p class="stat-number" id="recorde-sequencia">{{ perfil.sequencia_maxima|default:0 }} Dias</p>
-            <div class="stat-subtext">Melhor sequência</div>
+        <h3 class="stat-label">Tempo de Estudo</h3>
+        <p class="stat-number" id="tempo-estudo">{{ perfil.tempo_estudo_formatado }}</p>
+        <div class="stat-subtext" id="tempo-hoje">
+            Hoje
         </div>
     </div>
+    
+    <!-- XP Total -->
+    <div class="stat-card stat-card-overall fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-star text-purple-600 text-xl"></i>
+        </div>
+        <h3 class="stat-label">XP Total</h3>
+        <p class="stat-number" id="xp-total">{{ perfil.xp|default:0 }}</p>
+        <div class="stat-subtext" id="xp-hoje">+{{ perfil.xp_hoje|default:0 }} hoje</div>
+    </div>
+
+    <!-- Módulos -->
+    <div class="stat-card stat-card-progress fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-cubes text-orange-500 text-xl"></i>
+        </div>
+        <h3 class="stat-label">Módulos</h3>
+        <p class="stat-number" id="modulos-concluidos">{{ modulos_concluidos|default:0 }}/{{ total_modulos|default:0 }}</p>
+        <div class="progress-bar-modules">
+            <div class="progress-fill-modules" id="progresso-modulos" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- Sequência -->
+    <div class="stat-card stat-card-streak fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-fire text-red-500 text-xl"></i>
+        </div>
+        <h3 class="stat-label">Sequência</h3>
+        <p class="stat-number" id="sequencia-atual">{{ perfil.sequencia|default:0 }} Dias</p>
+        <div class="stat-subtext" id="meta-sequencia">Meta: 7 dias</div>
+    </div>
+    
+    <!-- Tempo para Próxima Vida (CORRIGIDO) -->
+    <div class="stat-card stat-card-vida fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-heart text-blue-600 text-xl"></i>
+        </div>
+        <h3 class="stat-label">Próxima Vida</h3>
+        <p class="stat-number" id="tempo-proxima-vida">
+            {% if perfil.vidas >= perfil.max_vidas %}
+                Completas
+            {% else %}
+                {{ perfil.tempo_para_proxima_vida }}min
+            {% endif %}
+        </p>
+        <!-- ✅ CORREÇÃO: REMOVER TEXTO DAS VIDAS EM BAIXO -->
+    </div>
+    
+    <!-- Recorde de Sequência -->
+    <div class="stat-card stat-card-completed fade-in">
+        <div class="stat-icon">
+            <i class="fas fa-trophy text-green-600 text-xl"></i>
+        </div>
+        <h3 class="stat-label">Recorde</h3>
+        <p class="stat-number" id="recorde-sequencia">{{ perfil.sequencia_maxima|default:0 }} Dias</p>
+        <div class="stat-subtext">Melhor sequência</div>
+    </div>
+</div>
 
     <!-- Primeira Linha de Gráficos -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1167,18 +1165,31 @@ async function inicializarDadosBasicos() {
     try {
         const data = await fetchAPI('/api/dashboard/basico/');
         
-        // Atualizar cards de resumo
+        // ✅ CORREÇÃO: Usar tempo total formatado do perfil
         document.getElementById('tempo-estudo').textContent = data.tempo_estudo;
         document.getElementById('xp-total').textContent = data.xp_total.toLocaleString();
         document.getElementById('xp-hoje').textContent = `+${data.xp_hoje} hoje`;
         document.getElementById('modulos-concluidos').textContent = `${data.modulos_concluidos}/${data.total_modulos}`;
         document.getElementById('sequencia-atual').textContent = `${data.sequencia_atual} Dias`;
         
+        // ✅ CORREÇÃO: Mostrar APENAS "Hoje" sem tempo estimado
+        const tempoHojeElement = document.getElementById('tempo-hoje');
+        if (tempoHojeElement) {
+            // Verificar se há atividade hoje (XP ganho > 0)
+            if (data.xp_hoje > 0) {
+                tempoHojeElement.textContent = 'Hoje';
+            } else {
+                tempoHojeElement.textContent = 'Total acumulado';
+            }
+        }
+        
         // Usar o campo correto para o recorde de sequência
         const recordeSequencia = data.recorde_sequencia || data.recorde_acertos || 0;
         document.getElementById('recorde-sequencia').textContent = `${recordeSequencia} Dias`;
         
         console.log('📊 Dados básicos carregados:', {
+            tempo_estudo: data.tempo_estudo,
+            xp_hoje: data.xp_hoje,
             sequencia_atual: data.sequencia_atual,
             recorde_sequencia: recordeSequencia
         });
@@ -1985,28 +1996,36 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// CORREÇÃO: Função para atualizar status das vidas
+// CORREÇÃO FINAL: Função para atualizar status das vidas
 async function atualizarStatusVidas() {
     try {
         const data = await fetchAPI('/api/dashboard/basico/');
         
+        // ✅ ATUALIZAR APENAS O CARD DE VIDAS
         const elementoVidas = document.getElementById('tempo-proxima-vida');
-        const elementoSubtitulo = document.querySelector('.stat-card-vida .stat-subtext');
+        const elementoStatusVidas = document.getElementById('status-vidas');
         
-        if (elementoVidas && elementoSubtitulo) {
-            const vidasAtuais = 10; // Fallback
-            const maxVidas = 10;
+        if (elementoVidas && elementoStatusVidas) {
+            const vidasAtuais = data.vidas_restantes || 5;
+            const maxVidas = data.max_vidas || 10;
             
             if (vidasAtuais >= maxVidas) {
                 elementoVidas.textContent = 'Completas';
-                elementoVidas.style.fontSize = '1.2rem';
             } else {
-                elementoVidas.textContent = '5min';
-                elementoVidas.style.fontSize = '2rem';
+                const tempoProximaVida = data.tempo_para_proxima_vida || 5;
+                elementoVidas.textContent = `${tempoProximaVida}min`;
             }
             
-            elementoSubtitulo.textContent = `${vidasAtuais}/${maxVidas} vidas`;
+            // ✅ ATUALIZAR APENAS O ELEMENTO DE STATUS DE VIDAS
+            elementoStatusVidas.textContent = `${vidasAtuais}/${maxVidas} vidas`;
         }
+        
+        // ✅ MANTER O TEMPO DE HOJE SEM ALTERAÇÃO
+        const tempoHojeElement = document.getElementById('tempo-hoje');
+        if (tempoHojeElement && data.tempo_estudo_hoje) {
+            tempoHojeElement.textContent = `Hoje: ${data.tempo_estudo_hoje}`;
+        }
+        
     } catch (error) {
         console.error('Erro ao atualizar status das vidas:', error);
     }

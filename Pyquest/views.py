@@ -1909,6 +1909,11 @@ def tarefas(request):
     try:
         modulo = Modulo.objects.select_related('capitulo').get(id=modulo_id, ativo=True)
         
+        # ✅ BUSCAR E ATUALIZAR PERFIL DO USUÁRIO
+        perfil, created = Perfil.objects.get_or_create(user=request.user)
+        perfil.regenerar_vidas()  # Atualizar vidas antes de usar
+        perfil.verificar_streak_automatico()  # Verificar streak
+        
         # Buscar todas as aulas do módulo
         aulas = Aula.objects.filter(
             modulo=modulo, 
@@ -1988,6 +1993,16 @@ def tarefas(request):
         total_aulas_concluidas_geral = len([a for a in aulas_com_dados if a['concluida_teoria'] and a['concluida_pratica']])
         progresso_geral = int((total_aulas_concluidas_geral / total_aulas_geral * 100)) if total_aulas_geral > 0 else 0
         
+        # ✅ VERIFICAR SE O USUÁRIO PODE FAZER ATIVIDADES PRÁTICAS
+        pode_fazer_pratica = perfil.vidas > 0
+        tempo_proxima_vida = perfil.tempo_para_proxima_vida()
+        
+        print(f"🎯 Tarefas - Usuário: {request.user.username}")
+        print(f"💓 Vidas: {perfil.vidas}/{perfil.max_vidas}")
+        print(f"⏰ Próxima vida em: {tempo_proxima_vida} min")
+        print(f"🔓 Pode fazer prática: {pode_fazer_pratica}")
+        print(f"📊 Progresso: Teoria {progresso_teoria}%, Prática {progresso_pratica}%, Geral {progresso_geral}%")
+        
         context = {
             'modulo': modulo,
             'aulas_com_dados': aulas_com_dados,
@@ -2001,12 +2016,24 @@ def tarefas(request):
             'total_xp_teoria': total_xp_teoria,
             'total_xp_pratica': total_xp_pratica,
             'total_xp_geral': total_xp_teoria + total_xp_pratica,
+            # ✅ INFORMAÇÕES DE VIDAS CRÍTICAS
+            'vidas_restantes': perfil.vidas,
+            'max_vidas': perfil.max_vidas,
+            'pode_fazer_pratica': pode_fazer_pratica,
+            'tempo_proxima_vida': tempo_proxima_vida,
+            'perfil': perfil,  # Passar o perfil completo para possível uso futuro
         }
         
         return render(request, "Pyquest/tarefas.html", context)
         
     except Modulo.DoesNotExist:
         messages.error(request, "Módulo não encontrado.")
+        return redirect('conteudo')
+    except Exception as e:
+        print(f"❌ Erro na view tarefas: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, "Erro ao carregar as tarefas.")
         return redirect('conteudo')
 
 
@@ -2732,6 +2759,11 @@ def pratica(request):
             
             questions_data.append(questao_data)
         
+
+        # ✅ GARANTIR QUE AS VIDAS ESTÃO SENDO PASSADAS CORRETAMENTE
+        perfil = request.user.perfil
+        perfil.regenerar_vidas()
+
         context = {
             'aula': aula,
             'aula_concluida': aula_concluida,
@@ -2740,6 +2772,8 @@ def pratica(request):
             'vidas_restantes': tentativa.vidas_restantes,
             'max_vidas': perfil.max_vidas,
             'pratica_concluida': aula_concluida,  # Para controle de revisão
+            'perfil': perfil,  # ✅ ADICIONAR PERFIL COMPLETO
+
         }
         
         return render(request, "Pyquest/pratica.html", context)
@@ -2782,68 +2816,149 @@ def usar_vida_pratica(request):
 @login_required
 @require_POST
 def finalizar_pratica(request):
-    """Finaliza a prática e calcula recompensas"""
+    """Finaliza a prática - VERSÃO CORRIGIDA: NÃO marca como concluída se perdeu todas as vidas"""
     try:
         data = json.loads(request.body)
         aula_id = data.get('aula_id')
         xp_total = data.get('xp_total', 0)
         vidas_restantes = data.get('vidas_restantes', 0)
+        tempo_decorrido = data.get('tempo_decorrido', 0)
+        
+        print(f"🎯 [PRÁTICA FINAL] Iniciando - Aula: {aula_id}, XP: {xp_total}, Vidas: {vidas_restantes}")
         
         aula = get_object_or_404(Aula, id=aula_id)
         perfil = request.user.perfil
         
-        # Buscar tentativa
-        tentativa = TentativaPratica.objects.get(
-            usuario=request.user,
-            aula=aula
-        )
+        # ✅ VERIFICAÇÃO CRÍTICA: Se acabaram as vidas, NÃO marcar como concluída
+        vidas_acabaram = vidas_restantes <= 0
         
-        # Atualizar tentativa
-        tentativa.concluida = True
-        tentativa.xp_ganho = xp_total
-        tentativa.vidas_restantes = vidas_restantes
-        tentativa.save()
+        if vidas_acabaram:
+            print("💀 [PRÁTICA FINAL] Vidas acabaram - NÃO marcar como concluída")
+            
+            # ✅ SALVAR TEMPO MESMO ASSIM (para estatísticas)
+            if tempo_decorrido > 0:
+                hoje = timezone.now().date()
+                
+                tempo_diario, created = TempoEstudoDiario.objects.get_or_create(
+                    user=request.user,
+                    data=hoje,
+                    defaults={'tempo_segundos': tempo_decorrido}
+                )
+                
+                if not created:
+                    tempo_diario.tempo_segundos += tempo_decorrido
+                    tempo_diario.save()
+                
+                perfil.tempo_total_estudo += tempo_decorrido
+            
+            # ✅ ATUALIZAR STREAK (o usuário tentou, mesmo que não tenha conseguido)
+            streak_anterior = perfil.sequencia
+            novo_streak, streak_zerado, streak_aumentado = perfil.verificar_e_atualizar_streak()
+            
+            # ✅ SALVAR PERFIL
+            perfil.save()
+            
+            # ✅ REGISTRAR ATIVIDADE DE TENTATIVA (NÃO conclusão)
+            Atividade.objects.create(
+                user=request.user,
+                aula=aula,
+                titulo=f"Tentativa de prática: {aula.titulo_aula} (vidas esgotadas)",
+                xp_ganho=0  # ❌ ZERO XP por não concluir
+            )
+            
+            print("✅ [PRÁTICA FINAL] Registrada como tentativa (sem conclusão)")
+            
+            return JsonResponse({
+                'success': True,
+                'vidas_acabaram': True,
+                'xp_total': 0,  # ❌ ZERO XP
+                'tempo_registrado': tempo_decorrido,
+                'streak_atual': novo_streak,
+                'streak_anterior': streak_anterior,
+                'streak_aumentado': streak_aumentado,
+                'redirect_url': f"/tarefas/?modulo_id={aula.modulo.id}",
+                'mensagem': '💔 Suas vidas acabaram! A prática não foi concluída.'
+            })
         
-        # Bônus por vidas restantes
-        bonus_vidas = 0
-        if vidas_restantes > 0:
-            bonus_vidas = vidas_restantes * 5  # 5 XP por vida restante
+        # ✅ SE AINDA TEM VIDAS: lógica normal de conclusão
+        print("✅ [PRÁTICA FINAL] Vidas restantes - processando conclusão normal")
         
-        xp_final = xp_total + bonus_vidas
+        # 1. PRIMEIRO: ATUALIZAR STREAK (CRÍTICO!)
+        print("🔥 [PRÁTICA FINAL] Atualizando streak...")
+        streak_anterior = perfil.sequencia
+        novo_streak, streak_zerado, streak_aumentado = perfil.verificar_e_atualizar_streak()
         
-        # Marcar aula como concluída se não estava
+        # 2. SALVAR TEMPO
+        if tempo_decorrido > 0:
+            hoje = timezone.now().date()
+            
+            tempo_diario, created = TempoEstudoDiario.objects.get_or_create(
+                user=request.user,
+                data=hoje,
+                defaults={'tempo_segundos': tempo_decorrido}
+            )
+            
+            if not created:
+                tempo_diario.tempo_segundos += tempo_decorrido
+                tempo_diario.save()
+            
+            perfil.tempo_total_estudo += tempo_decorrido
+        
+        # 3. ATUALIZAR AULA CONCLUÍDA (APENAS SE TEVE SUCESSO)
         aula_concluida, created = AulaConcluida.objects.get_or_create(
             usuario=request.user,
             aula=aula
         )
         
+        xp_final = xp_total
+        
+        # ✅ SÓ MARCA COMO CONCLUÍDA SE REALMENTE TERMINOU COM SUCESSO
         if not aula_concluida.pratica_concluida:
             aula_concluida.pratica_concluida = True
             aula_concluida.data_conclusao_pratica = timezone.now()
             aula_concluida.xp_pratica_ganho = xp_final
             aula_concluida.save()
             
-            # Atualizar perfil
+            # ✅ ATUALIZAR XP DO PERFIL (apenas se concluiu)
             perfil.xp += xp_final
             perfil.save()
             
-            # Registrar atividade
-            Atividade.objects.create(
-                user=request.user,
-                aula=aula,
-                titulo=f"Prática concluída: {aula.titulo_aula}",
-                xp_ganho=xp_final
-            )
+            # ✅ ATUALIZAR ATIVIDADE COM XP (se já existe)
+            try:
+                atividade = Atividade.objects.filter(
+                    user=request.user,
+                    aula=aula,
+                    titulo__contains="Prática concluída"
+                ).latest('data')
+                atividade.xp_ganho = xp_final
+                atividade.save()
+                print(f"✅ [PRÁTICA FINAL] Atividade atualizada com XP: {xp_final}")
+            except Atividade.DoesNotExist:
+                # Criar nova atividade se não existe
+                Atividade.objects.create(
+                    user=request.user,
+                    aula=aula,
+                    titulo=f"Prática concluída: {aula.titulo_aula}",
+                    xp_ganho=xp_final
+                )
+                print(f"✅ [PRÁTICA FINAL] Nova atividade criada com XP: {xp_final}")
+        
+        print(f"✅ [PRÁTICA FINAL] Concluída com sucesso - XP: {xp_final}, Streak: {novo_streak}")
         
         return JsonResponse({
             'success': True,
+            'vidas_acabaram': False,
             'xp_total': xp_final,
-            'bonus_vidas': bonus_vidas,
-            'vidas_restantes': vidas_restantes,
-            'redirect_url': f"/tarefas/?modulo_id={aula.modulo.id}"
+            'tempo_registrado': tempo_decorrido,
+            'streak_atual': novo_streak,
+            'streak_anterior': streak_anterior,
+            'streak_aumentado': streak_aumentado,
+            'redirect_url': f"/tarefas/?modulo_id={aula.modulo.id}",
+            'mensagem': '🎉 Prática concluída com sucesso!'
         })
         
     except Exception as e:
+        print(f"❌ [PRÁTICA FINAL] Erro: {e}")
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
@@ -3165,30 +3280,43 @@ def api_dashboard_basico(request):
 
 @login_required
 def api_dashboard_xp(request):
-    """API para dados do gráfico de XP - VERSÃO CORRIGIDA"""
+    """API para dados do gráfico de XP - VERSÃO CORRIGIDA COM 24 HORAS COMPLETAS"""
     period = request.GET.get('period', 'week')
     
     try:
         hoje = timezone.now().date()
         
         if period == 'day':
-            # Últimas 24 horas (em períodos de 4h)
-            labels = ['00h', '04h', '08h', '12h', '16h', '20h']
+            # ✅ CORREÇÃO: 24 horas completas em períodos de 2 horas
+            labels = ['00h', '02h', '04h', '06h', '08h', '10h', 
+                     '12h', '14h', '16h', '18h', '20h', '22h', '24h']
             xp_data = []
             
-            for i in range(6):
-                hora_inicio = i * 4
-                hora_fim = (i + 1) * 4
+            for i in range(13):  # 13 períodos (00h-24h)
+                hora_inicio = i * 2
                 
-                # Buscar XP ganho nesse período
-                xp_periodo = Atividade.objects.filter(
-                    user=request.user,
-                    data__date=hoje,
-                    data__hour__gte=hora_inicio,
-                    data__hour__lt=hora_fim
-                ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                # Para o último período (24h), usar a mesma lógica que os outros
+                if i == 12:  # Último período (24h)
+                    # Este período representa as atividades das 22h-24h
+                    xp_periodo = Atividade.objects.filter(
+                        user=request.user,
+                        data__date=hoje,
+                        data__hour__gte=22
+                    ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
+                else:
+                    # Períodos normais de 2 horas
+                    hora_fim = (i + 1) * 2
+                    xp_periodo = Atividade.objects.filter(
+                        user=request.user,
+                        data__date=hoje,
+                        data__hour__gte=hora_inicio,
+                        data__hour__lt=hora_fim
+                    ).aggregate(total_xp=Sum('xp_ganho'))['total_xp'] or 0
                 
                 xp_data.append(xp_periodo)
+            
+            # ✅ AGORA INCLUINDO O PERÍODO ATÉ 24h
+            print(f"📊 API XP - 24h completas: {len(labels)} períodos, dados: {xp_data}")
         
         elif period == 'week':
             # Últimos 7 dias
@@ -3227,6 +3355,8 @@ def api_dashboard_xp(request):
             labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
             xp_data = [0, 0, 0, 0, 0, 0, 0]
         
+        print(f"📊 API XP - Período: {period}, Dados: {xp_data}")
+        
         return JsonResponse({
             'labels': labels,
             'data': xp_data,
@@ -3234,12 +3364,13 @@ def api_dashboard_xp(request):
         })
         
     except Exception as e:
-        print(f"Erro na API XP: {e}")
-        # Fallback com dados estáticos em caso de erro
+        print(f"❌ Erro na API XP: {e}")
+        # ✅ CORREÇÃO: Fallback com dados estáticos para 24h COMPLETAS
         if period == 'day':
             return JsonResponse({
-                'labels': ['00h', '04h', '08h', '12h', '16h', '20h'],
-                'data': [50, 120, 80, 200, 150, 100],
+                'labels': ['00h', '02h', '04h', '06h', '08h', '10h', 
+                          '12h', '14h', '16h', '18h', '20h', '22h', '24h'],
+                'data': [10, 5, 0, 0, 25, 40, 60, 45, 30, 35, 20, 15, 8],
                 'period': period
             })
         elif period == 'month':
@@ -4443,39 +4574,111 @@ def api_vidas_status(request):
 @login_required
 @require_POST
 def api_usar_vida(request):
-    """API para usar uma vida"""
+    """API para usar uma vida - VERSÃO OTIMIZADA"""
     try:
         data = json.loads(request.body)
         aula_id = data.get('aula_id', None)
         
         perfil = request.user.perfil
         
-        if perfil.usar_vida():
-            # Registrar uso de vida se tiver aula associada
-            if aula_id:
-                try:
-                    aula = Aula.objects.get(id=aula_id)
-                    tentativa, created = TentativaPratica.objects.get_or_create(
-                        usuario=request.user,
-                        aula=aula
-                    )
-                    tentativa.vidas_usadas += 1
-                    tentativa.vidas_restantes = perfil.vidas
-                    tentativa.save()
-                except Aula.DoesNotExist:
-                    pass
-            
-            return JsonResponse({
-                'success': True,
-                'vidas_restantes': perfil.vidas,
-                'max_vidas': perfil.max_vidas,
-                'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida()
-            })
-        else:
+        # ✅ VERIFICAÇÃO RÁPIDA - Evita regeneração desnecessária
+        if perfil.vidas <= 0:
             return JsonResponse({
                 'success': False,
                 'error': 'Sem vidas disponíveis'
             })
+        
+        # ✅ USAR VIDA DIRETAMENTE (sem regeneração aqui)
+        perfil.vidas -= 1
+        perfil.ultima_atualizacao_vidas = timezone.now()
+        perfil.save()
+        
+        # ✅ REGISTRAR EM SEGUNDO PLANO (não bloqueia a resposta)
+        if aula_id:
+            try:
+                aula = Aula.objects.get(id=aula_id)
+                tentativa, created = TentativaPratica.objects.get_or_create(
+                    usuario=request.user,
+                    aula=aula
+                )
+                tentativa.vidas_usadas += 1
+                tentativa.vidas_restantes = perfil.vidas
+                tentativa.save()
+            except Aula.DoesNotExist:
+                pass
+        
+        return JsonResponse({
+            'success': True,
+            'vidas_restantes': perfil.vidas,
+            'max_vidas': perfil.max_vidas,
+            'tempo_para_proxima_vida': perfil.tempo_para_proxima_vida()
+        })
             
     except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+@require_POST
+def registrar_atividade_pratica(request):
+    """Registra atividade de prática para o streak - VERSÃO CORRIGIDA"""
+    try:
+        data = json.loads(request.body)
+        aula_id = data.get('aula_id')
+        
+        print(f"🔥 [PRÁTICA] Iniciando registro de atividade - Aula: {aula_id}")
+        
+        perfil = request.user.perfil
+        agora = timezone.now()
+        
+        # DEBUG: Estado antes
+        print(f"📊 [PRÁTICA] Estado ANTES - Streak: {perfil.sequencia}, Última: {perfil.ultima_atividade}")
+        
+        # ✅ USAR A MESMA LÓGICA DAS ATIVIDADES TEÓRICAS
+        # Chamar a função central de streak que já funciona
+        novo_streak, streak_zerado, streak_aumentado = perfil.verificar_e_atualizar_streak()
+        
+        # DEBUG: Estado depois
+        print(f"📊 [PRÁTICA] Estado DEPOIS - Streak: {perfil.sequencia}, Última: {perfil.ultima_atividade}")
+        print(f"📊 [PRÁTICA] Resultado - Zerado: {streak_zerado}, Aumentado: {streak_aumentado}")
+        
+        # ✅ MARCAR QUE FEZ ATIVIDADE HOJE (IMPORTANTE!)
+        perfil.ja_fez_atividade_hoje = True
+        perfil.save()
+        
+        # ✅ CRIAR ATIVIDADE NO BANCO (igual às teóricas)
+        if aula_id:
+            try:
+                aula = Aula.objects.get(id=aula_id)
+                titulo_atividade = f"Prática concluída: {aula.titulo_aula}"
+            except Aula.DoesNotExist:
+                titulo_atividade = "Atividade prática concluída"
+        else:
+            titulo_atividade = "Atividade prática concluída"
+        
+        # Registrar atividade no banco
+        atividade = Atividade.objects.create(
+            user=request.user,
+            aula_id=aula_id,
+            titulo=titulo_atividade,
+            xp_ganho=0,  # XP será adicionado depois
+            data=agora
+        )
+        
+        print(f"✅ [PRÁTICA] Atividade registrada: {atividade.titulo}")
+        
+        return JsonResponse({
+            'success': True,
+            'streak_atual': perfil.sequencia,
+            'streak_maximo': perfil.sequencia_maxima,
+            'streak_zerado': streak_zerado,
+            'streak_aumentado': streak_aumentado,
+            'ultima_atividade': perfil.ultima_atividade.isoformat() if perfil.ultima_atividade else None,
+            'ja_fez_atividade_hoje': perfil.ja_fez_atividade_hoje,
+            'atividade_id': atividade.id,
+        })
+        
+    except Exception as e:
+        print(f"❌ [PRÁTICA] Erro crítico: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'success': False, 'error': str(e)})

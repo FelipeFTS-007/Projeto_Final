@@ -17,9 +17,9 @@
         max-width: 100px !important;
         font-weight: 500;
         display: inline-block;
-        vertical-align: baseline;
+        vertical-align: middle;
         font-family: inherit;
-        font-size: 14px !important;
+        font-size: 14px;
         border-radius: 3px;
         height: 22px !important;
         line-height: 1;
@@ -165,22 +165,6 @@
     
     .hint-container.active {
         display: block;
-    }
-    
-    .blank-input {
-        border-bottom: 2px solid #3B82F6;
-        text-align: center;
-        padding: 4px 8px;
-        margin: 0 4px;
-        background: transparent;
-        outline: none;
-        min-width: 80px;
-        font-weight: 500;
-    }
-    
-    .blank-input:focus {
-        border-color: #1E40AF;
-        background: #f0f9ff;
     }
     
     .blank-filled {
@@ -493,33 +477,6 @@
         margin-bottom: 2px !important;
     }
 
-    /* Classe para preservar espaços de forma natural */
-    .preserve-spaces {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        display: inline;
-    }
-
-    /* Inputs de lacuna - TAMANHO REDUZIDO */
-    .blank-input {
-        border-bottom: 2px solid #3B82F6;
-        text-align: center;
-        padding: 1px 3px !important; 
-        margin: 0 1px !important;
-        background: transparent;
-        outline: none;
-        min-width: 60px !important;      
-        max-width: 80px !important;       
-        font-weight: 500;
-        display: inline-block;
-        vertical-align: baseline;
-        font-family: inherit;
-        font-size: 13px !important;
-        border-radius: 2px;
-        height: 20px !important;
-        line-height: 1;
-    }
-
     .blank-input:focus {
         border-color: #1E40AF;
         background: #f0f9ff;
@@ -567,6 +524,48 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+    /* ✅ CORREÇÃO DEFINITIVA - PRESERVAÇÃO TOTAL DE ESPAÇOS */
+    .fill-blank-container {
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        font-family: inherit !important;
+        line-height: 1.4 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* ✅ REMOVER ESTILOS PADRÃO DO PRE QUE ATRAPALHAM */
+    .fill-blank-container pre {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: inherit !important;
+        white-space: pre-wrap !important;
+    }
+
+    /* ✅ GARANTIR FORMATAÇÃO EXATA */
+    .text-line {
+        margin: 2px 0;
+        line-height: 1.4;
+        min-height: 1.4em;
+        white-space: pre;
+        font-family: monospace;
+    }
+
+    .preserve-spaces {
+        white-space: pre;
+        display: inline;
+    }
+
+    .empty-line {
+        height: 1.4em;
+        margin: 2px 0;
+    }
 </style>
 {% endblock %}
 
@@ -581,16 +580,6 @@
         </a>
 
         <div class="flex items-center gap-4">
-            <!-- ✅ SISTEMA DE VIDAS (APENAS NO MODO NORMAL) -->
-            {% if not pratica_concluida %}
-            <div id="lives-container" class="lives-container">
-                
-                {% for i in "123" %}
-                
-                {% endfor %}
-            </div>
-            {% endif %}
-
             <!-- Cronômetro -->
             <div class="flex items-center gap-3 bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold">
                 <div class="relative w-8 h-8">
@@ -646,22 +635,6 @@
         </p>
     </div>
     {% endif %}
-
-    <!-- Progresso da Prática -->
-    <div class="bg-white rounded-xl p-4 shadow-md">
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-medium text-gray-700">Progresso</span>
-            <span class="text-sm font-bold text-blue-600" id="progress-text">0/{{ aula.questoes.count }}</span>
-        </div>
-        <div class="practice-progress">
-            <div class="practice-progress-fill" id="practice-progress-fill" style="width: 0%"></div>
-        </div>
-        <div class="questions-indicator" id="questions-indicator">
-            {% for questao in aula.questoes.all %}
-            <div class="question-dot" data-question-id="{{ questao.id }}"></div>
-            {% endfor %}
-        </div>
-    </div>
 
     <!-- Container Principal das Questões -->
     <div id="questions-container" class="space-y-6">
@@ -822,20 +795,20 @@
                 </div>
 
                 {% elif questao.tipo == 'fill-blank' %}
-                <!-- Completar Lacunas CORRIGIDO -->
+                <!-- ✅ CORREÇÃO: Completar Lacunas - FORMATO EXATO DO BANCO -->
                 <div class="space-y-4">
                     <h4 class="font-bold text-gray-800 mb-2">Complete as lacunas no texto abaixo:</h4>
                     
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 leading-relaxed whitespace-pre-line fill-blank-container">
+                        <!-- ✅ CORREÇÃO CRÍTICA: DIV COM PRESERVAÇÃO PERFEITA -->
+                        <div id="fill-blank-text-{{ questao.id }}" class="text-gray-700 fill-blank-container">
                             {{ questao.texto_com_lacunas|default:questao.enunciado }}
                         </div>
                     </div>
 
-                    <!-- ✅ DIV COM AS RESPOSTAS CORRETAS -->
                     <div id="respostas-{{ questao.id }}" 
-                         data-respostas='{{ questao.respostas_corretas|default:"[]" }}'
-                         style="display: none;">
+                        data-respostas='{{ questao.respostas_corretas|default:"[]" }}'
+                        style="display: none;">
                     </div>
 
                     <button class="check-blank bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
@@ -971,6 +944,15 @@
     document.addEventListener('DOMContentLoaded', async function() {
         console.log("🎯 Iniciando sistema com vidas...");
         console.log(`💓 Vidas iniciais: ${lives}/${maxLives}`);
+
+         // ✅ VERIFICAÇÃO CRÍTICA: BLOQUEAR SE ESTIVER SEM VIDAS
+        if (checkInitialLives()) {
+            return; // Para a execução se estiver sem vidas
+        }
+        
+        // ✅ INICIALIZAR SISTEMA DE VIDAS
+        initializeLivesSystem();
+    
         
         // ✅ INICIALIZAR SISTEMA DE VIDAS
         initializeLivesSystem();
@@ -983,9 +965,10 @@
         initializeHints();
         initializeQuestionEvents();
         initializeCodeEditors();
-        initializeFillBlankQuestions();
+        initializeFillBlankQuestions(); // ✅ CORREÇÃO: CHAMADA CORRETA
         startTimer();
         updateProgress();
+        
         
         // ✅ INICIALIZAR BOTÃO DE FINALIZAR REVISÃO
         initializeFinalizarRevisao();
@@ -996,80 +979,184 @@
 
     // ===== SISTEMA DE VIDAS CORRIGIDO =====
     function initializeLivesSystem() {
-        // ✅ SÓ MOSTRAR VIDAS NO MODO NORMAL (NÃO REVISÃO)
+        // ✅ MANTENHA O SISTEMA DE VIDAS FUNCIONANDO, MAS NÃO MOSTRE VISUALMENTE
         if (!isReviewMode) {
             const livesContainer = document.getElementById('lives-container');
-            livesContainer.style.display = 'flex';
-            updateLivesDisplay();
+            if (livesContainer) {
+                livesContainer.style.display = 'none'; // ✅ Só esconde, não remove a funcionalidade
+            }
+            // O sistema de vidas continua funcionando nos bastidores
+            console.log(`💓 Sistema de vidas ativo (não visível): ${lives}/${maxLives}`);
         } else {
-            // ✅ NO MODO REVISÃO, VIDAS ILIMITADAS (NÃO MOSTRAR)
-            lives = 999; // Virtualmente ilimitado
+            // ✅ NO MODO REVISÃO, VIDAS ILIMITADAS
+            lives = 999;
         }
     }
 
     function updateLivesDisplay() {
-        if (isReviewMode) return; // Não mostrar vidas no modo revisão
+        // ✅ MANTENHA A FUNÇÃO, MAS NÃO FAÇA NADA VISUALMENTE
+        // O sistema ainda controla as vidas internamente
+        if (isReviewMode) return;
         
-        const livesContainer = document.getElementById('lives-container');
-        const lifeIcons = livesContainer.querySelectorAll('.life-indicator');
+        console.log(`💓 Vidas atualizadas: ${lives}/${maxLives} (não visível)`);
         
-        lifeIcons.forEach((icon, index) => {
-            if (index < lives) {
-                icon.style.display = 'block';
-                icon.style.opacity = '1';
-            } else {
-                icon.style.display = 'none';
-            }
-        });
-    }
-
-    // ✅ FUNÇÃO CORRIGIDA: PERDER VIDA ATUALIZANDO BACKEND
-    async function loseLife() {
-        if (isReviewMode) return false; // ✅ NO MODO REVISÃO NÃO PERDE VIDA
-        
-        if (lives > 0) {
-            try {
-                // ✅ ATUALIZAR NO BACKEND PRIMEIRO
-                const aulaId = document.getElementById('aula-id').value;
-                const response = await fetch("{% url 'api_usar_vida' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        aula_id: aulaId
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    // ✅ ATUALIZAR VIDAS LOCAIS COM DADOS DO BACKEND
-                    lives = data.vidas_restantes;
-                    updateLivesDisplay();
-                    
-                    // ✅ MOSTRAR MENSAGEM DE PERDA DE VIDA
-                    showLifeLostMessage();
-                    
-                    console.log(`💔 Vida perdida! Vidas restantes: ${lives}`);
-                    
-                    // ✅ VERIFICAR SE ACABARAM AS VIDAS
-                    if (lives === 0) {
-                        setTimeout(() => {
-                            finishPractice();
-                        }, 2000);
-                        return true;
-                    }
-                } else {
-                    console.error('❌ Erro ao usar vida:', data.error);
-                }
-            } catch (error) {
-                console.error('❌ Erro na requisição de vida:', error);
-            }
+        // ✅ ATUALIZAR HEADER SE EXISTIR (mantenha essa funcionalidade)
+        const headerVidas = document.getElementById('vidas-count');
+        if (headerVidas) {
+            headerVidas.textContent = lives;
         }
-        return false;
     }
+
+    // ✅ FUNÇÃO PARA DEBOUNCE (evita múltiplas chamadas rápidas)
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // ✅ APLICAR DEBOUNCE NAS CHAMADAS CRÍTICAS
+    const debouncedLoseLife = debounce(loseLife, 300);
+
+// ✅ FUNÇÃO CORRIGIDA: PERDER VIDA COM VERIFICAÇÃO RIGOROSA
+async function loseLife() {
+    console.log("💔 Tentando perder vida...");
+    
+    if (isReviewMode) {
+        console.log("📝 Modo revisão - não perde vida");
+        return false; // ✅ NO MODO REVISÃO NÃO PERDE VIDA
+    }
+    
+    // ✅ VERIFICAÇÃO CRÍTICA: Se já está com 0 vidas, BLOQUEIA imediatamente
+    if (lives <= 0) {
+        console.log("💀 BLOQUEADO: Usuário já está sem vidas!");
+        showNoLivesMessage();
+        return true; // ✅ RETORNA VERDADEIRO PARA BLOQUEAR
+    }
+    
+    if (lives > 0) {
+        lives--;
+        console.log(`💔 Vida perdida! Vidas restantes: ${lives}`);
+        updateLivesDisplay();
+        
+        // ✅ MOSTRAR MENSAGEM DE PERDA DE VIDA
+        showLifeLostMessage();
+        
+        // ✅ ENVIAR PARA BACKEND
+        try {
+            const aulaId = document.getElementById('aula-id').value;
+            const response = await fetch("{% url 'api_usar_vida' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    aula_id: aulaId
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log("✅ Vida registrada no backend");
+            } else {
+                console.error('❌ Erro ao usar vida no backend:', data.error);
+            }
+        } catch (error) {
+            console.error('❌ Erro na requisição de vida:', error);
+        }
+        
+        // ✅ VERIFICAR SE ACABARAM AS VIDAS
+        if (lives === 0) {
+            console.log("💀 Todas as vidas acabaram! Finalizando prática...");
+            showNoLivesMessage();
+            setTimeout(() => {
+                finishPractice();
+            }, 3000);
+            return true; // ✅ RETORNA VERDADEIRO QUANDO ACABARAM AS VIDAS
+        }
+        
+        return false; // ✅ RETORNA FALSO QUANDO AINDA HÁ VIDAS
+    }
+    
+    console.log("💀 Sem vidas disponíveis");
+    return true; // ✅ RETORNA VERDADEIRO SE JÁ ESTAVA SEM VIDAS
+}
+
+// ✅ FUNÇÃO PARA MOSTRAR MENSAGEM DE SEM VIDAS
+function showNoLivesMessage() {
+    // Remover mensagem anterior se existir
+    const existingMessage = document.querySelector('.life-lost-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Criar mensagem de SEM VIDAS
+    const message = document.createElement('div');
+    message.className = 'life-lost-message';
+    message.style.background = '#dc2626'; // Vermelho mais forte
+    message.innerHTML = `
+        <img src="{% static 'imagem/block_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Bloqueado" class="w-5 h-5">
+        <span><strong>SEM VIDAS!</strong> Aguarde a regeneração ou volte amanhã.</span>
+    `;
+    
+    document.body.appendChild(message);
+    
+    // Remover mensagem após 5 segundos
+    setTimeout(() => {
+        message.classList.add('fade-out');
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 500);
+    }, 5000);
+}
+
+// ✅ VERIFICAÇÃO INICIAL DE VIDAS - BLOQUEIA SE ESTIVER SEM VIDAS
+function checkInitialLives() {
+    if (!isReviewMode && lives <= 0) {
+        console.log("🚫 BLOQUEADO: Usuário iniciou prática sem vidas!");
+        
+        // Desabilitar todos os botões de verificação
+        document.querySelectorAll('.check-blank, .check-editor-code, .option-button').forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        });
+        
+        // Mostrar mensagem de bloqueio
+        showNoLivesMessage();
+        
+        // Adicionar overlay bloqueador
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.background = 'rgba(0,0,0,0.5)';
+        overlay.style.zIndex = '9998';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.color = 'white';
+        overlay.style.fontSize = '24px';
+        overlay.style.fontWeight = 'bold';
+        overlay.innerHTML = 'SEM VIDAS DISPONÍVEIS';
+        
+        document.body.appendChild(overlay);
+        
+        return true;
+    }
+    return false;
+}
 
     // ✅ FUNÇÃO PARA MOSTRAR MENSAGEM DE PERDA DE VIDA
     function showLifeLostMessage() {
@@ -1423,6 +1510,9 @@
             console.log(`💰 XP Acumulado: ${totalXP}`);
         }
         console.log('---');
+
+        // ✅ DEBUG: Verificar se está indo para próxima questão
+        console.log(`➡️ Indo para questão ${currentQuestionIndex + 1} (ID: ${questions[currentQuestionIndex].id})`);
     }
 
     function findNextPendingQuestion() {
@@ -1561,6 +1651,12 @@
     // ===== VERIFICAÇÃO DE CÓDIGO EDITOR - CORRIGIDA =====
     async function handleCheckEditorCode(questionId) {
         console.log("=== 🔧 VERIFICAÇÃO DE CÓDIGO INICIADA ===");
+
+        // ✅ VERIFICAÇÃO DE VIDAS ANTES DE QUALQUER AÇÃO
+        if (!isReviewMode && lives <= 0) {
+            showNoLivesMessage();
+            return;
+        }
         
         const textarea = document.getElementById(`code-input-${questionId}`);
         const terminal = document.getElementById(`code-output-${questionId}`);
@@ -1617,7 +1713,7 @@
             } else {
                 // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
                 if (!isReviewMode) {
-                    await loseLife();
+                    await debouncedLoseLife();
                 }
                 
                 showFeedback(questionId, 'incorrect', '❌ Código incorreto. Tente novamente.', 0);
@@ -1636,7 +1732,7 @@
             
             // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
             if (!isReviewMode) {
-                await loseLife();
+                await debouncedLoseLife();
             }
             
             showFeedback(questionId, 'incorrect', '❌ Erro no código. Verifique a sintaxe.', 0);
@@ -1692,52 +1788,103 @@
         }
     }
 
-    // ===== SISTEMA DE LACUNAS CORRIGIDO =====
+    // ===== SISTEMA DE LACUNAS DEFINITIVAMENTE CORRIGIDO =====
     function initializeFillBlankQuestions() {
         document.querySelectorAll('[id^="fill-blank-text-"]').forEach(container => {
             const questionId = container.id.replace('fill-blank-text-', '');
-            const originalText = container.textContent;
             
-            const processedHTML = originalText.replace(/\[_____\]/g, 
-                '<input type="text" class="blank-input" placeholder="______">'
-            );
+            console.log("🔄 Processando lacunas para questão:", questionId);
             
-            container.innerHTML = processedHTML;
+            // ✅ CORREÇÃO: OBTER TEXTO ORIGINAL DIRETAMENTE
+            const originalText = container.textContent || container.innerText;
+            console.log("📝 Texto original:", JSON.stringify(originalText));
             
-            container.style.whiteSpace = 'pre-wrap';
-            container.style.wordWrap = 'break-word';
-            container.style.lineHeight = '1.6';
-            container.classList.add('fill-blank-container');
+            // ✅ CORREÇÃO: PROCESSAR TEXTO MANTENDO FORMATAÇÃO EXATA
+            processFillBlankText(container, originalText, questionId);
         });
     }
 
-    // ===== FUNÇÃO CORRIGIDA PARA VERIFICAR LACUNAS =====
+    // ✅ SOLUÇÃO DEFINITIVA - REMOVE ESPAÇOS INDESEJADOS MAS MANTÉM FORMATAÇÃO
+    function processFillBlankText(container, text, questionId) {
+        console.log("🎯 Processando texto com lacunas:", JSON.stringify(text));
+        
+        // ✅ CORREÇÃO: Limpar espaços HTML indesejados mas manter formatação do conteúdo
+        const cleanText = text.replace(/^\s+|\s+$/g, ''); // Só remove espaços no início e fim do texto completo
+        
+        const lines = cleanText.split('\n');
+        let processedHTML = '';
+        
+        lines.forEach(line => {
+            // ✅ CORREÇÃO CRÍTICA: Processar cada linha individualmente
+            // Remover apenas espaços HTML extras, manter espaços de conteúdo
+            const cleanLine = line.replace(/^\s+/, ''); // Remove espaços iniciais do HTML
+            
+            if (cleanLine === '') {
+                // Se a linha ficou vazia após limpeza, é uma linha de layout - ignorar
+                return;
+            }
+            
+            let lineHTML = '<div class="text-line">';
+            
+            // ✅ Processar preservando a estrutura exata
+            const parts = cleanLine.split(/(\[_____\])/);
+            
+            parts.forEach(part => {
+                if (part === '[_____]') {
+                    lineHTML += '<input type="text" class="blank-input" placeholder="______" data-question="' + questionId + '">';
+                } else if (part !== '') {
+                    lineHTML += '<span class="preserve-spaces">' + part + '</span>';
+                }
+            });
+            
+            lineHTML += '</div>';
+            processedHTML += lineHTML;
+        });
+        
+        container.innerHTML = processedHTML;
+        console.log("✅ FORMATAÇÃO IDÊNTICA AO ENUNCIADO:", container.innerHTML);
+    }
+
+    // ===== FUNÇÃO VERIFICAR LACUNAS CORRIGIDA =====
     async function handleCheckBlank(e) {
+        console.log("🎯 INICIANDO VERIFICAÇÃO DE LACUNAS");
+        
+        // ✅ VERIFICAÇÃO DE VIDAS ANTES DE QUALQUER AÇÃO
+        if (!isReviewMode && lives <= 0) {
+            showNoLivesMessage();
+            return;
+        }
         const btn = e.currentTarget;
         const questionContainer = btn.closest('.question-container');
         const questionId = questionContainer.dataset.questionId;
         const currentQuestion = questions.find(q => q.id === questionId);
-        const xp = currentQuestion ? currentQuestion.xp : 10;
+        
+        if (!currentQuestion) {
+            console.error("❌ Questão não encontrada:", questionId);
+            return;
+        }
         
         console.log(`🔍 Verificando questão de lacunas: ${questionId}`);
         
         // ✅ MODO REVISÃO: MOSTRAR RESPOSTA CORRETA
         if (isReviewMode) {
+            console.log("📝 Modo Revisão - Mostrando respostas corretas");
             const blankInputs = questionContainer.querySelectorAll('.blank-input');
             const respostasCorretas = await getCorrectAnswersForQuestion(questionId);
             
-            console.log("📝 Modo Revisão - Respostas corretas:", respostasCorretas);
+            console.log("📝 Respostas corretas:", respostasCorretas);
             
             blankInputs.forEach((input, index) => {
                 const respostaCorreta = respostasCorretas[index] || "Resposta não disponível";
                 input.value = respostaCorreta;
-                input.classList.add('blank-filled');
+                input.classList.add('filled');
                 input.disabled = true;
             });
             
             showFeedback(questionId, 'info', '📝 Modo revisão: Respostas corretas mostradas', 0);
             
             setTimeout(() => {
+                console.log("🔄 Indo para próxima questão (modo revisão)");
                 nextQuestion(true);
             }, 2000);
             
@@ -1747,6 +1894,8 @@
         // ✅ MODO NORMAL: VERIFICAR RESPOSTAS
         const blankInputs = questionContainer.querySelectorAll('.blank-input');
         let allFilled = true;
+        
+        console.log(`📝 Verificando ${blankInputs.length} lacunas`);
         
         // Verificar se todas as lacunas foram preenchidas
         blankInputs.forEach(input => {
@@ -1758,17 +1907,27 @@
         });
         
         if (!allFilled) {
+            console.log("❌ Lacunas não preenchidas completamente");
             showFeedback(questionId, 'incorrect', '❌ Preencha todas as lacunas antes de verificar.', 0);
             return;
         }
         
         // ✅ BUSCAR RESPOSTAS CORRETAS
+        console.log("🔍 Buscando respostas corretas...");
         const respostasCorretas = await getCorrectAnswersForQuestion(questionId);
         console.log("🎯 Respostas corretas encontradas:", respostasCorretas);
+        
+        if (!respostasCorretas || respostasCorretas.length === 0) {
+            console.error("❌ Nenhuma resposta correta encontrada");
+            showFeedback(questionId, 'incorrect', '❌ Erro: Nenhuma resposta correta configurada.', 0);
+            return;
+        }
         
         // ✅ VERIFICAR RESPOSTAS DO USUÁRIO
         let isCorrect = true;
         let incorrectCount = 0;
+        
+        console.log("🔍 Verificando respostas do usuário...");
         
         blankInputs.forEach(input => {
             input.classList.remove('filled', 'shake');
@@ -1787,22 +1946,25 @@
                 isCorrect = false;
                 incorrectCount++;
                 input.classList.add('shake');
-                console.log(`❌ Lacuna ${index + 1} INCORRETA`);
+                console.log(`❌ Lacuna ${index + 1} INCORRETO`);
             }
         });
         
-        // ✅ MOSTRAR RESULTADO
-        if (isCorrect && respostasCorretas.length > 0) {
-            showFeedback(questionId, 'correct', '✅ Todas as lacunas preenchidas corretamente!', xp);
+        // ✅ MOSTRAR RESULTADO E PROCESSAR
+        if (isCorrect) {
+            console.log("✅ Todas as lacunas corretas!");
+            showFeedback(questionId, 'correct', '✅ Todas as lacunas preenchidas corretamente!', currentQuestion.xp);
             
             setTimeout(() => {
+                console.log("🔄 Indo para próxima questão (resposta correta)");
                 nextQuestion(true);
             }, 1500);
         } else {
-            // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
-            if (!isReviewMode) {
-                await loseLife();
-            }
+            console.log(`❌ ${incorrectCount} lacuna(s) incorreta(s)`);
+            
+            // ✅ PERDER VIDA NO MODO NORMAL
+            console.log("💔 Perdendo vida...");
+            const vidaPerdida = await loseLife();
             
             const errorMessage = incorrectCount > 0 
                 ? `❌ ${incorrectCount} lacuna(s) incorreta(s). Tente novamente.`
@@ -1810,9 +1972,17 @@
                 
             showFeedback(questionId, 'incorrect', errorMessage, 0);
             
-            setTimeout(() => {
-                nextQuestion(false);
-            }, 2000);
+            console.log("💓 Vidas restantes após erro:", lives);
+            
+            // ✅ CORREÇÃO CRÍTICA: SEMPRE CHAMAR nextQuestion MESMO QUANDO ERRAR
+            if (!vidaPerdida) {
+                setTimeout(() => {
+                    console.log("🔄 Indo para próxima questão (resposta incorreta)");
+                    nextQuestion(false);
+                }, 2000);
+            } else {
+                console.log("💀 Vidas acabaram - prática será finalizada");
+            }
         }
     }
 
@@ -1991,6 +2161,12 @@
     
     // ===== MÚLTIPLA ESCOLHA CORRIGIDA =====
     async function handleMultipleChoice(e) {
+
+        // ✅ VERIFICAÇÃO DE VIDAS ANTES DE QUALQUER AÇÃO
+        if (!isReviewMode && lives <= 0) {
+            showNoLivesMessage();
+            return;
+        }
         const btn = e.currentTarget;
         const questionContainer = btn.closest('.question-container');
         const questionId = questionContainer.dataset.questionId;
@@ -2036,7 +2212,7 @@
             }, 1500);
         } else {
             // ✅ CORREÇÃO: PERDER VIDA NO MODO NORMAL (AGORA ATUALIZA BACKEND)
-            await loseLife();
+            await debouncedLoseLife();
             
             showFeedback(questionId, 'incorrect', '❌ Resposta incorreta. Tente novamente.', 0);
             
@@ -2124,74 +2300,33 @@
         return bonus;
     }
 
-    // ===== FINALIZAÇÃO CORRIGIDA - XP EXATO =====
-    async function finishPractice() {
-        const aulaId = document.getElementById('aula-id').value;
-        const elapsedTime = stopTimer();
+// ===== FINALIZAÇÃO CORRIGIDA - NÃO CONCLUI SE PERDEU TODAS AS VIDAS =====
+async function finishPractice() {
+    const aulaId = document.getElementById('aula-id').value;
+    const elapsedTime = stopTimer(); // ✅ Isso já pega o tempo do cronômetro
+    
+    console.log(`🏁 Finalizando prática - Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
+    console.log(`📊 XP acumulado: ${totalXP}`);
+    console.log(`⏰ Tempo decorrido: ${elapsedTime} segundos`);
+    console.log(`💓 Vidas restantes: ${lives}`);
+    
+    // ✅ VERIFICAÇÃO CRÍTICA: Se acabaram as vidas, tratar como FALHA
+    const vidasAcabaram = lives <= 0;
+    
+    let xpFinal = 0;
+    let timeBonus = 0;
+    let revisaoBonus = 0;
+    
+    if (isReviewMode) {
+        // ✅ MODO REVISÃO: Sempre conclui (não usa vidas)
+        revisaoBonus = 5;
+        xpFinal = revisaoBonus;
         
-        console.log(`🏁 Finalizando prática - Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
-        console.log(`📊 XP acumulado: ${totalXP}`);
-        console.log(`⏰ Tempo decorrido: ${elapsedTime} segundos`);
-        console.log(`💓 Vidas restantes: ${lives}`);
+        console.log(`📝 Modo Revisão: Bônus fixo de ${revisaoBonus} XP`);
         
-        let xpFinal = 0;
-        let timeBonus = 0;
-        let revisaoBonus = 0;
-        
-        if (isReviewMode) {
-            // ✅ MODO REVISÃO: APENAS BÔNUS FIXO DE 5 XP (SOMENTE UMA VEZ)
-            revisaoBonus = 5; // Valor fixo
-            xpFinal = revisaoBonus;
-            
-            console.log(`📝 Modo Revisão: Bônus fixo de ${revisaoBonus} XP`);
-            
-            // ✅ CORREÇÃO: EVITAR REGISTRO DUPLICADO
-            if (!revisaoRegistrada) {
-                try {
-                    const response = await fetch("{% url 'registrar_xp_revisao' %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({
-                            aula_id: aulaId,
-                            xp_revisao: revisaoBonus
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    if (data.success) {
-                        revisaoRegistrada = true;
-                        console.log("✅ XP de revisão registrado com sucesso!");
-                    } else {
-                        console.error("❌ Erro ao registrar XP da revisão:", data.error);
-                    }
-                } catch (error) {
-                    console.error('❌ Erro ao registrar XP da revisão:', error);
-                }
-            } else {
-                console.log("🔁 XP de revisão já registrado anteriormente");
-            }
-        } else {
-            // ✅ MODO NORMAL: XP EXATO DAS QUESTÕES CORRETAS + BÔNUS DE TEMPO
-            const xpQuestoes = Array.from(answeredCorrectly).reduce((total, questionId) => {
-                const question = questions.find(q => q.id === questionId);
-                return total + (question ? question.xp : 0);
-            }, 0);
-            
-            // ✅ CORREÇÃO: CALCULAR BÔNUS DE TEMPO
-            timeBonus = calculateTimeBonus(elapsedTime, xpQuestoes);
-            xpFinal = xpQuestoes + timeBonus;
-            
-            console.log(`🎯 Modo Normal:`);
-            console.log(`   - Questões corretas: ${answeredCorrectly.size}`);
-            console.log(`   - XP das questões: ${xpQuestoes}`);
-            console.log(`   - Bônus de tempo: +${timeBonus} XP`);
-            console.log(`   - Total: ${xpFinal} XP`);
-            
+        if (!revisaoRegistrada) {
             try {
-                const response = await fetch("{% url 'finalizar_pratica' %}", {
+                const response = await fetch("{% url 'registrar_xp_revisao' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2199,24 +2334,152 @@
                     },
                     body: JSON.stringify({
                         aula_id: aulaId,
-                        xp_total: xpFinal,
-                        tempo_decorrido: elapsedTime
+                        xp_revisao: revisaoBonus
                     })
                 });
                 
                 const data = await response.json();
                 if (data.success) {
-                    console.log("✅ Prática finalizada com sucesso!");
+                    revisaoRegistrada = true;
+                    console.log("✅ XP de revisão registrado com sucesso!");
                 } else {
-                    console.error("❌ Erro ao finalizar prática:", data.error);
+                    console.error("❌ Erro ao registrar XP da revisão:", data.error);
                 }
             } catch (error) {
-                console.error('❌ Erro ao finalizar prática:', error);
+                console.error('❌ Erro ao registrar XP da revisão:', error);
             }
         }
+    } else if (vidasAcabaram) {
+        // ✅ MODO NORMAL COM VIDAS ACABADAS: NÃO CONCLUI, ZERO XP
+        console.log("💀 VIDAS ACABARAM - Prática NÃO concluída, zero XP");
+        xpFinal = 0;
+        timeBonus = 0;
         
+        // Mostrar tela de derrota
+        showDefeatScreen(elapsedTime);
+        return; // ✅ PARA AQUI - não mostra tela de sucesso
+        
+    } else {
+        // ✅ MODO NORMAL COM SUCESSO: XP normal + bônus
+        const xpQuestoes = Array.from(answeredCorrectly).reduce((total, questionId) => {
+            const question = questions.find(q => q.id === questionId);
+            return total + (question ? question.xp : 0);
+        }, 0);
+        
+        timeBonus = calculateTimeBonus(elapsedTime, xpQuestoes);
+        xpFinal = xpQuestoes + timeBonus;
+        
+        console.log(`🎯 Modo Normal (Sucesso):`);
+        console.log(`   - Questões corretas: ${answeredCorrectly.size}`);
+        console.log(`   - XP das questões: ${xpQuestoes}`);
+        console.log(`   - Bônus de tempo: +${timeBonus} XP`);
+        console.log(`   - Total: ${xpFinal} XP`);
+    }
+    
+    // ✅ SÓ ENVIA PARA O BACKEND SE NÃO FOR CASO DE VIDAS ACABADAS
+    if (!vidasAcabaram) {
+        try {
+            const response = await fetch("{% url 'finalizar_pratica' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    aula_id: aulaId,
+                    xp_total: xpFinal,
+                    tempo_decorrido: elapsedTime,
+                    vidas_restantes: lives
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                console.log("✅ Prática finalizada com sucesso!");
+                
+                // ✅ VERIFICAR SE O BACKEND CONFIRMOU QUE AS VIDAS ACABARAM
+                if (data.vidas_acabaram) {
+                    console.log("💀 Backend confirmou: vidas acabaram!");
+                    showDefeatScreen(elapsedTime);
+                    return;
+                }
+            } else {
+                console.error("❌ Erro ao finalizar prática:", data.error);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao finalizar prática:', error);
+        }
+    }
+    
+    // ✅ SÓ MOSTRA TELA DE SUCESSO SE NÃO FOR CASO DE DERROTA
+    if (!vidasAcabaram) {
         showResultScreen(xpFinal, elapsedTime, timeBonus, revisaoBonus);
     }
+}
+
+// ✅ NOVA FUNÇÃO: TELA DE DERROTA QUANDO ACABAM AS VIDAS
+function showDefeatScreen(elapsedTime) {
+    const resultScreen = document.getElementById('result-screen');
+    const questionsContainer = document.getElementById('questions-container');
+    
+    questionsContainer.style.display = 'none';
+    resultScreen.classList.remove('hidden');
+    
+    // Customizar para tela de derrota
+    resultScreen.querySelector('h2').innerHTML = '💔 Vidas Esgotadas';
+    resultScreen.querySelector('p').textContent = 'Suas vidas acabaram durante a prática!';
+    
+    // Formatar tempo
+    const minutes = Math.floor(elapsedTime / 60);
+    const secondsRemaining = elapsedTime % 60;
+    const timeFormatted = String(minutes).padStart(2, '0') + ':' + String(secondsRemaining).padStart(2, '0');
+    
+    // Atualizar conteúdo da tela
+    resultScreen.innerHTML = `
+        <div class="bg-gradient-to-r from-red-600 to-red-800 text-white rounded-t-2xl p-6 -m-8 mb-6">
+            <h2 class="text-3xl font-bold flex items-center justify-center gap-3">
+                <span>💔</span>
+                Vidas Esgotadas
+            </h2>
+            <p class="mt-2 text-red-100">Suas vidas acabaram durante a prática!</p>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Estatísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-md text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <img src="{% static 'imagem/timer_35dp_DC2626_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Tempo" class="w-8 h-8">
+                    </div>
+                    <div class="text-2xl font-bold text-red-600 mb-2">${timeFormatted}</div>
+                    <p class="text-sm text-gray-600">Tempo de tentativa</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-md text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <img src="{% static 'imagem/block_35dp_DC2626_FILL0_wght400_GRAD0_opsz40.png' %}" alt="Vidas" class="w-8 h-8">
+                    </div>
+                    <div class="text-2xl font-bold text-red-600 mb-2">0/${maxLives}</div>
+                    <p class="text-sm text-gray-600">Vidas restantes</p>
+                </div>
+            </div>
+
+            <!-- Mensagem de motivação -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                <p class="text-red-700 font-semibold mb-2">Não desanime! Tente novamente quando suas vidas regenerarem.</p>
+                <p class="text-red-600 text-sm">💡 Dica: Revise a teoria antes de tentar novamente!</p>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex justify-center gap-4 mt-8">
+                <a href="{% url 'tarefas' %}?modulo_id={{ aula.modulo.id }}"
+                    class="bg-gradient-to-r from-red-500 to-red-700 text-white px-8 py-3 rounded-xl shadow-lg hover:from-red-600 hover:to-red-800 transition transform hover:scale-105 font-bold flex items-center gap-2">
+                    Voltar às Tarefas
+                </a>
+            </div>
+        </div>
+    `;
+}
     
     function showResultScreen(totalXP, elapsedTime, timeBonus, revisaoBonus = 0) {
         const resultScreen = document.getElementById('result-screen');
@@ -2264,6 +2527,8 @@
         console.log(`   - Bônus revisão: ${revisaoBonus}`);
         console.log(`   - Modo: ${isReviewMode ? 'REVISÃO' : 'NORMAL'}`);
     }
+
+    
 
     console.log("🚀 Sistema corrigido - Loop, Vidas e Bônus funcionando perfeitamente!");
 </script>

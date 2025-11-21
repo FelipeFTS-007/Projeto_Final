@@ -289,6 +289,8 @@ class Perfil(models.Model):
         self.save()
         return streak_anterior
 
+   
+    
     def regenerar_vidas(self):
         """Regenera vidas baseado no tempo passado - VERSÃO CORRIGIDA"""
         agora = timezone.now()
@@ -299,22 +301,30 @@ class Perfil(models.Model):
             self.save()
             return
         
-        # Calcular tempo desde a última atualização
+        # Calcular tempo desde a última atualização em MINUTOS
         diferenca = agora - self.ultima_atualizacao_vidas
         minutos_passados = diferenca.total_seconds() / 60
         
-        # Regenera 1 vida a cada 10 minutos
-        vidas_regeneradas = int(minutos_passados / 10)
+        print(f"⏰ Regeneração - Minutos passados: {minutos_passados:.1f}")
+        
+        # 🔥 CORREÇÃO: Regenera 1 vida a cada 2 minutos (para testes)
+        # Em produção, use 10 minutos
+        minutos_por_vida = 2  # Mude para 10 em produção
+        vidas_regeneradas = int(minutos_passados / minutos_por_vida)
         
         if vidas_regeneradas > 0:
             # Calcular novo tempo base para próxima regeneração
-            minutos_restantes = minutos_passados % 10
+            minutos_restantes = minutos_passados % minutos_por_vida
             tempo_base = agora - timedelta(minutes=minutos_restantes)
             
+            vidas_antes = self.vidas
             self.vidas = min(self.max_vidas, self.vidas + vidas_regeneradas)
             self.ultima_atualizacao_vidas = tempo_base
+            
+            print(f"✅ {vidas_regeneradas} vidas regeneradas! {vidas_antes} → {self.vidas}")
             self.save()
-            print(f"✅ {vidas_regeneradas} vidas regeneradas! Total: {self.vidas}")
+        else:
+            print(f"⏳ Aguardando regeneração: {self.tempo_para_proxima_vida()} min")
 
     def tempo_para_proxima_vida(self):
         """Retorna minutos até a próxima vida regenerar - VERSÃO CORRIGIDA"""
@@ -324,9 +334,12 @@ class Perfil(models.Model):
         agora = timezone.now()
         diferenca = agora - self.ultima_atualizacao_vidas
         minutos_passados = diferenca.total_seconds() / 60
-        minutos_restantes = 10 - (minutos_passados % 10)
         
-        return int(minutos_restantes) if minutos_restantes > 0 else 0
+        # 🔥 CORREÇÃO: Usar o mesmo tempo de regeneração
+        minutos_por_vida = 2  # Mude para 10 em produção
+        minutos_restantes = minutos_por_vida - (minutos_passados % minutos_por_vida)
+        
+        return max(0, int(minutos_restantes))
 
     def usar_vida(self):
         """Usa uma vida e retorna se foi possível - VERSÃO CORRIGIDA"""
@@ -334,8 +347,11 @@ class Perfil(models.Model):
             self.vidas -= 1
             self.ultima_atualizacao_vidas = timezone.now()  # Resetar timer
             self.save()
+            print(f"💔 Vida usada! Restam: {self.vidas}")
             return True
-        return False
+        else:
+            print("❌ Sem vidas disponíveis!")
+            return False
 
     def verificar_reset_diario(self):
         """Verifica e reseta automaticamente se passou um dia - CORREÇÃO"""

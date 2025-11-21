@@ -4376,10 +4376,12 @@ def api_questao_respostas(request, questao_id):
 @login_required
 @require_GET
 def api_vidas_status(request):
-    """API para obter status atual das vidas"""
+    """API para obter status atual das vidas - SEMPRE REGENERA ANTES"""
     try:
         perfil = request.user.perfil
-        perfil.regenerar_vidas()  # Sempre verificar regeneração ao acessar
+        
+        # 🔥 CORREÇÃO CRÍTICA: Sempre regenerar antes de retornar o status
+        perfil.regenerar_vidas()
         
         return JsonResponse({
             'success': True,
@@ -4391,7 +4393,6 @@ def api_vidas_status(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
-
     
 
 def esqueci_senha(request):

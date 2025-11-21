@@ -148,7 +148,11 @@
     }
   </style>
   {% block extra_css %}{% endblock %}
+
+
+
 </head>
+
 <body class="bg-blue-200">
 
 <div class="layout-container">
@@ -183,6 +187,17 @@
                 <h2 id="sequencia-days">{{ perfil.sequencia }} dias</h2>
             </div>
         </div>
+
+        <!-- Solução sem Django templates - mais segura -->
+        <script>
+          window.perfilData = {
+              streak: parseInt('{{ perfil.sequencia|default:0 }}'),
+              jaFezAtividadeHoje: '{{ perfil.ja_fez_atividade_hoje|yesno:"true,false" }}' === 'true',
+              vidas: parseInt('{{ perfil.vidas|default:3 }}'),
+              nivel: parseInt('{{ perfil.nivel|default:1 }}')
+          };
+          console.log('📊 Dados carregados:', window.perfilData);
+        </script>
 
         <!-- Ícones + Perfil -->
         <div class="flex items-center gap-6 text-blue-600 font-semibold">
@@ -514,13 +529,133 @@
 </div>
 
 <script>
-  // ===== SISTEMA DE VIDAS CORRIGIDO =====
+  // ===== SISTEMA DE STREAK CORRIGIDO =====
   
-  // Sistema de atualização automática de vidas
-  function iniciarAtualizacaoVidas() {
-      atualizarStatusVidas();
+  // Sistema de atualização automática do streak
+  function iniciarAtualizacaoStreak() {
+      atualizarStatusStreak();
       
       // Atualizar a cada 30 segundos
+      setInterval(atualizarStatusStreak, 30000);
+  }
+
+  async function atualizarStatusStreak() {
+      try {
+          const response = await fetch('/api/streak/');
+          const data = await response.json();
+          
+          if (data.success) {
+              // Atualizar display
+              document.getElementById('sequencia-days').textContent = data.streak_atual + ' dias';
+              
+              // Atualizar fogo baseado no streak e atividade do dia
+              atualizarFogoStreak(data.streak_atual, data.ja_fez_atividade_hoje);
+              
+              console.log('✅ Status streak atualizado:', data.streak_atual, 'dias');
+          }
+      } catch (error) {
+          console.log('Erro ao atualizar streak:', error);
+      }
+  }
+
+  // Função para atualizar o visual do fogo
+    // Função para atualizar o visual do fogo
+  function atualizarFogoStreak(streakAtual, jaFezAtividadeHoje = null) {
+      const fireElement = document.getElementById('sequencia-fire');
+      const daysElement = document.getElementById('sequencia-days');
+      
+      if (!fireElement || !daysElement) return;
+      
+      // Usar dados do window.perfilData se não fornecido
+      if (jaFezAtividadeHoje === null && window.perfilData) {
+          jaFezAtividadeHoje = window.perfilData.jaFezAtividadeHoje;
+      }
+      
+      // Atualizar contador
+      daysElement.textContent = streakAtual + ' dias';
+      
+      console.log('🎯 Atualizando fogo - Streak:', streakAtual, 'Atividade hoje:', jaFezAtividadeHoje);
+      
+      // LÓGICA CORRIGIDA: Fogo aceso se já fez atividade HOJE E tem streak > 0
+      if (jaFezAtividadeHoje && streakAtual > 0) {
+          // Fogo ACESO - laranja vibrante com efeitos
+          fireElement.className = 'fas fa-fire text-xl mr-1.5 text-orange-500 fire-glow animate-pulse';
+          console.log('🔥 Fogo ACESO - Atividade hoje + streak:', streakAtual);
+      } else if (streakAtual > 0) {
+          // Fogo "meio apagado" - tem streak mas não fez atividade hoje
+          fireElement.className = 'fas fa-fire text-xl mr-1.5 text-orange-300';
+          fireElement.classList.remove('fire-glow', 'animate-pulse');
+          console.log('🔶 Fogo MEIO APAGADO - Streak mas sem atividade hoje');
+      } else {
+          // Fogo APAGADO - sem streak
+          fireElement.className = 'fas fa-fire text-xl mr-1.5 text-gray-400';
+          fireElement.classList.remove('fire-glow', 'animate-pulse');
+          console.log('⚫ Fogo APAGADO - Sem streak');
+      }
+  }
+
+  // Função para registrar atividade e acender o fogo IMEDIATAMENTE
+  async function registrarAtividadeStreak(aulaId = null) {
+      try {
+          const response = await fetch('/api/streak/registrar-atividade/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({ 
+                  aula_id: aulaId,
+                  tipo: 'pratica'  // ou 'teoria' dependendo da atividade
+              })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+              // ✅ ATUALIZAÇÃO IMEDIATA DO FOCO - SEM DELAY
+              const fireElement = document.getElementById('sequencia-fire');
+              const daysElement = document.getElementById('sequencia-days');
+              
+              // ACENDER O FOCO IMEDIATAMENTE
+              fireElement.className = 'fas fa-fire text-xl mr-1.5 text-orange-500 fire-glow animate-pulse';
+              daysElement.textContent = data.streak_atual + ' dias';
+              
+              // Efeito visual de celebração
+              celebrarStreak(data.streak_aumentado);
+              
+              console.log('🎯 Atividade registrada! Streak:', data.streak_atual);
+              return true;
+          } else {
+              console.error('Erro ao registrar atividade:', data.error);
+              return false;
+          }
+      } catch (error) {
+          console.error('Erro ao registrar atividade:', error);
+          return false;
+      }
+  }
+
+  // Função para celebrar aumento de streak
+  function celebrarStreak(streakAumentado) {
+      if (streakAumentado) {
+          // Efeito especial quando o streak aumenta
+          const fireElement = document.getElementById('sequencia-fire');
+          
+          // Pulsação mais intensa
+          fireElement.classList.add('animate-pulse');
+          setTimeout(() => {
+              fireElement.classList.remove('animate-pulse');
+          }, 2000);
+          
+          // Mostrar notificação de celebração
+          mostrarNotificacao('🔥 Streak aumentou! Continue assim!', 'success');
+      }
+  }
+
+  // ===== SISTEMA DE VIDAS CORRIGIDO =====
+  
+  function iniciarAtualizacaoVidas() {
+      atualizarStatusVidas();
       setInterval(atualizarStatusVidas, 30000);
   }
 
@@ -530,25 +665,20 @@
           const data = await response.json();
           
           if (data.success) {
-              // Atualizar display
               document.getElementById('vidas-count').textContent = data.vidas;
-              
-              // Atualizar coração baseado nas vidas
               const heartIcon = document.getElementById('heart-icon');
+              
               if (data.vidas === 0) {
                   heartIcon.className = 'fas fa-heart-crack text-gray-400 text-lg mr-1.5';
               } else {
                   heartIcon.className = 'fas fa-heart text-red-500 text-lg mr-1.5';
               }
-              
-              console.log('✅ Status vidas atualizado:', data.vidas, 'vidas');
           }
       } catch (error) {
           console.log('Erro ao atualizar vidas:', error);
       }
   }
 
-  // Função para usar vida via API
   async function usarVida(aulaId = null) {
       try {
           const response = await fetch('/api/vidas/usar/', {
@@ -563,21 +693,14 @@
           const data = await response.json();
           
           if (data.success) {
-              // Atualizar display
               document.getElementById('vidas-count').textContent = data.vidas_restantes;
-              
-              // Animação do coração
               animarCoracao();
-              
-              console.log('✅ Vida usada. Restantes:', data.vidas_restantes);
               return true;
           } else {
-              console.error('Erro ao usar vida:', data.error);
               mostrarNotificacao('Sem vidas disponíveis!', 'error');
               return false;
           }
       } catch (error) {
-          console.error('Erro ao usar vida:', error);
           mostrarNotificacao('Erro ao usar vida', 'error');
           return false;
       }
@@ -599,8 +722,34 @@
       return cookieValue;
   }
 
-  // Função global para usar vida
-  window.usarVida = usarVida;
+  // Funções de utilidade
+  function animarCoracao() {
+      const heartIcon = document.getElementById('heart-icon');
+      heartIcon.classList.add('heart-pulse');
+      setTimeout(() => heartIcon.classList.remove('heart-pulse'), 600);
+  }
+
+  function mostrarNotificacao(mensagem, tipo = 'info') {
+      const notification = document.createElement('div');
+      const bgColor = tipo === 'success' ? 'bg-green-500' : 
+                     tipo === 'error' ? 'bg-red-500' : 'bg-blue-500';
+      
+      notification.className = `fixed top-4 right-4 ${bgColor} text-white p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-full`;
+      notification.innerHTML = `
+          <div class="flex items-center">
+              <i class="fas fa-${tipo === 'success' ? 'check' : tipo === 'error' ? 'exclamation-triangle' : 'info'} mr-2"></i>
+              <span>${mensagem}</span>
+          </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+      setTimeout(() => {
+          notification.classList.add('translate-x-full');
+          setTimeout(() => notification.remove(), 300);
+      }, 5000);
+  }
 
   // ===== SISTEMA ORIGINAL (MANTIDO) =====
 
@@ -611,48 +760,49 @@
   const cancelConfig = document.getElementById("cancel-config");
   const saveConfig = document.getElementById("save-config");
 
-  btnConfig.addEventListener("click", () => {
-      configModal.classList.remove("hidden");
-      document.body.style.overflow = 'hidden';
-  });
+  if (btnConfig) {
+      btnConfig.addEventListener("click", () => {
+          configModal.classList.remove("hidden");
+          document.body.style.overflow = 'hidden';
+      });
+  }
 
   function closeConfigModal() {
       configModal.classList.add("hidden");
       document.body.style.overflow = '';
   }
 
-  closeConfig.addEventListener("click", closeConfigModal);
-  cancelConfig.addEventListener("click", closeConfigModal);
+  if (closeConfig) closeConfig.addEventListener("click", closeConfigModal);
+  if (cancelConfig) cancelConfig.addEventListener("click", closeConfigModal);
 
   configModal.addEventListener("click", (e) => {
-      if (e.target === configModal) {
-          closeConfigModal();
-      }
+      if (e.target === configModal) closeConfigModal();
   });
 
-  // Salvar configurações
-  saveConfig.addEventListener("click", () => {
-      saveConfig.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        Salvo!
-      `;
-      saveConfig.classList.add('bg-green-600', 'hover:bg-green-700');
-      
-      setTimeout(() => {
-          closeConfigModal();
+  if (saveConfig) {
+      saveConfig.addEventListener("click", () => {
+          saveConfig.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Salvo!
+          `;
+          saveConfig.classList.add('bg-green-600', 'hover:bg-green-700');
+          
           setTimeout(() => {
-              saveConfig.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Salvar Alterações
-              `;
-              saveConfig.classList.remove('bg-green-600', 'hover:bg-green-700');
+              closeConfigModal();
+              setTimeout(() => {
+                  saveConfig.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Salvar Alterações
+                  `;
+                  saveConfig.classList.remove('bg-green-600', 'hover:bg-green-700');
+              }, 1000);
           }, 1000);
-      }, 1000);
-  });
+      });
+  }
 
   // Botão Notificações
   const btnNotify = document.getElementById("btn-notify");
@@ -660,53 +810,54 @@
   const clearNotifications = document.getElementById("clear-notifications");
   const notificationCounter = document.querySelector('#btn-notify span');
 
-  btnNotify.addEventListener("click", (e) => {
-      e.stopPropagation();
-      notifyBox.classList.toggle("hidden");
-      
-      if (!notifyBox.classList.contains("hidden")) {
-          const unreadNotifications = document.querySelectorAll('.notify-item.bg-blue-50, .notify-item.dark\\:bg-gray-700');
-          unreadNotifications.forEach(notification => {
-              notification.classList.remove('bg-blue-50', 'dark:bg-gray-700');
-              notification.classList.add('bg-white', 'dark:bg-gray-800');
+  if (btnNotify) {
+      btnNotify.addEventListener("click", (e) => {
+          e.stopPropagation();
+          notifyBox.classList.toggle("hidden");
+          
+          if (!notifyBox.classList.contains("hidden")) {
+              const unreadNotifications = document.querySelectorAll('.notify-item.bg-blue-50, .notify-item.dark\\:bg-gray-700');
+              unreadNotifications.forEach(notification => {
+                  notification.classList.remove('bg-blue-50', 'dark:bg-gray-700');
+                  notification.classList.add('bg-white', 'dark:bg-gray-800');
+              });
+              
+              if (notificationCounter) {
+                  notificationCounter.textContent = '0';
+                  notificationCounter.classList.remove('animate-pulse');
+              }
+          }
+      });
+  }
+
+  document.addEventListener('click', (e) => {
+      if (notifyBox && !notifyBox.contains(e.target) && e.target !== btnNotify && !btnNotify.contains(e.target)) {
+          notifyBox.classList.add('hidden');
+      }
+  });
+
+  if (clearNotifications) {
+      clearNotifications.addEventListener('click', () => {
+          const notificationItems = document.querySelectorAll('.notify-item');
+          notificationItems.forEach(item => {
+              item.style.opacity = '0';
+              item.style.transition = 'opacity 0.3s ease';
+              setTimeout(() => item.remove(), 300);
           });
           
           if (notificationCounter) {
               notificationCounter.textContent = '0';
               notificationCounter.classList.remove('animate-pulse');
           }
-      }
-  });
-
-  document.addEventListener('click', (e) => {
-      if (!notifyBox.contains(e.target) && e.target !== btnNotify && !btnNotify.contains(e.target)) {
-          notifyBox.classList.add('hidden');
-      }
-  });
-
-  // Limpar todas as notificações
-  clearNotifications.addEventListener('click', () => {
-      const notificationItems = document.querySelectorAll('.notify-item');
-      notificationItems.forEach(item => {
-          item.style.opacity = '0';
-          item.style.transition = 'opacity 0.3s ease';
+          
           setTimeout(() => {
-              item.remove();
-          }, 300);
+              const emptyMessage = document.createElement('div');
+              emptyMessage.className = 'p-4 text-center text-gray-500';
+              emptyMessage.textContent = 'Nenhuma notificação';
+              notifyBox.querySelector('.p-2').appendChild(emptyMessage);
+          }, 350);
       });
-      
-      if (notificationCounter) {
-          notificationCounter.textContent = '0';
-          notificationCounter.classList.remove('animate-pulse');
-      }
-      
-      setTimeout(() => {
-          const emptyMessage = document.createElement('div');
-          emptyMessage.className = 'p-4 text-center text-gray-500';
-          emptyMessage.textContent = 'Nenhuma notificação';
-          notifyBox.querySelector('.p-2').appendChild(emptyMessage);
-      }, 350);
-  });
+  }
 
   // Fechar notificações individualmente
   document.querySelectorAll('.notify-dismiss').forEach(button => {
@@ -730,113 +881,130 @@
       });
   });
 
-  // Sistema Dinâmico do Fogo da Sequência
-  function updateFireSequence() {
+  // ===== FUNÇÕES GLOBAIS =====
+
+  // Função global para registrar atividade
+  window.registrarAtividadeStreak = registrarAtividadeStreak;
+  window.usarVida = usarVida;
+
+  // Função global para ser chamada quando completar uma atividade
+  window.completarAtividade = function(aulaId = null) {
+      // Registrar atividade no streak
+      registrarAtividadeStreak(aulaId);
+      
+      // Atualizar status das vidas (caso tenha usado)
+      atualizarStatusVidas();
+  };
+
+      // Inicializar quando a página carregar
+  document.addEventListener('DOMContentLoaded', function() {
+      // Iniciar sistemas
+      iniciarRegeneracaoVidas(); // ✅ FALTANDO ESTA CHAMADA
+      iniciarAtualizacaoVidas();
+      iniciarAtualizacaoStreak();
+      
+      // 🔥 CORREÇÃO: Forçar atualização visual imediata do fogo
       const fireElement = document.getElementById('sequencia-fire');
       const daysElement = document.getElementById('sequencia-days');
       
-      if (!fireElement || !daysElement) return;
+      if (fireElement && daysElement) {
+          const streakAtual = parseInt(daysElement.textContent) || 0;
+          const isFireLit = fireElement.classList.contains('text-orange-500');
+          
+          console.log('🎯 Estado inicial - Streak:', streakAtual, 'Fogo aceso:', isFireLit);
+          
+          // Lógica direta: se tem streak > 0, acende o fogo
+          if (streakAtual > 0) {
+              fireElement.className = 'fas fa-fire text-xl mr-1.5 text-orange-500 fire-glow';
+              console.log('🔥 Fogo ACESO no carregamento');
+          } else {
+              fireElement.className = 'fas fa-fire text-xl mr-1.5 text-gray-400';
+              console.log('⚫ Fogo APAGADO no carregamento');
+          }
+      }
       
-      const currentDays = parseInt(daysElement.textContent);
+      // Fazer uma verificação via API após 2 segundos (fallback)
+      setTimeout(() => {
+          atualizarStatusStreak();
+      }, 2000);
       
-      // Fogo aceso se tem dias > 0
-      if (currentDays > 0) {
-          // Acender o fogo - laranja com efeitos
-          fireElement.className = 'fas fa-fire text-xl mr-1.5 transition-all duration-300 text-orange-500 fire-glow';
-          fireElement.classList.add('animate-pulse');
-      } else {
-          // Apagar o fogo - cinza sem efeitos
-          fireElement.className = 'fas fa-fire text-xl mr-1.5 transition-all duration-300 text-gray-400';
-          fireElement.classList.remove('animate-pulse', 'fire-glow');
+      console.log('🔥 Sistema de streak inicializado');
+  });
+ 
+
+  // Mantenha também a função original para compatibilidade
+  function iniciarAtualizacaoVidas() {
+      atualizarStatusVidas();
+      setInterval(atualizarStatusVidas, 30000);
+  }
+
+  async function atualizarStatusVidas() {
+      try {
+          const response = await fetch('/api/vidas/status/');
+          const data = await response.json();
+          
+          if (data.success) {
+              document.getElementById('vidas-count').textContent = data.vidas;
+              const heartIcon = document.getElementById('heart-icon');
+              
+              if (data.vidas === 0) {
+                  heartIcon.className = 'fas fa-heart-crack text-gray-400 text-lg mr-1.5';
+              } else {
+                  heartIcon.className = 'fas fa-heart text-red-500 text-lg mr-1.5';
+              }
+              
+              console.log('❤️ Status vidas atualizado:', data.vidas);
+          }
+      } catch (error) {
+          console.log('Erro ao atualizar vidas:', error);
+      }
+  }
+  function iniciarRegeneracaoVidas() {
+      console.log('🔄 Iniciando sistema de regeneração de vidas...');
+      
+      // Verificar a cada 30 segundos
+      setInterval(async () => {
+          await verificarERegenerarVidas();
+      }, 30000); // 30 segundos
+      
+      // Verificar imediatamente ao carregar
+      verificarERegenerarVidas();
+  }
+
+  async function verificarERegenerarVidas() {
+      try {
+          console.log('🔍 Verificando regeneração de vidas...');
+          
+          const response = await fetch('/api/vidas/status/');
+          const data = await response.json();
+          
+          if (data.success) {
+              // Atualizar display
+              document.getElementById('vidas-count').textContent = data.vidas;
+              
+              // Atualizar ícone do coração
+              const heartIcon = document.getElementById('heart-icon');
+              if (data.vidas === 0) {
+                  heartIcon.className = 'fas fa-heart-crack text-gray-400 text-lg mr-1.5';
+              } else {
+                  heartIcon.className = 'fas fa-heart text-red-500 text-lg mr-1.5';
+              }
+              
+              console.log(`❤️ Vidas: ${data.vidas}/${data.max_vidas} | Próxima em: ${data.tempo_para_proxima_vida}min`);
+              
+              // Mostrar notificação se vida regenerou
+              if (data.vidas > 0 && data.tempo_para_proxima_vida === 0) {
+                  mostrarNotificacaoVidaRegenerada();
+              }
+          }
+      } catch (error) {
+          console.log('❌ Erro ao verificar vidas:', error);
       }
   }
 
-  // Nova função para atualizar o fogo quando fizer atividade
-  function atualizarFogoAtividade() {
-      const fireElement = document.getElementById('sequencia-fire');
-      const daysElement = document.getElementById('sequencia-days');
-      
-      // Acender o fogo
-      fireElement.className = 'fas fa-fire text-xl mr-1.5 transition-all duration-300 text-orange-500 fire-glow';
-      fireElement.classList.add('animate-pulse');
-      
-      // Atualizar contador de dias
-      const currentDays = parseInt(daysElement.textContent);
-      daysElement.textContent = (currentDays + 1) + ' dias';
-      
-      // Efeito especial quando acende
-      setTimeout(() => {
-          fireElement.classList.remove('animate-pulse');
-      }, 1000);
-  }
+  
 
-  // Funções para animações do coração
-  function animarCoracao() {
-      const heartIcon = document.getElementById('heart-icon');
-      heartIcon.classList.add('heart-pulse');
-      setTimeout(() => {
-          heartIcon.classList.remove('heart-pulse');
-      }, 600);
-  }
-
-  // Função para mostrar notificações
-  function mostrarNotificacao(mensagem, tipo = 'info') {
-      const notification = document.createElement('div');
-      const bgColor = tipo === 'success' ? 'bg-green-500' : tipo === 'error' ? 'bg-red-500' : 'bg-blue-500';
-      
-      notification.className = `fixed top-4 right-4 ${bgColor} text-white p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-full`;
-      notification.innerHTML = `
-          <div class="flex items-center">
-              <i class="fas fa-${tipo === 'success' ? 'check' : tipo === 'error' ? 'exclamation-triangle' : 'info'} mr-2"></i>
-              <span>${mensagem}</span>
-          </div>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-          notification.classList.remove('translate-x-full');
-      }, 100);
-      
-      setTimeout(() => {
-          notification.classList.add('translate-x-full');
-          setTimeout(() => notification.remove(), 300);
-      }, 5000);
-  }
-
-  // Função global para ser chamada quando completar uma atividade
-  window.completarAtividade = function() {
-      atualizarFogoAtividade();
-  };
-
-  // Verificar atualização de sequência
-  function checkSequenceUpdate() {
-      fetch('/api/streak/')
-          .then(response => response.json())
-          .then(data => {
-          if (data.success && data.streak_atual !== undefined) {
-              const currentElement = document.getElementById('sequencia-days');
-              if (currentElement && parseInt(currentElement.textContent) !== data.streak_atual) {
-              currentElement.textContent = data.streak_atual + ' dias';
-              updateFireSequence();
-              }
-          }
-          })
-          .catch(error => console.log('Erro ao verificar sequência:', error));
-  }
-
-  // Inicializar quando a página carregar
-  document.addEventListener('DOMContentLoaded', function() {
-      // Iniciar sistema de vidas
-      iniciarAtualizacaoVidas();
-      
-      // Sistema original
-      updateFireSequence();
-      
-      // Verificar a cada 30 minutos se precisa atualizar (para o reset automático)
-      setInterval(updateFireSequence, 30 * 60 * 1000);
-      setInterval(checkSequenceUpdate, 30000);
-  });
+  // ===== ATUALIZAÇÃO DA VIEW api_vidas_status =====
 </script>
 
 {% block extra_js %}{% endblock %}

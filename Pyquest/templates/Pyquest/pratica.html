@@ -5,6 +5,71 @@
 
 {% block extra_css %}
 <style>
+    /* ✅ CORREÇÃO DEFINITIVA - PRESERVAÇÃO TOTAL DE ESPAÇOS */
+    .fill-blank-container {
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        font-family: inherit !important;
+        line-height: 1.6 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 15px !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* ✅ LINHAS DE TEXTO COM FORMATAÇÃO EXATA */
+    .text-line {
+        margin: 4px 0;
+        line-height: 1.6;
+        min-height: 1.6em;
+        white-space: pre;
+        font-family: inherit;
+        display: block;
+    }
+
+    .preserve-spaces {
+        white-space: pre;
+        display: inline;
+        font-family: inherit;
+    }
+
+    .empty-line {
+        height: 1.6em;
+        margin: 4px 0;
+        display: block;
+    }
+
+    /* ✅ REMOVER ESTILOS PADRÃO QUE ATRAPALHAM */
+    .fill-blank-container pre {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: inherit !important;
+        white-space: pre-wrap !important;
+    }
+
+    /* ✅ LACUNAS MAIS COMPACTAS */
+    .blank-input {
+        border-bottom: 2px solid #3B82F6;
+        text-align: center;
+        padding: 2px 4px !important;
+        margin: 0 4px !important;
+        background: transparent;
+        outline: none;
+        min-width: 80px !important;
+        max-width: 120px !important;
+        font-weight: 500;
+        display: inline-block;
+        vertical-align: baseline;
+        font-family: inherit;
+        font-size: 14px;
+        border-radius: 3px;
+        height: 24px !important;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
     /* ✅ ESTILOS MELHORADOS PARA LACUNAS */
     .blank-input {
         border-bottom: 2px solid #3B82F6;
@@ -836,14 +901,7 @@
         {% endfor %}
     </div>
 
-    <!-- ✅ BOTÃO FINALIZAR REVISÃO -->
-    {% if pratica_concluida %}
-    <button id="finalizar-revisao-btn" class="finalizar-revisao-btn">
-        <img src="{% static 'imagem/check_circle_20dp_FFFFFF_FILL0_wght400_GRAD0_opsz20.png' %}" alt="Finalizar" class="w-5 h-5">
-        Finalizar Revisão
-    </button>
-    {% endif %}
-
+    
     <!-- Tela de Resultados -->
     <div id="result-screen" class="hidden bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg p-8 text-center space-y-6 border border-green-200">
         <div class="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-t-2xl p-6 -m-8 mb-6">
@@ -1804,36 +1862,36 @@ function checkInitialLives() {
         });
     }
 
-    // ✅ SOLUÇÃO DEFINITIVA - REMOVE ESPAÇOS INDESEJADOS MAS MANTÉM FORMATAÇÃO
+    // ✅ SOLUÇÃO DEFINITIVA - PRESERVAÇÃO TOTAL DE ESPAÇOS E FORMATAÇÃO
     function processFillBlankText(container, text, questionId) {
         console.log("🎯 Processando texto com lacunas:", JSON.stringify(text));
         
-        // ✅ CORREÇÃO: Limpar espaços HTML indesejados mas manter formatação do conteúdo
-        const cleanText = text.replace(/^\s+|\s+$/g, ''); // Só remove espaços no início e fim do texto completo
+        // ✅ CORREÇÃO CRÍTICA: NÃO REMOVER ESPAÇOS INTERNOS - APENAS TRIM GERAL
+        const cleanText = text.trim(); // Só remove espaços no início e fim do texto completo
         
         const lines = cleanText.split('\n');
         let processedHTML = '';
         
         lines.forEach(line => {
-            // ✅ CORREÇÃO CRÍTICA: Processar cada linha individualmente
-            // Remover apenas espaços HTML extras, manter espaços de conteúdo
-            const cleanLine = line.replace(/^\s+/, ''); // Remove espaços iniciais do HTML
-            
-            if (cleanLine === '') {
-                // Se a linha ficou vazia após limpeza, é uma linha de layout - ignorar
+            // ✅ CORREÇÃO: PRESERVAR ESPAÇOS INTERNOS E LINHAS VAZIAS
+            if (line.trim() === '') {
+                // Linha vazia - manter para preservar espaçamento
+                processedHTML += '<div class="empty-line">&nbsp;</div>';
                 return;
             }
             
             let lineHTML = '<div class="text-line">';
             
-            // ✅ Processar preservando a estrutura exata
-            const parts = cleanLine.split(/(\[_____\])/);
+            // ✅ Processar preservando TODOS os espaços
+            const parts = line.split(/(\[_____\])/);
             
             parts.forEach(part => {
                 if (part === '[_____]') {
                     lineHTML += '<input type="text" class="blank-input" placeholder="______" data-question="' + questionId + '">';
                 } else if (part !== '') {
-                    lineHTML += '<span class="preserve-spaces">' + part + '</span>';
+                    // ✅ PRESERVAR ESPAÇOS ORIGINAIS - usar &nbsp; para espaços consecutivos
+                    const preservedSpaces = part.replace(/  /g, ' &nbsp;');
+                    lineHTML += '<span class="preserve-spaces">' + preservedSpaces + '</span>';
                 }
             });
             
@@ -1842,7 +1900,7 @@ function checkInitialLives() {
         });
         
         container.innerHTML = processedHTML;
-        console.log("✅ FORMATAÇÃO IDÊNTICA AO ENUNCIADO:", container.innerHTML);
+        console.log("✅ FORMATAÇÃO EXATA PRESERVADA:", container.innerHTML);
     }
 
     // ===== FUNÇÃO VERIFICAR LACUNAS CORRIGIDA =====

@@ -44,7 +44,7 @@ source venv/bin/activate
 
 ## **4. Instalar Dependências do Projeto**
 
-pip install -r requeriments.txt
+pip install -r requirements.txt
 
 ---
 
